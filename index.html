@@ -11,18 +11,10 @@
   <!-- PDF.js -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
   
-  <!-- MathJax cấu hình chuẩn cho Ma trận ngoặc tròn (pmatrix) -->
-  <script>
-    window.MathJax = {
-      tex: {
-        inlineMath: [['$', '$'], ['\\(', '\\)']],
-        displayMath: [['$$', '$$'], ['\\[', '\\]']],
-        processEscapes: true
-      },
-      svg: { fontCache: 'global' }
-    };
-  </script>
-  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+  <!-- KaTeX (Thư viện render toán học & ma trận chuẩn xác, nét đẹp tuyệt đối giống ảnh mẫu) -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body);"></script>
 
   <style>
     body { background-color: #f8fafc; font-family: system-ui, -apple-system, sans-serif; }
@@ -44,6 +36,8 @@
       border-radius: 50%;
       background-color: white;
     }
+    /* Đảm bảo công thức toán học hiển thị rõ ràng */
+    .katex { font-size: 1.1em !important; }
   </style>
 </head>
 <body class="text-slate-800 min-h-screen pb-20">
@@ -72,7 +66,7 @@
         <label class="block text-sm font-bold text-slate-700 mb-2">📄 Chọn file PDF đề thi:</label>
         <input type="file" id="pdf-file" accept="application/pdf" class="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-rose-50 file:text-rose-600 hover:file:bg-rose-100 cursor-pointer mb-4"/>
 
-        <div id="status-msg" class="text-sm font-medium text-rose-600 hidden">⏳ Đang trích xuất ma trận & câu hỏi từ PDF...</div>
+        <div id="status-msg" class="text-sm font-medium text-rose-600 hidden">⏳ Đang trích xuất ma trận & câu hỏi chuẩn toán học từ PDF...</div>
       </div>
     </div>
 
@@ -91,10 +85,10 @@
       <div id="questions-container" class="space-y-6"></div>
     </div>
 
-    <!-- Màn hình Kết quả (Chuẩn 100% Giao diện Ảnh Mẫu) -->
+    <!-- Màn hình Kết quả -->
     <div id="result-section" class="hidden space-y-5">
 
-      <!-- Khối 1: Vòng tròn điểm số & Thông tin tổng quan -->
+      <!-- Khối điểm số -->
       <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col md:flex-row items-center gap-8">
         <div class="flex-shrink-0">
           <div class="circle-progress" id="circle-progress-bar">
@@ -114,7 +108,7 @@
           <p id="eval-desc" class="text-sm text-slate-500">Bạn nắm rất chắc nội dung này. Hãy thử bộ đề khó hơn.</p>
           
           <div class="text-xs text-slate-500 space-y-1 pt-1">
-            <div class="font-bold text-slate-700" id="test-name-tag">TEST LẦN 1</div>
+            <div class="font-bold text-slate-700">BÀI TẬP TEST LẦN 2</div>
             <div>📊 <span id="correct-detail-text">Đúng 13/14 câu (92,9%)</span></div>
             <div>🕒 <span id="time-spent-text">24 phút 36 giây</span> • Nộp lúc <span id="submit-timestamp">--:--</span></div>
           </div>
@@ -126,20 +120,17 @@
         </div>
       </div>
 
-      <!-- Khối nút Chia sẻ -->
+      <!-- Chia sẻ -->
       <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
         <button class="bg-rose-600 hover:bg-rose-700 text-white px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/></svg>
           Chia sẻ kết quả
         </button>
       </div>
 
-      <!-- Khối 2: Bảng xếp hạng -->
+      <!-- Bảng xếp hạng -->
       <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-3">
         <div class="flex justify-between items-center">
-          <h3 class="font-bold text-slate-800 text-sm flex items-center gap-1.5">
-            🏆 Bảng xếp hạng
-          </h3>
+          <h3 class="font-bold text-slate-800 text-sm">🏆 Bảng xếp hạng</h3>
           <span class="text-xs text-slate-400">37 người đã thi</span>
         </div>
         <div class="p-3 bg-rose-50/70 border border-rose-100 rounded-xl text-xs text-rose-900 flex justify-between items-center">
@@ -148,13 +139,10 @@
             <input type="checkbox" checked class="rounded text-rose-600"> Hiện tên tôi trên bảng xếp hạng
           </label>
         </div>
-        <p class="text-xs text-slate-400">Chưa có ai chọn hiện tên. Hãy là người đầu tiên!</p>
-        <p class="text-xs text-slate-400 italic">Mỗi người tính bài tốt nhất; bằng điểm thì ai làm nhanh hơn xếp trên.</p>
       </div>
 
-      <!-- Khối 3: Thống kê Đúng / Sai / Bỏ trống & Điểm chủ đề -->
+      <!-- Tổng kết & Điểm theo chủ đề -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <!-- Thống kê Tổng kết -->
         <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4">
           <h3 class="font-bold text-slate-800 text-sm">Tổng kết</h3>
           <div class="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden flex">
@@ -163,39 +151,26 @@
             <div id="bar-empty" class="bg-slate-300 h-full" style="width: 0%"></div>
           </div>
           <div class="grid grid-cols-4 text-left text-xs font-semibold">
-            <div>
-              <span class="text-slate-400 block text-[10px]">● Đúng</span>
-              <span id="stat-correct" class="text-base font-bold text-slate-800">0</span>
-            </div>
-            <div>
-              <span class="text-slate-400 block text-[10px]">● Sai</span>
-              <span id="stat-incorrect" class="text-base font-bold text-slate-800">0</span>
-            </div>
-            <div>
-              <span class="text-slate-400 block text-[10px]">● Bỏ trống</span>
-              <span id="stat-empty" class="text-base font-bold text-slate-800">0</span>
-            </div>
-            <div>
-              <span class="text-slate-400 block text-[10px]">Tổng số câu</span>
-              <span id="stat-total" class="text-base font-bold text-slate-800">0</span>
-            </div>
+            <div><span class="text-slate-400 block text-[10px]">● Đúng</span><span id="stat-correct" class="text-base font-bold text-slate-800">0</span></div>
+            <div><span class="text-slate-400 block text-[10px]">● Sai</span><span id="stat-incorrect" class="text-base font-bold text-slate-800">0</span></div>
+            <div><span class="text-slate-400 block text-[10px]">● Bỏ trống</span><span id="stat-empty" class="text-base font-bold text-slate-800">0</span></div>
+            <div><span class="text-slate-400 block text-[10px]">Tổng số câu</span><span id="stat-total" class="text-base font-bold text-slate-800">0</span></div>
           </div>
         </div>
 
-        <!-- Điểm theo chủ đề -->
         <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-3">
           <div class="flex justify-between items-center">
             <h3 class="font-bold text-slate-800 text-sm">Điểm theo chủ đề</h3>
             <span id="theme-percent" class="text-xs font-bold text-slate-800">0%</span>
           </div>
-          <div class="text-xs font-semibold text-slate-400">BÀI TẬP MA TRẬN NGHỊCH ĐẢO</div>
+          <div class="text-xs font-semibold text-slate-400">BÀI TẬP TEST LẦN 2</div>
           <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
             <div id="theme-bar" class="bg-emerald-500 h-full" style="width: 0%"></div>
           </div>
         </div>
       </div>
 
-      <!-- Khối 4: Xem lại từng câu (Tabs Lọc) -->
+      <!-- Xem lại từng câu -->
       <div id="review-anchor" class="pt-4">
         <div class="flex justify-between items-center mb-4">
           <h3 class="font-bold text-slate-800 text-lg">Xem lại từng câu</h3>
@@ -222,7 +197,6 @@
     let timerInterval;
     let startTime;
 
-    // Đáp án chuẩn từ tài liệu đề AMC 2027
     const officialAnswers = {
       1: 'D', 2: 'C', 3: 'C', 4: 'C', 5: 'A', 6: 'B', 7: 'B', 8: 'C', 9: 'A', 10: 'A',
       11: 'D', 12: 'A', 13: 'A', 14: 'D', 15: 'C', 16: 'A', 17: 'B', 18: 'A', 19: 'B', 20: 'B',
@@ -274,18 +248,18 @@
       }
     });
 
-    // Chuẩn hóa ký hiệu LaTeX toán học: Biến đổi matrix thành pmatrix (ngoặc tròn ma trận)
+    // Định dạng chuỗi văn bản và tự động bọc cú pháp KaTeX cho Ma trận ngoặc tròn chuẩn như ảnh mẫu
     function cleanMathSyntax(str) {
       if (!str) return '';
       let text = str;
       
-      // Chuyển matrix thường sang pmatrix (ngoặc tròn như ảnh đề bài)
+      // Chuyển ma trận thường sang pmatrix chuẩn ngoặc tròn
       text = text.replace(/\\begin\{matrix\}/g, '\\begin{pmatrix}');
       text = text.replace(/\\end\{matrix\}/g, '\\end{pmatrix}');
       
-      // Tự động bọc $ cho các biểu thức thiếu ký hiệu $
-      text = text.replace(/(\(\\begin\{pmatrix\}[\s\S]*?\\end\{pmatrix\}\))/g, '$ $1 $');
-      text = text.replace(/(A\^\{-1\}|A\^T|\(A\^T\)\^\{-1\}|det\(2\(A\^\{-1\}\)\^2A\^T\)|det\(A\^3\(A\^T\)\^\{-1\}\)|tr\(A\^\{-1\}\)|c_\{32\}|a_\{ij\})/g, '$$$1$$');
+      // Đảm bảo bọc đúng ký hiệu $ để KaTeX render
+      text = text.replace(/(\(\\begin\{pmatrix\}[\s\S]*?\\end\{pmatrix\}\))/g, ' $1 ');
+      text = text.replace(/(A\^\{-1\}|A\^T|\(A\^T\)\^\{-1\}|det\(A\)|tr\(A\^\{-1\}\)|c_\{32\}|a_\{ij\})/g, '$$$1$$');
 
       return text;
     }
@@ -385,7 +359,13 @@
         container.appendChild(qCard);
       });
 
-      if (window.MathJax) MathJax.typesetPromise();
+      // Render KaTeX tự động cho toàn bộ trang
+      renderMathInElement(document.body, {
+        delimiters: [
+          {left: '$$', right: '$$', display: true},
+          {left: '$', right: '$', display: false}
+        ]
+      });
     }
 
     function gradeQuiz() {
@@ -413,12 +393,10 @@
       const score10 = total > 0 ? ((correctCount / total) * 10) : 0;
       const percentVal = Math.round((correctCount / total) * 100);
 
-      // Chuyển sang giao diện kết quả
       document.getElementById('quiz-section').classList.add('hidden');
       document.getElementById('result-section').classList.remove('hidden');
       document.getElementById('timer-box').classList.add('hidden');
 
-      // Điền số liệu
       document.getElementById('score-num').innerText = score10.toFixed(2).replace('.', ',');
       document.getElementById('circle-progress-bar').style.setProperty('--progress', `${percentVal}%`);
       document.getElementById('correct-detail-text').innerText = `Đúng ${correctCount}/${total} câu (${percentVal}%)`;
@@ -473,7 +451,7 @@
             circleLabelStyle = "bg-emerald-600 text-white border-emerald-600";
           }
           if (opt.label === userChoice && isCorrect) {
-            extraLabel = `<span class="ml-auto text-emerald-600 text-xs font-bold flex items-center gap-1"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> Bạn chọn đúng</span>`;
+            extraLabel = `<span class="ml-auto text-emerald-600 text-xs font-bold flex items-center gap-1">✓ Bạn chọn đúng</span>`;
           } else if (opt.label === userChoice && !isCorrect) {
             optionStyle = "border-rose-400 bg-rose-50/40 text-rose-900 font-semibold";
             circleLabelStyle = "bg-rose-600 text-white border-rose-600";
@@ -498,7 +476,7 @@
             <span class="font-extrabold text-slate-800 text-base">Câu ${q.id}</span>
             <div class="flex items-center gap-2">
               <span class="text-xs font-bold px-3 py-1 rounded-full ${badgeClass}">${badgeText}</span>
-              <button class="text-xs text-slate-400 border border-slate-200 px-2.5 py-1 rounded-lg hover:bg-slate-50 flex items-center gap-1">
+              <button class="text-xs text-slate-400 border border-slate-200 px-2.5 py-1 rounded-lg hover:bg-slate-50">
                 🔖 Đánh dấu để ôn
               </button>
             </div>
@@ -512,7 +490,12 @@
         container.appendChild(revCard);
       });
 
-      if (window.MathJax) MathJax.typesetPromise();
+      renderMathInElement(document.body, {
+        delimiters: [
+          {left: '$$', right: '$$', display: true},
+          {left: '$', right: '$', display: false}
+        ]
+      });
     }
 
     function filterReview(tab) {
