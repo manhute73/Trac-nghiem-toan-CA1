@@ -8,8 +8,6 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Thư viện xuất PDF (html2pdf.js) -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
         body { font-family: 'Inter', sans-serif; background-color: #0f172a; }
@@ -39,12 +37,20 @@
             outline: 2px solid #e11d48;
             background-color: #fff1f2 !important;
         }
+
+        /* CSS Tối ưu khi In / Xuất PDF */
+        @media print {
+            body { background-color: #ffffff !important; color: #000000 !important; }
+            header, button, .no-print { display: none !important; }
+            #tab-result { display: block !important; }
+            .shadow-xl, .shadow-2xl { box-shadow: none !important; }
+        }
     </style>
 </head>
 <body class="min-h-screen text-slate-800 flex flex-col">
 
     <!-- Top Browser Bar -->
-    <header class="bg-[#1e293b] text-slate-300 px-4 py-2.5 flex items-center justify-between text-sm select-none border-b border-slate-700">
+    <header class="bg-[#1e293b] text-slate-300 px-4 py-2.5 flex items-center justify-between text-sm select-none border-b border-slate-700 no-print">
         <div class="flex items-center space-x-2">
             <span class="w-3 h-3 rounded-full bg-rose-500 inline-block"></span>
             <span class="w-3 h-3 rounded-full bg-amber-500 inline-block"></span>
@@ -75,7 +81,6 @@
                     <span class="bg-amber-100 text-amber-700 text-xs px-2.5 py-1 rounded-full font-medium">Trung bình</span>
                 </div>
 
-                <!-- Tên bài tập -->
                 <div>
                     <label class="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1">Tên bài tập:</label>
                     <input type="text" id="input-exam-title" value="BÀI TẬP BUỔI 6 - HẠNG VÀ ĐLTT PTTT" class="w-full text-2xl font-bold text-slate-900 tracking-tight border-b-2 border-dashed border-slate-300 focus:border-rose-600 focus:outline-none py-1 bg-transparent">
@@ -84,7 +89,6 @@
                     </p>
                 </div>
 
-                <!-- Thẻ thông tin đề thi -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div class="bg-slate-50 border border-slate-100 p-4 rounded-xl flex items-start gap-3">
                         <div class="text-slate-400 mt-0.5"><i class="fa-solid fa-list-check text-lg"></i></div>
@@ -135,13 +139,11 @@
                     </div>
                 </div>
 
-                <!-- Chủ đề -->
                 <div class="flex items-center gap-2 text-xs text-slate-500 mt-2">
                     <span class="font-bold">Chủ đề:</span>
                     <input type="text" id="input-exam-topic" value="BÀI TẬP BUỔI 6 - HẠNG VÀ ĐLTT PTTT" class="flex-1 bg-slate-50 border border-slate-200 text-slate-700 px-3 py-1.5 rounded-lg font-medium focus:border-rose-600 focus:outline-none">
                 </div>
 
-                <!-- Thanh cảnh báo màu vàng -->
                 <div class="bg-amber-50 border border-amber-200 text-amber-800 p-4 rounded-xl flex items-start gap-3 text-sm">
                     <i class="fa-solid fa-triangle-exclamation text-amber-600 mt-0.5"></i>
                     <div>
@@ -149,7 +151,6 @@
                     </div>
                 </div>
 
-                <!-- Nút bắt đầu -->
                 <div class="pt-2">
                     <button onclick="startExam()" class="w-full bg-[#dc2626] hover:bg-[#b91c1c] text-white font-semibold py-4 rounded-xl shadow-lg shadow-rose-600/30 transition flex items-center justify-center gap-2 text-base cursor-pointer">
                         <i class="fa-solid fa-circle-play text-lg"></i> Bắt đầu làm đề
@@ -209,7 +210,6 @@
                     </div>
                 </div>
 
-                <!-- Giao diện làm bài chính kèm Palette bảng số câu bên phải -->
                 <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 items-start">
                     
                     <div id="quiz-questions-container" class="lg:col-span-3 space-y-4">
@@ -240,59 +240,95 @@
                 </div>
             </div>
 
-            <!-- TAB 4: RESULT SCORE REPORT (Kèm tính năng xuất PDF toàn bộ từ điểm đến hết) -->
+            <!-- TAB 4: RESULT SCORE REPORT (Giao diện trả kết quả chuẩn mẫu) -->
             <div id="tab-result" class="hidden space-y-6 flex-1 flex flex-col">
                 
                 <div id="pdf-export-content" class="space-y-6 bg-white p-2">
-                    <div class="bg-slate-50 border rounded-2xl p-6 flex flex-col md:flex-row items-center justify-between gap-6">
+                    
+                    <!-- Phần Tổng quan điểm số dạng chuẩn -->
+                    <div class="bg-white border rounded-2xl p-6 shadow-sm flex flex-col md:flex-row items-center justify-between gap-6">
                         <div class="flex items-center gap-6">
-                            <div class="relative w-28 h-28 flex items-center justify-center rounded-full bg-rose-50 border-4 border-rose-600 shadow-inner">
+                            <!-- Vòng tròn điểm số -->
+                            <div class="relative w-28 h-28 flex items-center justify-center rounded-full border-8 border-rose-600 bg-rose-50 shadow-inner shrink-0">
                                 <div class="text-center">
-                                    <span id="res-score" class="text-2xl font-black text-rose-600">10</span>
-                                    <span class="text-xs text-slate-500 block">/10 điểm</span>
+                                    <span id="res-score" class="text-2xl font-black text-slate-900">9,29</span>
+                                    <span class="text-xs text-slate-500 block font-bold">/10</span>
                                 </div>
                             </div>
                             <div>
-                                <span class="bg-rose-100 text-rose-700 text-xs px-2.5 py-1 rounded-full font-semibold">Hoàn thành!</span>
-                                <h2 class="text-xl font-bold text-slate-900 mt-2" id="res-msg-title">Bạn đã hoàn thành bài thi.</h2>
-                                <p class="text-xs text-slate-500 mt-1" id="res-details-text">Đúng 0/0 câu</p>
+                                <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Thi thử • TOÁN CAO CẤP</span>
+                                <h2 class="text-2xl font-black text-slate-900 mt-1" id="res-msg-title">Xuất sắc!</h2>
+                                <p class="text-xs text-slate-600 mt-1" id="res-msg-desc">Bạn nắm rất chắc nội dung này. Hãy thử bộ đề khó hơn.</p>
+                                <p class="text-xs font-semibold text-slate-800 mt-2" id="res-details-text">Đúng 13/14 câu (92,9%) • Nộp lúc 21:40 05/11/2026</p>
                             </div>
                         </div>
-                        <div class="flex flex-col gap-2 w-full md:w-auto">
+                        <div class="flex flex-col gap-2 w-full md:w-auto no-print">
                             <button onclick="startExam()" class="bg-rose-600 hover:bg-rose-700 text-white font-medium px-5 py-2.5 rounded-xl text-sm transition text-center shadow-md">
                                 <i class="fa-solid fa-rotate-right mr-1"></i> Làm lại đề
                             </button>
                             <button onclick="switchTab('dashboard')" class="bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 font-medium px-5 py-2.5 rounded-xl text-sm transition text-center">
-                                <i class="fa-solid fa-house mr-1"></i> Về trang chủ
+                                <i class="fa-solid fa-house mr-1"></i> Về trang môn học
                             </button>
+                        </div>
+                    </div>
+
+                    <!-- Bảng thay thế các ô khoanh đen: Lịch sử các lần làm -->
+                    <div class="bg-slate-50 border border-slate-200 rounded-2xl p-5 space-y-3">
+                        <div class="flex items-center justify-between border-b pb-2">
+                            <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2">
+                                <i class="fa-solid fa-clock-rotate-left text-rose-600"></i> Lịch sử các lần làm (Số lần đã làm)
+                            </h3>
+                            <span id="history-count-badge" class="bg-rose-100 text-rose-700 text-xs px-2.5 py-1 rounded-full font-bold">0 lần</span>
+                        </div>
+                        <div id="result-history-list" class="space-y-2">
+                            <p class="text-xs text-slate-500 italic">Chưa có lịch sử làm bài.</p>
                         </div>
                     </div>
 
                     <!-- Tổng kết chi tiết -->
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div class="bg-slate-50 border p-4 rounded-xl">
+                        <div class="bg-slate-50 border p-4 rounded-xl space-y-2">
                             <div class="text-xs font-bold text-slate-400 uppercase">Tổng kết</div>
-                            <div class="flex gap-4 mt-2 text-sm font-semibold">
+                            <div class="flex gap-4 text-sm font-semibold">
                                 <span class="text-emerald-600">● Đúng: <span id="res-correct-count">0</span></span>
                                 <span class="text-rose-600">● Sai: <span id="res-wrong-count">0</span></span>
+                                <span class="text-slate-400">● Bỏ trống: 0</span>
+                            </div>
+                            <div class="w-full bg-slate-200 h-2 rounded-full overflow-hidden flex">
+                                <div id="bar-correct" class="bg-emerald-500 h-full" style="width: 0%"></div>
+                                <div id="bar-wrong" class="bg-rose-500 h-full" style="width: 0%"></div>
                             </div>
                         </div>
-                        <div class="bg-slate-50 border p-4 rounded-xl">
-                            <div class="text-xs font-bold text-slate-400 uppercase">Tỷ lệ chính xác</div>
-                            <div class="text-sm font-semibold text-emerald-600 mt-2" id="res-topic-percent">0%</div>
+                        <div class="bg-slate-50 border p-4 rounded-xl space-y-2">
+                            <div class="text-xs font-bold text-slate-400 uppercase">Điểm theo chủ đề</div>
+                            <div class="text-sm font-semibold text-slate-800 flex justify-between">
+                                <span id="res-topic-name">ĐỀ THI</span>
+                                <span id="res-topic-percent" class="text-emerald-600 font-bold">0%</span>
+                            </div>
+                            <div class="w-full bg-slate-200 h-2 rounded-full overflow-hidden">
+                                <div id="bar-topic" class="bg-emerald-500 h-full" style="width: 0%"></div>
+                            </div>
                         </div>
                     </div>
 
-                    <!-- XEM LẠI TỪNG CÂU TỪ ĐẦU ĐẾN CUỐI ĐỀ -->
+                    <!-- XEM LẠI TỪNG CÂU VÀ BỘ LỌC TẤT CẢ / SAI / ĐÚNG -->
                     <div class="border-t pt-4 space-y-4">
-                        <h3 class="font-bold text-slate-800 mb-2">Xem lại toàn bộ câu hỏi và đáp án chi tiết</h3>
+                        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                            <h3 class="font-bold text-slate-900 text-base">Xem lại từng câu</h3>
+                            <div class="flex items-center gap-1 bg-slate-100 p-1 rounded-xl text-xs font-semibold">
+                                <button onclick="filterReview('all')" id="filter-btn-all" class="px-3 py-1.5 rounded-lg bg-white text-slate-900 shadow-sm transition">Tất cả (<span id="count-all">0</span>)</button>
+                                <button onclick="filterReview('wrong')" id="filter-btn-wrong" class="px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition">Sai (<span id="count-wrong">0</span>)</button>
+                                <button onclick="filterReview('correct')" id="filter-btn-correct" class="px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition">Đúng (<span id="count-correct">0</span>)</button>
+                            </div>
+                        </div>
+
                         <div id="review-questions-container" class="space-y-4">
                         </div>
                     </div>
                 </div>
 
                 <!-- Nút Tải xuống / Xuất PDF toàn bộ bài thi -->
-                <div class="pt-4 border-t flex justify-end">
+                <div class="pt-4 border-t flex justify-end no-print">
                     <button onclick="exportToPDF()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-6 py-3 rounded-xl text-sm transition shadow-lg flex items-center gap-2 cursor-pointer">
                         <i class="fa-solid fa-file-pdf text-base"></i> Tải xuống / Xuất PDF toàn bộ bài thi
                     </button>
@@ -303,7 +339,7 @@
         </div>
 
         <!-- Khung lịch sử các lần làm trước ở trang chủ -->
-        <div class="bg-white rounded-2xl shadow-xl p-6 md:p-8 space-y-4">
+        <div class="bg-white rounded-2xl shadow-xl p-6 md:p-8 space-y-4 no-print">
             <h3 class="font-bold text-slate-900 text-base">Lịch sử các lần làm trước</h3>
             <div id="history-container">
                 <p class="text-sm text-slate-400 italic">Chưa làm lần nào (Chưa có lịch sử làm bài)</p>
@@ -321,6 +357,7 @@
         let secondsElapsed = 0;
         let countdownSeconds = 0;
         let examHistory = [];
+        let currentFilter = 'all';
 
         function toggleShuffle() {
             isShuffleEnabled = !isShuffleEnabled;
@@ -364,7 +401,7 @@
                     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center py-3 border-b border-slate-100 gap-2">
                         <span class="text-rose-600 font-medium text-sm">Lần ${examHistory.length - idx}: ${item.timeStr}</span>
                         <div class="text-sm font-semibold text-slate-800">
-                            <span class="text-rose-600 font-bold">${item.score}/10</span> <span class="text-slate-500 font-normal">(${item.correct}/${item.total} câu đúng • ${item.durationStr})</span>
+                            <span class="text-rose-600 font-bold">${item.score}/10 điểm</span> <span class="text-slate-500 font-normal">(${item.correct}/${item.total} câu đúng • ${item.durationStr})</span>
                         </div>
                     </div>
                 `).join('');
@@ -571,12 +608,10 @@
                         </div>
                     </div>
 
-                    <!-- Khung xám đồng bộ, căn giữa tuyệt đối chống lệch -->
                     <div class="question-frame-box">
                         <img src="${q.imgUrl}" alt="Câu hỏi">
                     </div>
 
-                    <!-- Các nút đáp án nhỏ gọn -->
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
                         ${q.options.map((opt, optIdx) => `
                             <label id="label_q_${qIdx}_${optIdx}" onclick="selectOption(${qIdx}, ${optIdx})" class="flex items-center justify-center gap-2 py-2 px-3 rounded-lg border border-slate-200 hover:border-emerald-500 hover:bg-emerald-50/20 cursor-pointer transition select-none">
@@ -596,7 +631,6 @@
             const paletteEl = document.getElementById('palette-grid');
             paletteEl.innerHTML = activeQuestions.map((q, qIdx) => {
                 let isAnswered = userAnswers[qIdx] !== undefined;
-                // Đã làm: xanh đậm, tô đậm. Chưa làm: đỏ, chưa tô đậm.
                 let btnClass = isAnswered 
                     ? "bg-emerald-600 text-white font-bold shadow-sm" 
                     : "bg-white text-rose-600 border border-rose-300 font-normal hover:bg-rose-50";
@@ -649,29 +683,84 @@
             clearInterval(examTimer);
             let correctCount = 0;
             let total = activeQuestions.length;
+            let wrongCount = 0;
 
             activeQuestions.forEach((q, idx) => {
                 if(userAnswers[idx] === q.correct) {
                     correctCount++;
+                } else {
+                    wrongCount++;
                 }
             });
 
             let score = total > 0 ? ((correctCount / total) * 10).toFixed(2).replace('.', ',') : '0';
             document.getElementById('res-score').innerText = score;
             document.getElementById('res-correct-count').innerText = correctCount;
-            document.getElementById('res-wrong-count').innerText = total - correctCount;
+            document.getElementById('res-wrong-count').innerText = wrongCount;
             
-            let percent = Math.round((correctCount / total) * 100);
+            let percent = total > 0 ? Math.round((correctCount / total) * 100) : 0;
             document.getElementById('res-topic-percent').innerText = percent + '%';
+            document.getElementById('res-topic-name').innerText = document.getElementById('input-exam-title').value;
+
+            // Cập nhật thanh bar tỉ lệ
+            document.getElementById('bar-correct').style.width = `${total > 0 ? (correctCount/total)*100 : 0}%`;
+            document.getElementById('bar-wrong').style.width = `${total > 0 ? (wrongCount/total)*100 : 0}%`;
+            document.getElementById('bar-topic').style.width = `${percent}%`;
             
             let m = Math.floor(secondsElapsed / 60);
             let s = secondsElapsed % 60;
             let durationStr = `${m} phút ${s} giây`;
-            document.getElementById('res-details-text').innerText = `Đúng ${correctCount}/${total} câu (${percent}%) • ${durationStr}`;
-            document.getElementById('res-msg-title').innerText = percent >= 80 ? "Bạn nắm rất chắc nội dung này." : "Cần ôn tập thêm kiến thức phần này.";
+            let now = new Date();
+            let timeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')} ${now.getDate().toString().padStart(2, '0')}/${(now.getMonth()+1).toString().padStart(2, '0')}/${now.getFullYear()}`;
+            
+            document.getElementById('res-details-text').innerText = `Đúng ${correctCount}/${total} câu (${percent}%) • Nộp lúc ${timeStr}`;
+            document.getElementById('res-msg-title').innerText = percent >= 80 ? "Xuất sắc!" : "Cần cố gắng hơn!";
+            document.getElementById('res-msg-desc').innerText = percent >= 80 ? "Bạn nắm rất chắc nội dung này. Hãy thử bộ đề khó hơn." : "Bạn cần ôn tập thêm kiến thức phần này.";
 
+            // Lưu lịch sử
+            examHistory.unshift({
+                timeStr: timeStr,
+                score: score,
+                correct: correctCount,
+                total: total,
+                durationStr: durationStr
+            });
+
+            // Cập nhật bộ lọc số lượng
+            document.getElementById('count-all').innerText = total;
+            document.getElementById('count-wrong').innerText = wrongCount;
+            document.getElementById('count-correct').innerText = correctCount;
+
+            renderReviewList('all');
+            updateHistoryUI();
+            switchTab('result');
+        }
+
+        function filterReview(type) {
+            currentFilter = type;
+            document.getElementById('filter-btn-all').className = type === 'all' ? "px-3 py-1.5 rounded-lg bg-white text-slate-900 shadow-sm transition" : "px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition";
+            document.getElementById('filter-btn-wrong').className = type === 'wrong' ? "px-3 py-1.5 rounded-lg bg-white text-slate-900 shadow-sm transition" : "px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition";
+            document.getElementById('filter-btn-correct').className = type === 'correct' ? "px-3 py-1.5 rounded-lg bg-white text-slate-900 shadow-sm transition" : "px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition";
+            renderReviewList(type);
+        }
+
+        function renderReviewList(filterType) {
             const reviewContainer = document.getElementById('review-questions-container');
-            reviewContainer.innerHTML = activeQuestions.map((q, qIdx) => {
+            
+            let filteredQuestions = activeQuestions.map((q, idx) => ({q, idx})).filter(item => {
+                let userChoice = userAnswers[item.idx];
+                let isCorrect = userChoice === item.q.correct;
+                if (filterType === 'correct') return isCorrect;
+                if (filterType === 'wrong') return !isCorrect;
+                return true;
+            });
+
+            if (filteredQuestions.length === 0) {
+                reviewContainer.innerHTML = `<p class="text-sm text-slate-400 italic text-center py-6">Không có câu hỏi nào phù hợp với bộ lọc.</p>`;
+                return;
+            }
+
+            reviewContainer.innerHTML = filteredQuestions.map(({q, idx: qIdx}) => {
                 let userChoice = userAnswers[qIdx];
                 let isCorrect = userChoice === q.correct;
                 let userChoiceLetter = userChoice !== undefined ? String.fromCharCode(65 + userChoice) : "Không chọn";
@@ -698,35 +787,35 @@
                     </div>
                 `;
             }).join('');
+        }
 
-            let now = new Date();
-            let timeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')} ${now.getDate().toString().padStart(2, '0')}/${(now.getMonth()+1).toString().padStart(2, '0')}/${now.getFullYear()}`;
-            
-            examHistory.unshift({
-                timeStr: timeStr,
-                score: score,
-                correct: correctCount,
-                total: total,
-                durationStr: durationStr,
-                seconds: secondsElapsed
-            });
+        function updateHistoryUI() {
+            const container = document.getElementById('history-container');
+            const resultHistoryList = document.getElementById('result-history-list');
+            const historyCountBadge = document.getElementById('history-count-badge');
 
-            switchTab('result');
+            historyCountBadge.innerText = `${examHistory.length} lần`;
+
+            if (examHistory.length === 0) {
+                container.innerHTML = `<p class="text-sm text-slate-400 italic">Chưa làm lần nào (Chưa có lịch sử làm bài)</p>`;
+                resultHistoryList.innerHTML = `<p class="text-xs text-slate-500 italic">Chưa có lịch sử làm bài.</p>`;
+            } else {
+                let htmlStr = examHistory.map((item, idx) => `
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center py-2 border-b border-slate-200/60 gap-2 text-xs">
+                        <span class="text-rose-600 font-bold">Lần ${examHistory.length - idx}: <span class="text-slate-700 font-normal">${item.timeStr}</span></span>
+                        <div class="font-semibold text-slate-800">
+                            Điểm: <span class="text-rose-600 font-bold">${item.score}/10</span> <span class="text-slate-500 font-normal">(${item.correct}/${item.total} câu đúng • ${item.durationStr})</span>
+                        </div>
+                    </div>
+                `).join('');
+
+                container.innerHTML = htmlStr;
+                resultHistoryList.innerHTML = htmlStr;
+            }
         }
 
         function exportToPDF() {
-            const element = document.getElementById('pdf-export-content');
-            let examTitle = document.getElementById('input-exam-title').value || "KetQuaThi";
-            
-            const opt = {
-                margin:       10,
-                filename:     `${examTitle}_KetQua.pdf`,
-                image:        { type: 'jpeg', quality: 0.98 },
-                html2canvas:  { scale: 2, useCORS: true },
-                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
-            };
-
-            html2pdf().from(element).set(opt).save();
+            window.print();
         }
 
         window.onload = function() {
