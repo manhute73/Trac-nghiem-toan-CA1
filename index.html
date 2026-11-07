@@ -8,7 +8,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Thư viện hỗ trợ xuất PDF (html2pdf.js) -->
+    <!-- Thư viện xuất PDF (html2pdf.js) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
@@ -58,7 +58,7 @@
     </header>
 
     <!-- Main Container Card -->
-    <main class="flex-1 max-w-6xl w-full mx-auto p-4 md:p-6 space-y-4">
+    <main class="flex-1 max-w-5xl w-full mx-auto p-4 md:p-6 space-y-4">
         <div class="bg-white rounded-2xl shadow-2xl p-6 md:p-8 flex flex-col">
             
             <!-- TAB 1: DASHBOARD / EXAM PREVIEW -->
@@ -78,7 +78,7 @@
                 <!-- Tên bài tập -->
                 <div>
                     <label class="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1">Tên bài tập:</label>
-                    <input type="text" id="input-exam-title" value="BUỔI 01 - MA TRẬN VÀ CÁC PHÉP TÍNH TOÁN MA TRẬN (1)" class="w-full text-2xl font-bold text-slate-900 tracking-tight border-b-2 border-dashed border-slate-300 focus:border-rose-600 focus:outline-none py-1 bg-transparent">
+                    <input type="text" id="input-exam-title" value="BÀI TẬP BUỔI 6 - HẠNG VÀ ĐLTT PTTT" class="w-full text-2xl font-bold text-slate-900 tracking-tight border-b-2 border-dashed border-slate-300 focus:border-rose-600 focus:outline-none py-1 bg-transparent">
                     <p class="text-rose-600 font-semibold text-sm mt-3 flex items-center gap-1.5">
                         <span class="w-1.5 h-1.5 rounded-full bg-rose-600 inline-block"></span> TOÁN CAO CẤP
                     </p>
@@ -89,7 +89,7 @@
                     <div class="bg-slate-50 border border-slate-100 p-4 rounded-xl flex items-start gap-3">
                         <div class="text-slate-400 mt-0.5"><i class="fa-solid fa-list-check text-lg"></i></div>
                         <div class="flex-1">
-                            <div class="text-xs font-bold text-slate-400 uppercase tracking-wider">Tổng số câu trong đề</div>
+                            <div class="text-xs font-bold text-slate-400 uppercase tracking-wider">Số câu</div>
                             <div class="flex items-center gap-2 mt-1">
                                 <span id="display-exam-count" class="font-semibold text-slate-800 text-sm">0 câu trắc nghiệm</span>
                             </div>
@@ -127,10 +127,26 @@
                     </div>
                 </div>
 
+                <div class="bg-slate-50 border border-slate-100 p-4 rounded-xl flex items-start gap-3">
+                    <div class="text-rose-500 mt-0.5"><i class="fa-solid fa-circle-question text-lg"></i></div>
+                    <div>
+                        <div class="text-xs font-bold text-slate-400 uppercase tracking-wider">Đáp án và giải thích</div>
+                        <div class="font-semibold text-slate-800 text-sm mt-0.5">Bấm nộp bài để xem kết quả đúng/sai từng câu chi tiết.</div>
+                    </div>
+                </div>
+
                 <!-- Chủ đề -->
                 <div class="flex items-center gap-2 text-xs text-slate-500 mt-2">
                     <span class="font-bold">Chủ đề:</span>
-                    <input type="text" id="input-exam-topic" value="BUỔI 01 - MA TRẬN VÀ CÁC PHÉP TÍNH TOÁN MA TRẬN (1)" class="flex-1 bg-slate-50 border border-slate-200 text-slate-700 px-3 py-1.5 rounded-lg font-medium focus:border-rose-600 focus:outline-none">
+                    <input type="text" id="input-exam-topic" value="BÀI TẬP BUỔI 6 - HẠNG VÀ ĐLTT PTTT" class="flex-1 bg-slate-50 border border-slate-200 text-slate-700 px-3 py-1.5 rounded-lg font-medium focus:border-rose-600 focus:outline-none">
+                </div>
+
+                <!-- Thanh cảnh báo màu vàng -->
+                <div class="bg-amber-50 border border-amber-200 text-amber-800 p-4 rounded-xl flex items-start gap-3 text-sm">
+                    <i class="fa-solid fa-triangle-exclamation text-amber-600 mt-0.5"></i>
+                    <div>
+                        Đồng hồ bắt đầu chạy ngay khi bạn bấm bắt đầu, kể cả khi thoát ra ngoài. Hết giờ hệ thống tự nộp bài.
+                    </div>
                 </div>
 
                 <!-- Nút bắt đầu -->
@@ -176,7 +192,7 @@
                 </div>
             </div>
 
-            <!-- TAB 3: QUIZ SOLVING INTERFACE (Làm bài với Bảng Palette bên phải) -->
+            <!-- TAB 3: QUIZ SOLVING INTERFACE (Làm bài) -->
             <div id="tab-quiz" class="hidden space-y-4 flex-1 flex flex-col">
                 <div class="flex justify-between items-center bg-slate-50 p-4 rounded-xl border">
                     <div>
@@ -193,30 +209,26 @@
                     </div>
                 </div>
 
-                <!-- Bố cục lưới: Trái là danh sách câu hỏi, Phải là bảng Palette số câu -->
+                <!-- Giao diện làm bài chính kèm Palette bảng số câu bên phải -->
                 <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 items-start">
                     
-                    <!-- Cột trái: Danh sách câu hỏi (3 cột) -->
                     <div id="quiz-questions-container" class="lg:col-span-3 space-y-4">
                         <!-- Dynamic Questions -->
                     </div>
 
-                    <!-- Cột phải: Bảng điều hướng câu hỏi (Palette Grid) -->
                     <div class="lg:col-span-1 bg-slate-50 border border-slate-200 p-4 rounded-xl sticky top-4 space-y-4 shadow-sm">
                         <div class="text-xs font-bold text-slate-500 uppercase tracking-wider border-b pb-2">Danh sách câu hỏi</div>
                         
-                        <!-- Lưới ô số -->
                         <div id="palette-grid" class="grid grid-cols-5 gap-2 max-h-[350px] overflow-y-auto custom-scrollbar p-1">
                             <!-- Dynamic Palette Items -->
                         </div>
 
-                        <!-- Chú thích màu -->
                         <div class="border-t pt-3 space-y-1.5 text-[11px] text-slate-600 font-medium">
                             <div class="flex items-center gap-2">
-                                <span class="w-3 h-3 rounded bg-emerald-600 inline-block"></span> Đã làm (Xanh đậm)
+                                <span class="w-3 h-3 rounded bg-emerald-600 inline-block"></span> Đã làm (Xanh đậm, tô đậm)
                             </div>
                             <div class="flex items-center gap-2">
-                                <span class="w-3 h-3 rounded bg-rose-500 inline-block"></span> Chưa làm (Đỏ)
+                                <span class="w-3 h-3 rounded bg-rose-500 inline-block"></span> Chưa làm (Đỏ, chưa tô đậm)
                             </div>
                         </div>
 
@@ -228,10 +240,9 @@
                 </div>
             </div>
 
-            <!-- TAB 4: RESULT SCORE REPORT (Kèm nút Xuất PDF) -->
+            <!-- TAB 4: RESULT SCORE REPORT (Kèm tính năng xuất PDF toàn bộ từ điểm đến hết) -->
             <div id="tab-result" class="hidden space-y-6 flex-1 flex flex-col">
                 
-                <!-- Khu vực chứa toàn bộ nội dung cần xuất PDF -->
                 <div id="pdf-export-content" class="space-y-6 bg-white p-2">
                     <div class="bg-slate-50 border rounded-2xl p-6 flex flex-col md:flex-row items-center justify-between gap-6">
                         <div class="flex items-center gap-6">
@@ -272,15 +283,15 @@
                         </div>
                     </div>
 
-                    <!-- XEM LẠI TỪNG CÂU CHI TIẾT -->
+                    <!-- XEM LẠI TỪNG CÂU TỪ ĐẦU ĐẾN CUỐI ĐỀ -->
                     <div class="border-t pt-4 space-y-4">
-                        <h3 class="font-bold text-slate-800 mb-2">Xem lại từng câu hỏi chi tiết và đáp án</h3>
+                        <h3 class="font-bold text-slate-800 mb-2">Xem lại toàn bộ câu hỏi và đáp án chi tiết</h3>
                         <div id="review-questions-container" class="space-y-4">
                         </div>
                     </div>
                 </div>
 
-                <!-- Nút Xuất PDF -->
+                <!-- Nút Tải xuống / Xuất PDF toàn bộ bài thi -->
                 <div class="pt-4 border-t flex justify-end">
                     <button onclick="exportToPDF()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-6 py-3 rounded-xl text-sm transition shadow-lg flex items-center gap-2 cursor-pointer">
                         <i class="fa-solid fa-file-pdf text-base"></i> Tải xuống / Xuất PDF toàn bộ bài thi
@@ -289,6 +300,14 @@
 
             </div>
 
+        </div>
+
+        <!-- Khung lịch sử các lần làm trước ở trang chủ -->
+        <div class="bg-white rounded-2xl shadow-xl p-6 md:p-8 space-y-4">
+            <h3 class="font-bold text-slate-900 text-base">Lịch sử các lần làm trước</h3>
+            <div id="history-container">
+                <p class="text-sm text-slate-400 italic">Chưa làm lần nào (Chưa có lịch sử làm bài)</p>
+            </div>
         </div>
     </main>
 
@@ -301,6 +320,7 @@
         let examTimer = null;
         let secondsElapsed = 0;
         let countdownSeconds = 0;
+        let examHistory = [];
 
         function toggleShuffle() {
             isShuffleEnabled = !isShuffleEnabled;
@@ -331,7 +351,24 @@
 
         function updateDashboardInfo() {
             let filledCount = manualQuestions.filter(q => q && q.imgUrl).length;
-            document.getElementById('display-exam-count').innerText = `${filledCount}/${manualQuestions.length} câu đã có ảnh`;
+            document.getElementById('display-exam-count').innerText = `${filledCount}/${manualQuestions.length} câu trắc nghiệm`;
+            updateHistoryUI();
+        }
+
+        function updateHistoryUI() {
+            const container = document.getElementById('history-container');
+            if (examHistory.length === 0) {
+                container.innerHTML = `<p class="text-sm text-slate-400 italic">Chưa làm lần nào (Chưa có lịch sử làm bài)</p>`;
+            } else {
+                container.innerHTML = examHistory.map((item, idx) => `
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center py-3 border-b border-slate-100 gap-2">
+                        <span class="text-rose-600 font-medium text-sm">Lần ${examHistory.length - idx}: ${item.timeStr}</span>
+                        <div class="text-sm font-semibold text-slate-800">
+                            <span class="text-rose-600 font-bold">${item.score}/10</span> <span class="text-slate-500 font-normal">(${item.correct}/${item.total} câu đúng • ${item.durationStr})</span>
+                        </div>
+                    </div>
+                `).join('');
+            }
         }
 
         function generateQuestionSlots() {
@@ -555,12 +592,11 @@
             switchTab('quiz');
         }
 
-        // Cập nhật trạng thái bảng palette bên phải (Đã làm xanh đậm tô đậm, chưa làm đỏ)
         function updatePaletteGrid() {
             const paletteEl = document.getElementById('palette-grid');
             paletteEl.innerHTML = activeQuestions.map((q, qIdx) => {
                 let isAnswered = userAnswers[qIdx] !== undefined;
-                // Đã làm: màu xanh đậm, tô đậm (font-bold), chưa làm: màu đỏ, chưa tô đậm (font-normal)
+                // Đã làm: xanh đậm, tô đậm. Chưa làm: đỏ, chưa tô đậm.
                 let btnClass = isAnswered 
                     ? "bg-emerald-600 text-white font-bold shadow-sm" 
                     : "bg-white text-rose-600 border border-rose-300 font-normal hover:bg-rose-50";
@@ -593,7 +629,7 @@
                     badge.className = "font-bold text-slate-700 text-xs w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center shrink-0 border border-slate-200";
                 }
             }
-            updatePaletteGrid(); // Cập nhật lại màu sắc bảng palette ngay lập tức khi chọn đáp án
+            updatePaletteGrid();
         }
 
         function validateAndSubmitExam() {
@@ -663,10 +699,21 @@
                 `;
             }).join('');
 
+            let now = new Date();
+            let timeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')} ${now.getDate().toString().padStart(2, '0')}/${(now.getMonth()+1).toString().padStart(2, '0')}/${now.getFullYear()}`;
+            
+            examHistory.unshift({
+                timeStr: timeStr,
+                score: score,
+                correct: correctCount,
+                total: total,
+                durationStr: durationStr,
+                seconds: secondsElapsed
+            });
+
             switchTab('result');
         }
 
-        // --- HÀM XUẤT PDF TOÀN BỘ BÀI THI ---
         function exportToPDF() {
             const element = document.getElementById('pdf-export-content');
             let examTitle = document.getElementById('input-exam-title').value || "KetQuaThi";
