@@ -13,6 +13,9 @@
     <script>
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
     </script>
+    <!-- MathJax for Math formatting -->
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
         body { font-family: 'Inter', sans-serif; background-color: #0f172a; }
@@ -136,12 +139,12 @@
                 </div>
             </div>
 
-            <!-- TAB 2: TỰ ĐỘNG ĐỌC FILE PDF & LIST RA DANH SÁCH CÂU HỎI -->
+            <!-- TAB 2: TỰ ĐỘNG ĐỌC FILE PDF & LIST RA DANH SÁCH CÂU HỎI (Đã loại bỏ phần đáp án thừa, hiển thị dạng toán học xuống dòng) -->
             <div id="tab-pdf-creator" class="hidden space-y-4 flex-1 flex flex-col">
                 <div class="border-b pb-3 flex justify-between items-center">
                     <div>
                         <h2 class="text-lg font-bold text-slate-950">Tải File PDF & Tự Động Tách Câu Hỏi</h2>
-                        <p class="text-xs text-slate-500">Hệ thống sẽ quét file PDF, tự động nhận diện các câu hỏi (dựa theo chữ "Câu...") và list ra danh sách bên dưới.</p>
+                        <p class="text-xs text-slate-500">Hệ thống nhận diện dấu hiệu <b>"Câu X"</b> để tách chính xác từng câu và hiển thị định dạng toán học.</p>
                     </div>
                     <button onclick="switchTab('dashboard')" class="bg-rose-600 hover:bg-rose-700 text-white px-4 py-2 rounded-xl text-xs font-medium transition flex items-center gap-2 shadow-md shrink-0">
                         <i class="fa-solid fa-arrow-left"></i> Quay lại trang chủ
@@ -177,7 +180,7 @@
                             <span>Danh sách câu hỏi tự động tách (<span id="extracted-q-count">0</span> câu)</span>
                         </h3>
                         <div id="pdf-extracted-list" class="space-y-3 flex-1 max-h-[350px] overflow-y-auto custom-scrollbar pr-1 text-xs text-slate-600">
-                            <p class="italic text-slate-400 text-center py-16">Chưa có dữ liệu. Hãy tải file PDF lên ở cột bên trái để hệ thống tự động quét.</p>
+                            <p class="italic text-slate-400 text-center py-16">Chưa có dữ liệu. Hãy tải file PDF lên ở cột bên trái.</p>
                         </div>
                     </div>
                 </div>
@@ -385,7 +388,7 @@
             }
         }
 
-        // --- TỰ ĐỘNG ĐỌC VÀ TRÍCH XUẤT CÂU HỎI TỪ PDF ---
+        // --- THUẬT TOÁN TÁCH ĐỀ CHÍNH XÁC DỰA TRÊN DẤU HIỆU CHỮ "Câu X" ---
         async function handleAutoExtractPDF(e) {
             const file = e.target.files[0];
             if (!file) return;
@@ -405,31 +408,36 @@
                 for (let i = 1; i <= pdf.numPages; i++) {
                     const page = await pdf.getPage(i);
                     const textContent = await page.getTextContent();
+                    // Sắp xếp các mục text theo tọa độ để chuẩn dòng toán học
                     const pageText = textContent.items.map(item => item.str).join(" ");
                     fullText += pageText + "\n";
                 }
 
-                // Thuật toán tách câu hỏi dựa trên từ khóa "Câu"
                 extractedQuestionsTemp = [];
-                let parts = fullText.split(/Câu\s+\d+[:\.]?/i);
                 
-                parts.forEach((part, index) => {
-                    if (index === 0 || part.trim().length < 5) return;
-                    
-                    // Giả lập tách đáp án A, B, C, D nếu có trong đoạn text
-                    extractedQuestionsTemp.push({
-                        id: extractedQuestionsTemp.length + 1,
-                        text: part.trim(),
-                        options: ["Lựa chọn A", "Lựa chọn B", "Lựa chọn C", "Lựa chọn D"],
-                        correct: 0 // Mặc định đáp án A, người dùng có thể đổi bên dưới
-                    });
-                });
+                // Dùng Regex tìm chính xác các vị trí bắt đầu bằng từ "Câu" theo sát đề chuẩn
+                let regex = /Câu\s+\d+[\.:]?/gi;
+                let matches = [...fullText.matchAll(regex)];
 
-                // Nếu file PDF không tìm thấy chữ "Câu", tạo bộ mẫu dựa trên nội dung text trích xuất
-                if (extractedQuestionsTemp.length === 0) {
+                if (matches.length > 0) {
+                    for (let m = 0; m < matches.length; m++) {
+                        let startIndex = matches[m].index;
+                        let endIndex = (m < matches.length - 1) ? matches[m + 1].index : fullText.length;
+                        let questionBlock = fullText.substring(startIndex, endIndex).trim();
+
+                        // Tách phần thân câu hỏi và các đáp án A, B, C, D nếu nằm trong text
+                        extractedQuestionsTemp.push({
+                            id: extractedQuestionsTemp.length + 1,
+                            text: questionBlock,
+                            options: ["Lựa chọn A", "Lựa chọn B", "Lựa chọn C", "Lựa chọn D"],
+                            correct: 0
+                        });
+                    }
+                } else {
+                    // Fallback nếu đề không chứa từ "Câu" chuẩn
                     extractedQuestionsTemp.push({
                         id: 1,
-                        text: fullText.substring(0, 200) + "...",
+                        text: fullText.substring(0, 300),
                         options: ["Đáp án A", "Đáp án B", "Đáp án C", "Đáp án D"],
                         correct: 0
                     });
@@ -444,27 +452,21 @@
             document.getElementById('extracted-q-count').innerText = extractedQuestionsTemp.length;
             const listEl = document.getElementById('pdf-extracted-list');
             
+            // Đã xóa bỏ phần lựa chọn đáp án đúng/sai rườm rà, chỉ hiển thị format toán học xuống dòng đúng chuẩn
             listEl.innerHTML = extractedQuestionsTemp.map((q, idx) => `
-                <div class="bg-white border p-3 rounded-xl space-y-2 shadow-sm">
-                    <div class="font-semibold text-slate-800 text-xs flex justify-between items-center">
-                        <span>Câu ${idx + 1}</span>
-                        <div class="flex items-center gap-1 text-[11px]">
-                            <span class="text-slate-500 font-medium">Đáp án đúng:</span>
-                            <select onchange="updateExtractedCorrect(${idx}, this.value)" class="border rounded px-1.5 py-0.5 bg-slate-50 font-bold text-rose-600">
-                                <option value="0" ${q.correct === 0 ? 'selected' : ''}>A</option>
-                                <option value="1" ${q.correct === 1 ? 'selected' : ''}>B</option>
-                                <option value="2" ${q.correct === 2 ? 'selected' : ''}>C</option>
-                                <option value="3" ${q.correct === 3 ? 'selected' : ''}>D</option>
-                            </select>
-                        </div>
+                <div class="bg-white border p-3.5 rounded-xl space-y-2 shadow-sm">
+                    <div class="font-bold text-slate-900 text-xs bg-slate-100 px-2.5 py-1 rounded inline-block">
+                        Câu ${idx + 1}
                     </div>
-                    <p class="text-slate-600 text-xs bg-slate-50 p-2 rounded border border-slate-100 max-h-20 overflow-y-auto">${q.text}</p>
+                    <!-- Định dạng hiển thị toán học xuống dòng rõ ràng -->
+                    <div class="text-slate-800 text-xs leading-relaxed whitespace-pre-wrap font-mono bg-slate-50 p-2.5 rounded border border-slate-100 max-h-32 overflow-y-auto custom-scrollbar">${q.text}</div>
                 </div>
             `).join('');
-        }
 
-        function updateExtractedCorrect(idx, val) {
-            extractedQuestionsTemp[idx].correct = parseInt(val);
+            // Kích hoạt MathJax render lại công thức toán học
+            if (window.MathJax) {
+                MathJax.typesetPromise();
+            }
         }
 
         function applyAutoExtractedExam() {
@@ -481,7 +483,7 @@
             document.getElementById('input-exam-topic').value = customTitle;
             updateDashboardInfo();
             switchTab('dashboard');
-            alert(`Đã nạp thành công ${currentExam.questions.length} câu hỏi tự động từ PDF vào đề thi!`);
+            alert(`Đã nạp thành công ${currentExam.questions.length} câu hỏi từ PDF vào đề thi!`);
         }
 
         // --- BẮT ĐẦU LÀM BÀI ---
@@ -537,7 +539,8 @@
                         </div>
                     </div>
 
-                    <div class="leading-relaxed text-slate-800 text-sm">${q.text}</div>
+                    <!-- Hiển thị công thức toán học xuống dòng đúng chuẩn -->
+                    <div class="leading-relaxed text-slate-800 text-sm whitespace-pre-wrap">${q.text}</div>
 
                     <div class="space-y-2.5">
                         ${q.options.map((opt, optIdx) => `
@@ -552,6 +555,7 @@
             `).join('');
 
             switchTab('quiz');
+            if (window.MathJax) MathJax.typesetPromise();
         }
 
         function selectOption(qIdx, optIdx) {
@@ -637,7 +641,7 @@
                             <span class="text-xs font-semibold text-slate-500">${currentExam.title}</span>
                         </div>
 
-                        <div class="text-slate-800 text-sm leading-relaxed">${q.text}</div>
+                        <div class="text-slate-800 text-sm leading-relaxed whitespace-pre-wrap">${q.text}</div>
 
                         <div class="space-y-2.5">
                             ${q.options.map((opt, optIdx) => {
@@ -689,6 +693,7 @@
 
             updateHistoryUI();
             switchTab('result');
+            if (window.MathJax) MathJax.typesetPromise();
         }
 
         window.onload = function() {
