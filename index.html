@@ -7,16 +7,12 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap" rel="stylesheet">
-<!-- KaTeX render toán học chuẩn sắc nét -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.11/katex.min.css">
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.11/katex.min.js"></script>
 
 <style>
 :root { --font: 'Be Vietnam Pro', system-ui, -apple-system, sans-serif; }
 body { font-family: var(--font); background-color: #f8fafc; color: #1e293b; }
-.katex { font-size: 1.1em !important; }
 .circle-progress {
   position: relative;
   width: 140px;
@@ -35,11 +31,13 @@ body { font-family: var(--font); background-color: #f8fafc; color: #1e293b; }
   border-radius: 50%;
   background-color: white;
 }
+.paper { background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 12px; overflow-x: auto; }
+.paper img { display: block; max-width: 100%; height: auto; margin: 0 auto; }
 </style>
 </head>
 <body class="min-h-screen pb-20">
 
-  <!-- Header sticky -->
+  <!-- Header -->
   <header class="bg-white border-b border-slate-200 py-3 sticky top-0 z-30 shadow-sm">
     <div class="max-w-5xl mx-auto px-4 flex justify-between items-center">
       <div class="flex items-center gap-2">
@@ -54,15 +52,15 @@ body { font-family: var(--font); background-color: #f8fafc; color: #1e293b; }
 
   <main class="max-w-5xl mx-auto px-4 mt-6">
 
-    <!-- Screen 1: SETUP / UPLOAD -->
+    <!-- Screen 1: UPLOAD -->
     <section id="viewSetup" class="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm text-center">
       <div class="max-w-md mx-auto space-y-4">
         <h2 class="text-xl font-bold text-slate-800">Tải đề thi trắc nghiệm PDF</h2>
-        <p class="text-sm text-slate-500">Tự động bóc tách chuẩn xác mọi dạng ma trận ngang, ma trận vuông từ PDF.</p>
+        <p class="text-sm text-slate-500">Hệ thống tự động cắt ảnh từng câu hỏi toán học chuẩn nét 100% từ PDF.</p>
         
         <label class="block border-2 border-dashed border-slate-300 rounded-2xl p-8 hover:border-rose-500 transition cursor-pointer bg-slate-50/50">
           <strong class="block text-slate-700 text-base mb-1">Bấm chọn hoặc kéo thả file PDF vào đây</strong>
-          <span class="text-xs text-slate-400 block">Hỗ trợ trọn bộ đề thi AMC 2027</span>
+          <span class="text-xs text-slate-400 block" id="statusLabel">Tự động bóc tách chuẩn ma trận AMC 2027</span>
           <input type="file" id="fileInput" accept="application/pdf" class="hidden">
         </label>
         
@@ -179,64 +177,7 @@ const officialAnswers = {
   31: 'D', 32: 'D', 33: 'B', 34: 'C', 35: 'D', 36: 'A', 37: 'D', 38: 'A', 39: 'C', 40: 'B'
 };
 
-const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const escNl = t => esc(t).replace(/\n/g, '<br>');
-
-// Bộ phân tích và khôi phục định dạng ma trận thông minh (Hỗ trợ cả ma trận hàng ngang lẫn ma trận vuông)
-function parseMathExpressions(rawText) {
-  if (!rawText) return '';
-  let str = rawText;
-
-  str = str.replace(/\\begin\{matrix\}/g, '\\begin{pmatrix}');
-  str = str.replace(/\\end\{matrix\}/g, '\\end{pmatrix}');
-  str = str.replace(/(\\begin\{pmatrix\}[\s\S]*?\\end\{pmatrix\})/g, ' $$$1$$ ');
-
-  // Nhận diện ma trận từ chuỗi PDF thô
-  str = str.replace(/([A-Z])\s*=\s*\(\s*(-?[\d\s\-]+)\)/g, (match, p1, p2) => {
-    const nums = p2.trim().split(/\s+/).filter(Boolean);
-    if (nums.length === 9) { // Vuông 3x3
-      return `$${p1} = \\begin{pmatrix} ${nums[0]} & ${nums[1]} & ${nums[2]} \\\\ ${nums[3]} & ${nums[4]} & ${nums[5]} \\\\ ${nums[6]} & ${nums[7]} & ${nums[8]} \\end{pmatrix}$`;
-    } else if (nums.length === 4) { // Vuông 2x2
-      return `$${p1} = \\begin{pmatrix} ${nums[0]} & ${nums[1]} \\\\ ${nums[2]} & ${nums[3]} \\end{pmatrix}$`;
-    } else if (nums.length > 1) { // Ma trận hàng ngang (như ảnh bạn vừa gửi: A = ( 2 -1 3 0 4 5 ))
-      return `$${p1} = \\begin{pmatrix} ${nums.join(' & ')} \\end{pmatrix}$`;
-    }
-    return match;
-  });
-
-  str = str.replace(/\bc(\d{2})\b/g, '$c_{$1}$');
-  str = str.replace(/\ba(\d{2})\b/g, '$a_{$1}$');
-  str = str.replace(/\baij\b/g, '$a_{ij}$');
-  str = str.replace(/det\((.*?)\)/g, '$\\det($1)$');
-  str = str.replace(/A\^(-1|T)/g, '$A^{$1}$');
-
-  return str;
-}
-
-function rich(s) {
-  if (!s) return '';
-  const parsed = parseMathExpressions(s);
-  if (!window.katex) return escNl(parsed);
-  
-  let out = '', last = 0, m;
-  const re = /\$\$([\s\S]+?)\$\$|\$([^$\n]+?)\$/g;
-  while ((m = re.exec(parsed))) {
-    out += escNl(parsed.slice(last, m.index));
-    try {
-      out += katex.renderToString(m[1] !== undefined ? m[1] : m[2], {
-        displayMode: m[1] !== undefined,
-        throwOnError: false,
-        strict: false
-      });
-    } catch (e) {
-      out += esc(m[0]);
-    }
-    last = re.lastIndex;
-  }
-  return out + escNl(parsed.slice(last));
-}
-
-let parsedQuestions = [];
+let questionsList = [];
 let userAnswers = {};
 let timerInterval;
 let startTime;
@@ -251,67 +192,71 @@ document.getElementById('fileInput').addEventListener('change', async (e) => {
   msg.classList.add('hidden');
 
   try {
-    const pdf = await pdfjsLib.getDocument({ data: await file.arrayBuffer() }).promise;
-    let fullText = '';
+    const arrayBuffer = await file.arrayBuffer();
+    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+    
+    questionsList = [];
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
 
-    for (let i = 1; i <= pdf.numPages; i++) {
-      prog.value = Math.round((i / pdf.numPages) * 100);
-      const page = await pdf.getPage(i);
-      const tc = await page.getTextContent();
-      fullText += tc.items.map(item => item.str).join(' ') + '\n';
+    for (let p = 1; p <= pdf.numPages; p++) {
+      prog.value = Math.round((p / pdf.numPages) * 100);
+      const page = await pdf.getPage(p);
+      const vp = page.getViewport({ scale: 2.0 });
+      canvas.width = vp.width;
+      canvas.height = vp.height;
+
+      await page.render({ canvasContext: ctx, viewport: vp }).promise;
+
+      const textContent = await page.getTextContent();
+      const items = textContent.items;
+
+      // Tìm vị trí các câu hỏi "Câu 1", "Câu 2"... để cắt ảnh chuẩn
+      let qMarkers = [];
+      items.forEach(item => {
+        const str = item.str.trim();
+        const match = str.match(/^(?:Câu|CÂU)\s*(\d+)/);
+        if (match) {
+          const qNum = parseInt(match[1]);
+          const yPos = vp.height - (item.transform[5] * 2.0); // Chuyển đổi tọa độ Y
+          qMarkers.push({ qNum, y: Math.max(0, yPos - 20) });
+        }
+      });
+
+      // Cắt ảnh cho từng câu trong trang
+      for (let i = 0; i < qMarkers.length; i++) {
+        const cur = qMarkers[i];
+        const nextY = (i + 1 < qMarkers.length) ? qMarkers[i + 1].y : vp.height;
+        const cropH = Math.max(100, nextY - cur.y);
+
+        const cropCanvas = document.createElement('canvas');
+        cropCanvas.width = vp.width;
+        cropCanvas.height = cropH;
+        const cropCtx = cropCanvas.getContext('2d');
+        cropCtx.drawImage(canvas, 0, cur.y, vp.width, cropH, 0, 0, vp.width, cropH);
+
+        questionsList.push({
+          id: cur.qNum,
+          img: cropCanvas.toDataURL('image/jpeg', 0.9),
+          correctAnswer: officialAnswers[cur.qNum] || 'A'
+        });
+      }
     }
 
-    parsedQuestions = extractQuizText(fullText);
-
-    if (parsedQuestions.length === 0) {
-      msg.textContent = 'Không tìm thấy câu hỏi. Đảm bảo PDF có lớp chữ.';
+    if (questionsList.length === 0) {
+      msg.textContent = 'Không tìm thấy câu hỏi dạng "Câu X". Đảm bảo PDF có lớp chữ.';
       msg.classList.remove('hidden');
       return;
     }
 
     document.getElementById('setupConfig').classList.remove('hidden');
   } catch (err) {
-    msg.textContent = 'Lỗi đọc PDF: ' + err.message;
+    msg.textContent = 'Lỗi xử lý file PDF: ' + err.message;
     msg.classList.remove('hidden');
   } finally {
     prog.classList.add('hidden');
   }
 });
-
-function extractQuizText(text) {
-  const list = [];
-  const blocks = text.split(/(?=Câu\s+\d+)/g);
-
-  blocks.forEach((block, idx) => {
-    if (!block.trim().startsWith('Câu')) return;
-    const qNumMatch = block.match(/Câu\s+(\d+)/);
-    const qId = qNumMatch ? parseInt(qNumMatch[1]) : (idx + 1);
-
-    const parts = block.split(/(?=[A-D]\.\s*)/g);
-    if (parts.length >= 4) {
-      const questionText = parts[0].trim();
-      const options = [];
-      for (let i = 1; i < parts.length; i++) {
-        const optStr = parts[i].trim();
-        if (/^[A-D]\./.test(optStr)) {
-          const label = optStr[0];
-          const optContent = optStr.replace(/^[A-D]\.\s*/, '').trim();
-          options.push({ label, text: optContent });
-        }
-      }
-      if (options.length >= 2) {
-        list.push({
-          id: qId,
-          title: questionText,
-          options: options,
-          correctAnswer: officialAnswers[qId] || 'A'
-        });
-      }
-    }
-  });
-
-  return list;
-}
 
 document.getElementById('btnStart').addEventListener('click', () => {
   const mins = parseInt(document.getElementById('testTime').value) || 45;
@@ -327,25 +272,23 @@ document.getElementById('btnStart').addEventListener('click', () => {
 function renderQuiz() {
   const container = document.getElementById('quizList');
   container.innerHTML = '';
-  document.getElementById('totalCount').innerText = parsedQuestions.length;
+  document.getElementById('totalCount').innerText = questionsList.length;
 
-  parsedQuestions.forEach((q) => {
+  questionsList.forEach((q) => {
     const card = document.createElement('div');
     card.className = "bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4";
     
-    let optsHtml = '';
-    q.options.forEach(opt => {
-      optsHtml += `
-        <label class="flex items-start p-3.5 rounded-xl border border-slate-200 hover:bg-slate-50 cursor-pointer transition">
-          <input type="radio" name="q-${q.id}" value="${opt.label}" onchange="userAnswers[${q.id}]='${opt.label}'; updateCount();" class="mt-1 text-rose-600 focus:ring-rose-500">
-          <span class="ml-3 font-medium text-slate-700"><b class="text-rose-600 mr-1">${opt.label}.</b> ${rich(opt.text)}</span>
-        </label>
-      `;
-    });
+    let optsHtml = ['A', 'B', 'C', 'D'].map(label => `
+      <label class="flex items-center justify-center p-3.5 rounded-xl border border-slate-200 hover:bg-slate-50 cursor-pointer transition font-bold text-slate-700">
+        <input type="radio" name="q-${q.id}" value="${label}" onchange="userAnswers[${q.id}]='${label}'; updateCount();" class="mr-2 text-rose-600 focus:ring-rose-500">
+        ${label}
+      </label>
+    `).join('');
 
     card.innerHTML = `
-      <div class="font-bold text-slate-800 text-base">Câu ${q.id}: ${rich(q.title)}</div>
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-3">${optsHtml}</div>
+      <div class="font-bold text-slate-800 text-sm mb-2">Câu ${q.id}:</div>
+      <div class="paper mb-4"><img src="${q.img}" alt="Câu ${q.id}"></div>
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-3">${optsHtml}</div>
     `;
     container.appendChild(card);
   });
@@ -371,17 +314,16 @@ function startTimer(duration) {
 }
 
 function submitQuiz(force) {
-  if (!force && Object.keys(userAnswers).length < parsedQuestions.length) {
+  if (!force && Object.keys(userAnswers).length < questionsList.length) {
     if (!confirm('Bạn chưa làm hết các câu. Vẫn muốn nộp bài?')) return;
   }
   clearInterval(timerInterval);
   const endTime = new Date();
   const diffMs = endTime - startTime;
   const minsSpent = Math.floor(diffMs / 60000);
-  const secsSpent = Math.floor((diffMs % 60000) / 1000);
 
   let correctCount = 0, incorrectCount = 0, emptyCount = 0;
-  parsedQuestions.forEach(q => {
+  questionsList.forEach(q => {
     const ans = userAnswers[q.id];
     if (ans) {
       if (ans === q.correctAnswer) correctCount++;
@@ -389,7 +331,7 @@ function submitQuiz(force) {
     } else emptyCount++;
   });
 
-  const total = parsedQuestions.length;
+  const total = questionsList.length;
   const score10 = total > 0 ? ((correctCount / total) * 10) : 0;
   const percentVal = Math.round((correctCount / total) * 100);
 
@@ -400,7 +342,7 @@ function submitQuiz(force) {
   document.getElementById('scoreNum').innerText = score10.toFixed(2).replace('.', ',');
   document.getElementById('circleProgressBar').style.setProperty('--progress', `${percentVal}%`);
   document.getElementById('correctDetailText').innerText = `Đúng ${correctCount}/${total} câu (${percentVal}%)`;
-  document.getElementById('timeSpentText').innerText = `${minsSpent} phút ${secsSpent} giây`;
+  document.getElementById('timeSpentText').innerText = `${minsSpent} phút`;
 
   document.getElementById('statCorrect').innerText = correctCount;
   document.getElementById('statIncorrect').innerText = incorrectCount;
@@ -424,7 +366,7 @@ function renderReview(filter) {
   const container = document.getElementById('reviewContainer');
   container.innerHTML = '';
 
-  parsedQuestions.forEach(q => {
+  questionsList.forEach(q => {
     const uChoice = userAnswers[q.id];
     const isCorrect = uChoice === q.correctAnswer;
     const isEmpty = !uChoice;
@@ -436,34 +378,25 @@ function renderReview(filter) {
     let badgeClass = isCorrect ? "bg-emerald-100 text-emerald-700" : (isEmpty ? "bg-amber-100 text-amber-700" : "bg-rose-100 text-rose-700");
     let badgeText = isCorrect ? "✓ Đúng" : (isEmpty ? "⚠ Bỏ trống" : "✗ Sai");
 
-    let optsHtml = '';
-    q.options.forEach(opt => {
+    let optsHtml = ['A', 'B', 'C', 'D'].map(label => {
       let style = "border-slate-200 bg-white text-slate-700";
-      let labelStyle = "bg-slate-100 text-slate-700 border-slate-300";
       let tag = "";
-
-      if (opt.label === q.correctAnswer) {
-        style = "border-emerald-500 bg-emerald-50/40 text-emerald-900 font-semibold";
-        labelStyle = "bg-emerald-600 text-white border-emerald-600";
+      if (label === q.correctAnswer) {
+        style = "border-emerald-500 bg-emerald-50 text-emerald-900 font-bold";
       }
-      if (opt.label === uChoice && isCorrect) {
+      if (label === uChoice && isCorrect) {
         tag = `<span class="ml-auto text-emerald-600 text-xs font-bold">✓ Bạn chọn đúng</span>`;
-      } else if (opt.label === uChoice && !isCorrect) {
-        style = "border-rose-400 bg-rose-50/40 text-rose-900 font-semibold";
-        labelStyle = "bg-rose-600 text-white border-rose-600";
+      } else if (label === uChoice && !isCorrect) {
+        style = "border-rose-400 bg-rose-50 text-rose-900 font-bold";
         tag = `<span class="ml-auto text-rose-600 text-xs font-bold">Bạn chọn sai</span>`;
       }
-
-      optsHtml += `
+      return `
         <div class="p-3 rounded-xl border ${style} text-sm flex items-center justify-between">
-          <div class="flex items-center gap-3">
-            <span class="w-6 h-6 rounded-full border flex items-center justify-center font-bold text-xs ${labelStyle}">${opt.label}</span>
-            <span>${rich(opt.text)}</span>
-          </div>
+          <span><b>${label}</b></span>
           ${tag}
         </div>
       `;
-    });
+    }).join('');
 
     const card = document.createElement('div');
     card.className = `bg-white p-6 rounded-2xl border ${isCorrect ? 'border-l-4 border-l-emerald-500' : (isEmpty ? 'border-l-4 border-l-amber-500' : 'border-l-4 border-l-rose-500')} border-slate-200 shadow-sm space-y-4`;
@@ -472,8 +405,8 @@ function renderReview(filter) {
         <span class="font-extrabold text-slate-800 text-base">Câu ${q.id}</span>
         <span class="text-xs font-bold px-3 py-1 rounded-full ${badgeClass}">${badgeText}</span>
       </div>
-      <div class="text-slate-800 font-medium text-sm leading-relaxed">${rich(q.title)}</div>
-      <div class="space-y-2">${optsHtml}</div>
+      <div class="paper mb-3"><img src="${q.img}" alt="Câu ${q.id}"></div>
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-2">${optsHtml}</div>
       <div class="text-xs text-slate-500 bg-slate-50 p-3 rounded-xl border border-slate-200">
         Bạn chọn <b>${uChoice || 'không chọn'}</b>. Đáp án đúng: <b class="text-emerald-600">${q.correctAnswer}</b>.
       </div>
