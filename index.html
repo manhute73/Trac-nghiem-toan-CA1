@@ -1,147 +1,514 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="vi">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Luyện trắc nghiệm từ PDF</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Thi Thử - TOÁN CAO CẤP</title>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- PDF.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  
+  <!-- KaTeX (Thư viện render toán học & ma trận chuẩn xác, nét đẹp tuyệt đối giống ảnh mẫu) -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body);"></script>
+
+  <style>
+    body { background-color: #f8fafc; font-family: system-ui, -apple-system, sans-serif; }
+    .circle-progress {
+      position: relative;
+      width: 130px;
+      height: 130px;
+      border-radius: 50%;
+      background: conic-gradient(#e11d48 var(--progress, 0%), #e2e8f0 0deg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .circle-progress::before {
+      content: "";
+      position: absolute;
+      width: 104px;
+      height: 104px;
+      border-radius: 50%;
+      background-color: white;
+    }
+    /* Đảm bảo công thức toán học hiển thị rõ ràng */
+    .katex { font-size: 1.1em !important; }
+  </style>
 </head>
-<body>
-<main>
+<body class="text-slate-800 min-h-screen pb-20">
 
-<!-- ===== MÀN HÌNH SETUP (GIAO DIỆN CHUẨN MẪU) ===== -->
-<section id="viewSetup">
-  <div class="test-card">
-    <div class="badge-group">
-      <span class="badge red">Thi thử</span>
-      <span class="badge gray">Trung bình</span>
+  <!-- Header -->
+  <header class="bg-white border-b border-slate-200 py-3 sticky top-0 z-30 shadow-sm">
+    <div class="max-w-5xl mx-auto px-4 flex justify-between items-center">
+      <div class="flex items-center gap-2">
+        <span class="text-xs font-semibold px-2.5 py-0.5 bg-rose-100 text-rose-600 rounded-full">Thi thử</span>
+        <h1 class="text-base font-bold text-slate-700">TOÁN CAO CẤP - MA TRẬN NGHỊCH ĐẢO</h1>
+      </div>
+      <div id="timer-box" class="hidden bg-slate-900 text-amber-300 font-mono px-3.5 py-1.5 rounded-lg text-sm font-bold">
+        ⏱ <span id="time-left">45:00</span>
+      </div>
     </div>
+  </header>
 
-    <h1 class="test-title">TEST LẦN 2</h1>
-    <div class="subject-tag">● TOÁN CAO CẤP</div>
+  <main class="max-w-5xl mx-auto px-4 mt-6">
 
-    <div class="info-grid">
-      <div class="info-box">
-        <div class="info-icon">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#d32f2f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19h16M4 15h16M4 11h16M4 7h16"/></svg>
-        </div>
-        <div class="info-content">
-          <span class="info-label">SỐ CÂU</span>
-          <strong>14 câu trắc nghiệm</strong>
-        </div>
-      </div>
+    <!-- Upload PDF -->
+    <div id="upload-section" class="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm text-center">
+      <div class="max-w-md mx-auto">
+        <label class="block text-sm font-bold text-slate-700 mb-2">⏱ Thời gian làm bài (phút):</label>
+        <input type="number" id="test-time" value="45" min="1" max="180" class="w-full px-4 py-2 rounded-xl border border-slate-300 mb-4 text-center font-bold">
 
-      <div class="info-box">
-        <div class="info-icon">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#d32f2f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-        </div>
-        <div class="info-content">
-          <span class="info-label">THỜI GIAN</span>
-          <strong>25 phút</strong>
-        </div>
-      </div>
+        <label class="block text-sm font-bold text-slate-700 mb-2">📄 Chọn file PDF đề thi:</label>
+        <input type="file" id="pdf-file" accept="application/pdf" class="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-rose-50 file:text-rose-600 hover:file:bg-rose-100 cursor-pointer mb-4"/>
 
-      <div class="info-box">
-        <div class="info-icon">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#d32f2f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2" ry="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="16" y1="14" x2="16" y2="18"/><path d="M8 10h.01"/><path d="M12 10h.01"/><path d="M16 10h.01"/><path d="M8 14h.01"/><path d="M12 14h.01"/><path d="M8 18h.01"/><path d="M12 18h.01"/></svg>
-        </div>
-        <div class="info-content">
-          <span class="info-label">CÁCH TÍNH ĐIỂM</span>
-          <span>Mỗi câu bằng nhau, thang 10. Bỏ trống không có điểm, sai không bị trừ.</span>
-        </div>
-      </div>
-
-      <div class="info-box">
-        <div class="info-icon">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#d32f2f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="15" y1="15" x2="21" y2="21"/><line x1="4" y1="4" x2="9" y2="9"/></svg>
-        </div>
-        <div class="info-content">
-          <span class="info-label">THỨ TỰ</span>
-          <span>Trộn thứ tự câu hỏi và đáp án</span>
-        </div>
-      </div>
-
-      <div class="info-box full-width">
-        <div class="info-icon">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#d32f2f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14z"/></svg>
-        </div>
-        <div class="info-content">
-          <span class="info-label">ĐÁP ÁN VÀ GIẢI THÍCH</span>
-          <span>Chỉ hiển thị sau khi nộp bài, kèm giải thích.</span>
-        </div>
+        <div id="status-msg" class="text-sm font-medium text-rose-600 hidden">⏳ Đang trích xuất ma trận & câu hỏi chuẩn toán học từ PDF...</div>
       </div>
     </div>
 
-    <div class="topic-row">
-      Chủ đề: <span class="topic-pill">BÀI TẬP TEST LẦN 2</span>
-    </div>
-
-    <div class="upload-section">
-      <label class="drop" id="drop">
-        <strong id="dropTitle">Chọn hoặc kéo thả file PDF đề thi</strong>
-        <span class="muted small" id="dropSub">Đề cần có số câu dạng “Câu 1.” hoặc “1.”</span>
-        <input type="file" id="fileInput" accept="application/pdf,.pdf">
-      </label>
-      <progress id="parseProg" max="100" value="0" hidden></progress>
-      <div id="parseMsg" class="notice err" hidden></div>
-    </div>
-
-    <div id="stepKey" class="panel" hidden style="margin-top:16px">
-      <h2>Đáp án chuẩn</h2>
-      <textarea id="keyText" placeholder="Dán đáp án, ví dụ: 1A 2B 3C 4D…"></textarea>
-      <div class="row" style="margin-top:10px">
-        <button id="keyApply">Áp dụng đáp án</button>
+    <!-- Màn hình làm bài -->
+    <div id="quiz-section" class="hidden">
+      <div class="flex justify-between items-center bg-white p-4 rounded-xl border border-slate-200 mb-6 sticky top-16 z-20 shadow-sm">
+        <div class="text-sm">
+          <span class="text-slate-500">Đã làm:</span>
+          <span id="answered-count" class="font-bold text-rose-600">0</span> / <span id="total-questions-count">0</span> câu
+        </div>
+        <button onclick="gradeQuiz()" class="bg-rose-600 hover:bg-rose-700 text-white px-6 py-2 rounded-xl font-bold text-sm shadow transition">
+          Nộp bài
+        </button>
       </div>
-      <div id="keyMsg" class="small muted" style="margin-top:8px"></div>
+
+      <div id="questions-container" class="space-y-6"></div>
     </div>
 
-    <div class="warning-banner">
-      ⚠️ Đồng hồ bắt đầu chạy ngay khi bạn bấm bắt đầu, kể cả khi thoát ra ngoài. Hết giờ hệ thống tự nộp bài.
+    <!-- Màn hình Kết quả -->
+    <div id="result-section" class="hidden space-y-5">
+
+      <!-- Khối điểm số -->
+      <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col md:flex-row items-center gap-8">
+        <div class="flex-shrink-0">
+          <div class="circle-progress" id="circle-progress-bar">
+            <div class="relative z-10 flex flex-col items-center justify-center">
+              <span id="score-num" class="text-3xl font-black text-slate-800">9,29</span>
+              <span class="text-xs text-slate-400 font-semibold">/10</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="flex-grow text-center md:text-left space-y-2">
+          <div class="flex items-center justify-center md:justify-start gap-2">
+            <span class="text-xs font-bold px-2 py-0.5 bg-rose-100 text-rose-600 rounded">Thi thử</span>
+            <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Toán Cao Cấp</span>
+          </div>
+          <h2 id="eval-title" class="text-2xl font-black text-slate-800">Xuất sắc!</h2>
+          <p id="eval-desc" class="text-sm text-slate-500">Bạn nắm rất chắc nội dung này. Hãy thử bộ đề khó hơn.</p>
+          
+          <div class="text-xs text-slate-500 space-y-1 pt-1">
+            <div class="font-bold text-slate-700">BÀI TẬP TEST LẦN 2</div>
+            <div>📊 <span id="correct-detail-text">Đúng 13/14 câu (92,9%)</span></div>
+            <div>🕒 <span id="time-spent-text">24 phút 36 giây</span> • Nộp lúc <span id="submit-timestamp">--:--</span></div>
+          </div>
+
+          <div class="flex flex-wrap justify-center md:justify-start gap-2 pt-2">
+            <button onclick="scrollToReview()" class="bg-rose-600 hover:bg-rose-700 text-white px-4 py-1.5 rounded-lg text-xs font-bold transition">Xem lại đáp án</button>
+            <button onclick="location.reload()" class="bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 px-4 py-1.5 rounded-lg text-xs font-bold transition">🔄 Làm lại đề</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Chia sẻ -->
+      <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
+        <button class="bg-rose-600 hover:bg-rose-700 text-white px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition">
+          Chia sẻ kết quả
+        </button>
+      </div>
+
+      <!-- Bảng xếp hạng -->
+      <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+        <div class="flex justify-between items-center">
+          <h3 class="font-bold text-slate-800 text-sm">🏆 Bảng xếp hạng</h3>
+          <span class="text-xs text-slate-400">37 người đã thi</span>
+        </div>
+        <div class="p-3 bg-rose-50/70 border border-rose-100 rounded-xl text-xs text-rose-900 flex justify-between items-center">
+          <span>Hạng của bạn: <b id="user-rank" class="text-sm font-extrabold">11/37</b></span>
+          <label class="cursor-pointer flex items-center gap-1.5 text-slate-600">
+            <input type="checkbox" checked class="rounded text-rose-600"> Hiện tên tôi trên bảng xếp hạng
+          </label>
+        </div>
+      </div>
+
+      <!-- Tổng kết & Điểm theo chủ đề -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+          <h3 class="font-bold text-slate-800 text-sm">Tổng kết</h3>
+          <div class="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden flex">
+            <div id="bar-correct" class="bg-emerald-500 h-full" style="width: 0%"></div>
+            <div id="bar-incorrect" class="bg-rose-500 h-full" style="width: 0%"></div>
+            <div id="bar-empty" class="bg-slate-300 h-full" style="width: 0%"></div>
+          </div>
+          <div class="grid grid-cols-4 text-left text-xs font-semibold">
+            <div><span class="text-slate-400 block text-[10px]">● Đúng</span><span id="stat-correct" class="text-base font-bold text-slate-800">0</span></div>
+            <div><span class="text-slate-400 block text-[10px]">● Sai</span><span id="stat-incorrect" class="text-base font-bold text-slate-800">0</span></div>
+            <div><span class="text-slate-400 block text-[10px]">● Bỏ trống</span><span id="stat-empty" class="text-base font-bold text-slate-800">0</span></div>
+            <div><span class="text-slate-400 block text-[10px]">Tổng số câu</span><span id="stat-total" class="text-base font-bold text-slate-800">0</span></div>
+          </div>
+        </div>
+
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+          <div class="flex justify-between items-center">
+            <h3 class="font-bold text-slate-800 text-sm">Điểm theo chủ đề</h3>
+            <span id="theme-percent" class="text-xs font-bold text-slate-800">0%</span>
+          </div>
+          <div class="text-xs font-semibold text-slate-400">BÀI TẬP TEST LẦN 2</div>
+          <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+            <div id="theme-bar" class="bg-emerald-500 h-full" style="width: 0%"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Xem lại từng câu -->
+      <div id="review-anchor" class="pt-4">
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="font-bold text-slate-800 text-lg">Xem lại từng câu</h3>
+          <div class="flex bg-slate-200/60 p-1 rounded-xl text-xs font-medium text-slate-600 gap-1" id="filter-tabs">
+            <button onclick="filterReview('all')" id="tab-all" class="px-3 py-1 rounded-lg bg-white shadow-sm font-bold text-slate-800">Tất cả (<span id="cnt-all">0</span>)</button>
+            <button onclick="filterReview('wrong')" id="tab-wrong" class="px-3 py-1 rounded-lg hover:text-slate-900">Sai (<span id="cnt-wrong">0</span>)</button>
+            <button onclick="filterReview('empty')" id="tab-empty" class="px-3 py-1 rounded-lg hover:text-slate-900">Bỏ trống (<span id="cnt-empty">0</span>)</button>
+            <button onclick="filterReview('correct')" id="tab-correct" class="px-3 py-1 rounded-lg hover:text-slate-900">Đúng (<span id="cnt-correct">0</span>)</button>
+          </div>
+        </div>
+
+        <div id="review-container" class="space-y-4"></div>
+      </div>
+
     </div>
 
-    <button class="btn-start" id="btnStart">
-      ▶ Làm lại đề
-    </button>
-  </div>
+  </main>
 
-  <div class="history-card">
-    <h3>Các lần làm trước</h3>
-    <div class="history-item">
-      <a href="#" class="history-date">21:40 05/11/2026</a>
-      <span class="history-score"><strong>9,29/10</strong> (13/14 câu đúng)</span>
-    </div>
-  </div>
-</section>
+  <script>
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
-<!-- ===== QUIZ (LÀM BÀI) ===== -->
-<section id="viewQuiz" hidden>
-  <div class="bar">
-    <div class="grow">
-      <div class="small" id="qProgText" aria-live="polite"></div>
-      <progress id="qProg" max="1" value="0"></progress>
-    </div>
-    <div class="timer" id="qTimer">00:00</div>
-    <button class="primary" id="btnSubmit">Nộp bài</button>
-  </div>
-  <div id="quizList"></div>
-  <div class="row" style="justify-content:center; margin-top: 20px;"><button class="primary" id="btnSubmit2">Nộp bài</button></div>
-</section>
+    let quizData = [];
+    let userAnswers = {};
+    let timerInterval;
+    let startTime;
 
-<!-- ===== RESULT (KẾT QUẢ) ===== -->
-<section id="viewResult" hidden>
-  <div class="test-card" style="text-align: center;">
-    <h2 id="rTitle" style="font-size: 1.8rem; margin-bottom: 12px;">Kết quả bài làm</h2>
-    <p id="rMsg" class="muted" style="font-size: 1.1rem; margin-bottom: 24px;"></p>
-    <button class="btn-start" id="btnNew">Làm đề mới</button>
-  </div>
-</section>
+    const officialAnswers = {
+      1: 'D', 2: 'C', 3: 'C', 4: 'C', 5: 'A', 6: 'B', 7: 'B', 8: 'C', 9: 'A', 10: 'A',
+      11: 'D', 12: 'A', 13: 'A', 14: 'D', 15: 'C', 16: 'A', 17: 'B', 18: 'A', 19: 'B', 20: 'B',
+      21: 'D', 22: 'A', 23: 'C', 24: 'B', 25: 'B', 26: 'D', 27: 'D', 28: 'B', 29: 'A', 30: 'C',
+      31: 'D', 32: 'D', 33: 'B', 34: 'C', 35: 'D', 36: 'A', 37: 'D', 38: 'A', 39: 'C', 40: 'B'
+    };
 
-</main>
+    document.getElementById('pdf-file').addEventListener('change', async function(e) {
+      const file = e.target.files[0];
+      if (!file) return;
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-<script src="app.js"></script>
+      const statusMsg = document.getElementById('status-msg');
+      statusMsg.classList.remove('hidden');
+
+      try {
+        const arrayBuffer = await file.arrayBuffer();
+        const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+        
+        let fullText = '';
+        for (let i = 1; i <= pdf.numPages; i++) {
+          const page = await pdf.getPage(i);
+          const textContent = await page.getTextContent();
+          const pageText = textContent.items.map(item => item.str).join(' ');
+          fullText += pageText + '\n';
+        }
+
+        quizData = parsePDFTextToQuiz(fullText);
+        
+        if(quizData.length === 0) {
+          alert('Không trích xuất được câu hỏi từ PDF!');
+          statusMsg.classList.add('hidden');
+          return;
+        }
+
+        renderQuiz();
+        document.getElementById('upload-section').classList.add('hidden');
+        document.getElementById('quiz-section').classList.remove('hidden');
+        document.getElementById('timer-box').classList.remove('hidden');
+
+        startTime = new Date();
+        const minutes = parseInt(document.getElementById('test-time').value) || 45;
+        startTimer(minutes * 60);
+
+      } catch (err) {
+        console.error(err);
+        alert('Lỗi đọc file PDF: ' + err.message);
+      } finally {
+        statusMsg.classList.add('hidden');
+      }
+    });
+
+    // Định dạng chuỗi văn bản và tự động bọc cú pháp KaTeX cho Ma trận ngoặc tròn chuẩn như ảnh mẫu
+    function cleanMathSyntax(str) {
+      if (!str) return '';
+      let text = str;
+      
+      // Chuyển ma trận thường sang pmatrix chuẩn ngoặc tròn
+      text = text.replace(/\\begin\{matrix\}/g, '\\begin{pmatrix}');
+      text = text.replace(/\\end\{matrix\}/g, '\\end{pmatrix}');
+      
+      // Đảm bảo bọc đúng ký hiệu $ để KaTeX render
+      text = text.replace(/(\(\\begin\{pmatrix\}[\s\S]*?\\end\{pmatrix\}\))/g, ' $1 ');
+      text = text.replace(/(A\^\{-1\}|A\^T|\(A\^T\)\^\{-1\}|det\(A\)|tr\(A\^\{-1\}\)|c_\{32\}|a_\{ij\})/g, '$$$1$$');
+
+      return text;
+    }
+
+    function parsePDFTextToQuiz(text) {
+      const questions = [];
+      const questionBlocks = text.split(/(?=Câu\s+\d+)/g);
+
+      questionBlocks.forEach((block, index) => {
+        if (!block.trim().startsWith('Câu')) return;
+
+        const qNumMatch = block.match(/Câu\s+(\d+)/);
+        const qId = qNumMatch ? parseInt(qNumMatch[1]) : (index + 1);
+
+        let mainContent = block;
+        const keywords = ["Không có đáp án:", "Det(", "$="];
+        for (let kw of keywords) {
+          const idxKw = block.indexOf(kw);
+          if (idxKw !== -1) {
+            mainContent = block.substring(0, idxKw);
+            break;
+          }
+        }
+
+        const parts = mainContent.split(/(?=[A-D]\.\s*)/g);
+        if (parts.length >= 4) {
+          const questionText = parts[0].trim();
+          const options = [];
+          
+          for (let i = 1; i < parts.length; i++) {
+            const optStr = parts[i].trim();
+            if (/^[A-D]\./.test(optStr)) {
+              const label = optStr[0];
+              const optContent = optStr.replace(/^[A-D]\.\s*/, '').trim();
+              options.push({ label, text: cleanMathSyntax(optContent) });
+            }
+          }
+
+          if (options.length >= 2) {
+            questions.push({
+              id: qId,
+              title: cleanMathSyntax(questionText),
+              options: options,
+              correctAnswer: officialAnswers[qId] || 'A'
+            });
+          }
+        }
+      });
+
+      return questions;
+    }
+
+    function startTimer(duration) {
+      let timer = duration, minutes, seconds;
+      const display = document.getElementById('time-left');
+      
+      timerInterval = setInterval(function () {
+        minutes = parseInt(timer / 60, 10);
+        seconds = parseInt(timer % 60, 10);
+        display.textContent = (minutes < 10 ? "0" + minutes : minutes) + ":" + (seconds < 10 ? "0" + seconds : seconds);
+
+        if (--timer < 0) {
+          clearInterval(timerInterval);
+          alert("Hết thời gian làm bài!");
+          gradeQuiz();
+        }
+      }, 1000);
+    }
+
+    function updateAnsweredCount() {
+      document.getElementById('answered-count').innerText = Object.keys(userAnswers).length;
+    }
+
+    function renderQuiz() {
+      const container = document.getElementById('questions-container');
+      container.innerHTML = '';
+      document.getElementById('total-questions-count').innerText = quizData.length;
+
+      quizData.forEach((q) => {
+        const qCard = document.createElement('div');
+        qCard.className = "bg-white p-6 rounded-2xl border border-slate-200 shadow-sm";
+
+        let optionsHtml = '';
+        q.options.forEach(opt => {
+          optionsHtml += `
+            <label class="flex items-start p-3.5 rounded-xl border border-slate-200 hover:bg-slate-50 cursor-pointer transition">
+              <input type="radio" name="question-${q.id}" value="${opt.label}" onchange="userAnswers[${q.id}]='${opt.label}'; updateAnsweredCount();" class="mt-1 text-rose-600 focus:ring-rose-500">
+              <span class="ml-3 font-medium text-slate-700"><b class="text-rose-600 mr-1">${opt.label}</b> ${opt.text}</span>
+            </label>
+          `;
+        });
+
+        qCard.innerHTML = `
+          <div class="font-semibold text-slate-800 mb-4 text-base">${q.title}</div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3">${optionsHtml}</div>
+        `;
+        container.appendChild(qCard);
+      });
+
+      // Render KaTeX tự động cho toàn bộ trang
+      renderMathInElement(document.body, {
+        delimiters: [
+          {left: '$$', right: '$$', display: true},
+          {left: '$', right: '$', display: false}
+        ]
+      });
+    }
+
+    function gradeQuiz() {
+      clearInterval(timerInterval);
+      const endTime = new Date();
+      const diffMs = endTime - startTime;
+      const minsSpent = Math.floor(diffMs / 60000);
+      const secsSpent = Math.floor((diffMs % 60000) / 1000);
+
+      let correctCount = 0;
+      let incorrectCount = 0;
+      let emptyCount = 0;
+
+      quizData.forEach(q => {
+        const userChoice = userAnswers[q.id];
+        if (userChoice) {
+          if (userChoice === q.correctAnswer) correctCount++;
+          else incorrectCount++;
+        } else {
+          emptyCount++;
+        }
+      });
+
+      const total = quizData.length;
+      const score10 = total > 0 ? ((correctCount / total) * 10) : 0;
+      const percentVal = Math.round((correctCount / total) * 100);
+
+      document.getElementById('quiz-section').classList.add('hidden');
+      document.getElementById('result-section').classList.remove('hidden');
+      document.getElementById('timer-box').classList.add('hidden');
+
+      document.getElementById('score-num').innerText = score10.toFixed(2).replace('.', ',');
+      document.getElementById('circle-progress-bar').style.setProperty('--progress', `${percentVal}%`);
+      document.getElementById('correct-detail-text').innerText = `Đúng ${correctCount}/${total} câu (${percentVal}%)`;
+      document.getElementById('time-spent-text').innerText = `${minsSpent} phút ${secsSpent} giây`;
+      document.getElementById('submit-timestamp').innerText = endTime.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+
+      document.getElementById('stat-correct').innerText = correctCount;
+      document.getElementById('stat-incorrect').innerText = incorrectCount;
+      document.getElementById('stat-empty').innerText = emptyCount;
+      document.getElementById('stat-total').innerText = total;
+
+      document.getElementById('bar-correct').style.width = `${(correctCount/total)*100}%`;
+      document.getElementById('bar-incorrect').style.width = `${(incorrectCount/total)*100}%`;
+      document.getElementById('bar-empty').style.width = `${(emptyCount/total)*100}%`;
+
+      document.getElementById('theme-percent').innerText = `${percentVal}%`;
+      document.getElementById('theme-bar').style.width = `${percentVal}%`;
+
+      document.getElementById('cnt-all').innerText = total;
+      document.getElementById('cnt-correct').innerText = correctCount;
+      document.getElementById('cnt-wrong').innerText = incorrectCount;
+      document.getElementById('cnt-empty').innerText = emptyCount;
+
+      renderReviewList('all');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function renderReviewList(filter) {
+      const container = document.getElementById('review-container');
+      container.innerHTML = '';
+
+      quizData.forEach(q => {
+        const userChoice = userAnswers[q.id];
+        const isCorrect = userChoice === q.correctAnswer;
+        const isUnanswered = !userChoice;
+
+        if (filter === 'correct' && !isCorrect) return;
+        if (filter === 'wrong' && (isCorrect || isUnanswered)) return;
+        if (filter === 'empty' && !isUnanswered) return;
+
+        let badgeClass = isCorrect ? "bg-emerald-100 text-emerald-700" : (isUnanswered ? "bg-amber-100 text-amber-700" : "bg-rose-100 text-rose-700");
+        let badgeText = isCorrect ? "✓ Đúng" : (isUnanswered ? "⚠ Bỏ trống" : "✗ Sai");
+
+        let optionsHtml = '';
+        q.options.forEach(opt => {
+          let optionStyle = "border-slate-200 bg-white text-slate-700";
+          let circleLabelStyle = "bg-slate-100 text-slate-700 border-slate-300";
+          let extraLabel = "";
+
+          if (opt.label === q.correctAnswer) {
+            optionStyle = "border-emerald-500 bg-emerald-50/40 text-emerald-900 font-semibold";
+            circleLabelStyle = "bg-emerald-600 text-white border-emerald-600";
+          }
+          if (opt.label === userChoice && isCorrect) {
+            extraLabel = `<span class="ml-auto text-emerald-600 text-xs font-bold flex items-center gap-1">✓ Bạn chọn đúng</span>`;
+          } else if (opt.label === userChoice && !isCorrect) {
+            optionStyle = "border-rose-400 bg-rose-50/40 text-rose-900 font-semibold";
+            circleLabelStyle = "bg-rose-600 text-white border-rose-600";
+            extraLabel = `<span class="ml-auto text-rose-600 text-xs font-bold">Bạn chọn sai</span>`;
+          }
+
+          optionsHtml += `
+            <div class="p-3 rounded-xl border ${optionStyle} text-sm flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <span class="w-6 h-6 rounded-full border flex items-center justify-center font-bold text-xs ${circleLabelStyle}">${opt.label}</span>
+                <span>${opt.text}</span>
+              </div>
+              ${extraLabel}
+            </div>
+          `;
+        });
+
+        const revCard = document.createElement('div');
+        revCard.className = `bg-white p-6 rounded-2xl border ${isCorrect ? 'border-l-4 border-l-emerald-500 border-slate-200' : (isUnanswered ? 'border-l-4 border-l-amber-500 border-slate-200' : 'border-l-4 border-l-rose-500 border-slate-200')} shadow-sm space-y-4`;
+        revCard.innerHTML = `
+          <div class="flex justify-between items-center">
+            <span class="font-extrabold text-slate-800 text-base">Câu ${q.id}</span>
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-bold px-3 py-1 rounded-full ${badgeClass}">${badgeText}</span>
+              <button class="text-xs text-slate-400 border border-slate-200 px-2.5 py-1 rounded-lg hover:bg-slate-50">
+                🔖 Đánh dấu để ôn
+              </button>
+            </div>
+          </div>
+          <div class="text-slate-800 font-medium text-sm leading-relaxed">${q.title}</div>
+          <div class="space-y-2">${optionsHtml}</div>
+          <div class="text-xs text-slate-500 bg-slate-50 p-3 rounded-xl border border-slate-200">
+            Bạn chọn <b>${userChoice || 'không chọn'}</b>. Đáp án đúng: <b class="text-emerald-600">${q.correctAnswer}</b>.
+          </div>
+        `;
+        container.appendChild(revCard);
+      });
+
+      renderMathInElement(document.body, {
+        delimiters: [
+          {left: '$$', right: '$$', display: true},
+          {left: '$', right: '$', display: false}
+        ]
+      });
+    }
+
+    function filterReview(tab) {
+      document.querySelectorAll('#filter-tabs button').forEach(btn => {
+        btn.className = "px-3 py-1 rounded-lg hover:text-slate-900";
+      });
+      document.getElementById(`tab-${tab}`).className = "px-3 py-1 rounded-lg bg-white shadow-sm font-bold text-slate-800";
+      renderReviewList(tab);
+    }
+
+    function scrollToReview() {
+      document.getElementById('review-anchor').scrollIntoView({ behavior: 'smooth' });
+    }
+  </script>
 </body>
 </html>
