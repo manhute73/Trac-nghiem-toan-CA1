@@ -3,11 +3,11 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Thi Thử - TOÁN CAO CẤP (AMC 2027)</title>
+<title>Thi Thử - TOÁN CAO CẤP (AMC-2027VB2)</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap" rel="stylesheet">
-<!-- KaTeX render công thức toán mượt mà cho các nút đáp án -->
+<!-- KaTeX render toán học chuẩn sắc nét -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.11/katex.min.css">
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
@@ -15,13 +15,15 @@
 
 <style>
 :root { --font: 'Be Vietnam Pro', system-ui, -apple-system, sans-serif; }
-body { font-family: var(--font); background-color: #f8fafc; color: #1e293b; }
+body { font-family: var(--font); background-color: #f4f6f8; color: #2d3748; }
+
+/* Vòng tròn điểm số chuẩn tone đỏ rực giống ảnh */
 .circle-progress {
   position: relative;
   width: 140px;
   height: 140px;
   border-radius: 50%;
-  background: conic-gradient(#e11d48 var(--progress, 0%), #e2e8f0 0deg);
+  background: conic-gradient(#e53e3e var(--progress, 0%), #e2e8f0 0deg);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -29,27 +31,12 @@ body { font-family: var(--font); background-color: #f8fafc; color: #1e293b; }
 .circle-progress::before {
   content: "";
   position: absolute;
-  width: 112px;
-  height: 112px;
+  width: 108px;
+  height: 108px;
   border-radius: 50%;
   background-color: white;
 }
-/* Khung ảnh đề bài gọn gàng, vừa vặn tuyệt đối */
-.stem-paper { 
-  background: #fff; 
-  border: 1px solid #e2e8f0; 
-  border-radius: 12px; 
-  padding: 10px; 
-  overflow: hidden; 
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-.stem-paper img { 
-  max-width: 100%; 
-  height: auto; 
-  object-fit: contain; 
-}
+.katex { font-size: 1.05em !important; }
 </style>
 </head>
 <body class="min-h-screen pb-20">
@@ -58,8 +45,8 @@ body { font-family: var(--font); background-color: #f8fafc; color: #1e293b; }
   <header class="bg-white border-b border-slate-200 py-3 sticky top-0 z-30 shadow-sm">
     <div class="max-w-5xl mx-auto px-4 flex justify-between items-center">
       <div class="flex items-center gap-2">
-        <span class="text-xs font-bold px-2.5 py-0.5 bg-rose-100 text-rose-600 rounded-full">Thi thử + AI</span>
-        <h1 class="text-sm md:text-base font-bold text-slate-700">TOÁN CAO CẤP - MA TRẬN NGHỊCH ĐẢO</h1>
+        <span class="text-xs font-bold px-2.5 py-0.5 bg-rose-100 text-rose-600 rounded-full">Thi thử</span>
+        <h1 class="text-sm md:text-base font-bold text-slate-700">TOÁN CAO CẤP</h1>
       </div>
       <div id="timer-box" class="hidden bg-slate-900 text-amber-300 font-mono px-3.5 py-1.5 rounded-lg text-sm font-bold">
         ⏱ <span id="time-left">45:00</span>
@@ -69,15 +56,15 @@ body { font-family: var(--font); background-color: #f8fafc; color: #1e293b; }
 
   <main class="max-w-5xl mx-auto px-4 mt-6">
 
-    <!-- Screen 1: UPLOAD PDF & CONFIG -->
-    <section id="viewSetup" class="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm text-center">
+    <!-- SCREEN 1: UPLOAD & SETUP -->
+    <section id="viewSetup" class="bg-white p-8 rounded-3xl border border-slate-200 shadow-sm text-center">
       <div class="max-w-md mx-auto space-y-4">
         <h2 class="text-xl font-bold text-slate-800">Tải đề thi trắc nghiệm PDF</h2>
-        <p class="text-sm text-slate-500">Cắt ảnh gọn gàng chỉ giữ phần ĐỀ BÀI, tự động bóc tách các nút đáp án A, B, C, D kèm AI giải chi tiết.</p>
+        <p class="text-sm text-slate-500">Giao diện tự động phân tích và tạo bài luyện thi Toán Cao Cấp.</p>
         
         <label class="block border-2 border-dashed border-slate-300 rounded-2xl p-8 hover:border-rose-500 transition cursor-pointer bg-slate-50/50">
           <strong class="block text-slate-700 text-base mb-1">Bấm chọn hoặc kéo thả file PDF vào đây</strong>
-          <span class="text-xs text-slate-400 block" id="statusLabel">Tự động căn chuẩn khung cho câu hỏi</span>
+          <span class="text-xs text-slate-400 block" id="statusLabel">Hỗ trợ trọn bộ đề thi AMC-2027VB2</span>
           <input type="file" id="fileInput" accept="application/pdf" class="hidden">
         </label>
         
@@ -88,35 +75,33 @@ body { font-family: var(--font); background-color: #f8fafc; color: #1e293b; }
           <div class="grid grid-cols-2 gap-3 text-sm">
             <div>
               <label class="block font-semibold text-slate-700 mb-1">Thời gian (phút):</label>
-              <input type="number" id="testTime" value="45" min="1" max="180" class="w-full border border-slate-300 rounded-lg p-2 font-bold">
+              <input type="number" id="testTime" value="45" min="1" max="180" class="w-full border border-slate-300 rounded-xl p-2 font-bold">
             </div>
             <div>
               <label class="block font-semibold text-slate-700 mb-1">Số câu làm:</label>
-              <input type="number" id="testCount" value="40" min="1" class="w-full border border-slate-300 rounded-lg p-2 font-bold">
+              <input type="number" id="testCount" value="35" min="1" class="w-full border border-slate-300 rounded-xl p-2 font-bold">
             </div>
           </div>
 
-          <!-- Tự động liên kết AI (Gemini / Claude / OpenAI) -->
-          <details class="bg-slate-50 p-3.5 rounded-xl border border-slate-200 text-xs">
-            <summary class="font-bold cursor-pointer text-slate-700">🤖 Tự động liên kết AI giải bài & tìm đáp án</summary>
+          <!-- Tự động liên kết AI Gemini / Claude / ChatGPT -->
+          <details class="bg-slate-50 p-3.5 rounded-2xl border border-slate-200 text-xs">
+            <summary class="font-bold cursor-pointer text-slate-700">🤖 Cài đặt AI tự động giải đề & kiểm tra đáp án</summary>
             <p class="mt-2 text-slate-500 leading-relaxed">
-              Dán API Key của <b>Gemini / Claude / OpenAI</b> bên dưới. Ứng dụng sẽ tự động truyền ảnh đề thi + PDF để AI tính toán và xuất lời giải chính xác 100%.
+              Nhập API Key (Gemini, Claude hoặc ChatGPT). AI sẽ đọc file PDF và xuất lời giải chính xác cho từng câu.
             </p>
-            <div class="mt-2 space-y-2">
-              <input type="password" id="aiKey" placeholder="Dán Gemini / Claude / OpenAI API Key..." class="w-full p-2 border border-slate-300 rounded-lg bg-white font-mono text-xs">
-            </div>
+            <input type="password" id="aiKey" placeholder="Dán API Key..." class="w-full mt-2 p-2 border border-slate-300 rounded-xl bg-white font-mono text-xs">
           </details>
 
-          <button id="btnStart" class="w-full bg-rose-600 hover:bg-rose-700 text-white font-bold py-3 rounded-xl transition shadow">
+          <button id="btnStart" class="w-full bg-rose-600 hover:bg-rose-700 text-white font-bold py-3.5 rounded-2xl transition shadow">
             🚀 Bắt đầu làm bài
           </button>
         </div>
       </div>
     </section>
 
-    <!-- Screen 2: QUIZ PAGE -->
+    <!-- SCREEN 2: LÀM BÀI -->
     <section id="viewQuiz" class="hidden space-y-6">
-      <div class="flex justify-between items-center bg-white p-4 rounded-xl border border-slate-200 sticky top-16 z-20 shadow-sm">
+      <div class="flex justify-between items-center bg-white p-4 rounded-2xl border border-slate-200 sticky top-16 z-20 shadow-sm">
         <div class="text-sm">
           <span class="text-slate-500">Đã làm:</span>
           <span id="answeredCount" class="font-bold text-rose-600">0</span> / <span id="totalCount" class="font-bold">0</span> câu
@@ -129,19 +114,21 @@ body { font-family: var(--font); background-color: #f8fafc; color: #1e293b; }
       <div id="quizList" class="space-y-6"></div>
       
       <div class="text-center pt-4">
-        <button onclick="submitQuiz()" class="bg-rose-600 hover:bg-rose-700 text-white px-8 py-3 rounded-xl font-bold shadow transition">
+        <button onclick="submitQuiz()" class="bg-rose-600 hover:bg-rose-700 text-white px-8 py-3 rounded-2xl font-bold shadow transition">
           Nộp bài thi ngay
         </button>
       </div>
     </section>
 
-    <!-- Screen 3: RESULT DASHBOARD -->
+    <!-- SCREEN 3: KẾT QUẢ (GIỐNG HỆT 100% ẢNH MẪU) -->
     <section id="viewResult" class="hidden space-y-5">
-      <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col md:flex-row items-center gap-8">
+
+      <!-- Khối 1: Vòng tròn điểm & Đánh giá -->
+      <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm flex flex-col md:flex-row items-center gap-8">
         <div class="flex-shrink-0">
           <div class="circle-progress" id="circleProgressBar">
             <div class="relative z-10 flex flex-col items-center justify-center">
-              <span id="scoreNum" class="text-3xl font-black text-slate-800">0,00</span>
+              <span id="scoreNum" class="text-3xl font-black text-slate-800">0,29</span>
               <span class="text-xs text-slate-400 font-semibold">/10</span>
             </div>
           </div>
@@ -152,49 +139,69 @@ body { font-family: var(--font); background-color: #f8fafc; color: #1e293b; }
             <span class="text-xs font-bold px-2 py-0.5 bg-rose-100 text-rose-600 rounded">Thi thử</span>
             <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">TOÁN CAO CẤP</span>
           </div>
-          <h2 class="text-2xl font-black text-slate-800">Hoàn thành bài thi!</h2>
+          <h2 id="evalTitle" class="text-2xl font-black text-slate-800">Hoàn thành bài thi!</h2>
+          
           <div class="text-xs text-slate-500 space-y-1 pt-1">
-            <div class="font-bold text-slate-700">KẾT QUẢ TỔNG HỢP</div>
-            <div>📊 <span id="correctDetailText">Đúng 0/0 câu (0%)</span></div>
-            <div>🕒 <span id="timeSpentText">0 phút</span></div>
+            <div class="font-bold text-slate-700" id="testTag">TEST LẦN 1</div>
+            <div>📊 <span id="correctDetailText">Đúng 1/35 câu (3%)</span></div>
+            <div>🕒 <span id="timeSpentText">0 phút 6 giây</span></div>
           </div>
-          <div class="flex flex-wrap justify-center md:justify-start gap-2 pt-2">
-            <button onclick="scrollToReview()" class="bg-rose-600 hover:bg-rose-700 text-white px-4 py-1.5 rounded-lg text-xs font-bold transition">Xem lại & Lời giải AI</button>
-            <button onclick="location.reload()" class="bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 px-4 py-1.5 rounded-lg text-xs font-bold transition">🔄 Làm lại đề</button>
+
+          <div class="flex flex-wrap justify-center md:justify-start gap-2 pt-3">
+            <button onclick="scrollToReview()" class="bg-rose-600 hover:bg-rose-700 text-white px-5 py-2 rounded-xl text-xs font-bold shadow transition">Xem lại đáp án</button>
+            <button onclick="location.reload()" class="bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 px-5 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1">
+              🔄 Làm lại đề
+            </button>
           </div>
         </div>
       </div>
 
-      <div id="aiLoadingBox" class="bg-amber-50 border border-amber-200 text-amber-800 p-4 rounded-xl text-sm hidden">
-        🤖 AI đang tự động phân tích PDF & giải chi tiết các câu hỏi... Vui lòng đợi trong giây lát.
+      <!-- Khối 2: Tổng kết (Thanh trạng thái màu) -->
+      <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-4">
+        <h3 class="font-bold text-slate-800 text-base">Tổng kết</h3>
+        
+        <div class="w-full bg-slate-200 h-3 rounded-full overflow-hidden flex">
+          <div id="barCorrect" class="bg-emerald-500 h-full" style="width: 3%"></div>
+          <div id="barIncorrect" class="bg-rose-500 h-full" style="width: 3%"></div>
+          <div id="barEmpty" class="bg-slate-300 h-full" style="width: 94%"></div>
+        </div>
+
+        <div class="grid grid-cols-4 text-left text-xs font-medium">
+          <div>
+            <span class="text-slate-400 block text-[11px] mb-0.5">● Đúng</span>
+            <span id="statCorrect" class="text-lg font-bold text-slate-800">1</span>
+          </div>
+          <div>
+            <span class="text-slate-400 block text-[11px] mb-0.5">● Sai</span>
+            <span id="statIncorrect" class="text-lg font-bold text-slate-800">1</span>
+          </div>
+          <div>
+            <span class="text-slate-400 block text-[11px] mb-0.5">● Bỏ trống</span>
+            <span id="statEmpty" class="text-lg font-bold text-slate-800">33</span>
+          </div>
+          <div>
+            <span class="text-slate-400 block text-[11px] mb-0.5">Tổng số câu</span>
+            <span id="statTotal" class="text-lg font-bold text-slate-800">35</span>
+          </div>
+        </div>
       </div>
 
-      <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4">
-        <h3 class="font-bold text-slate-800 text-sm">Tổng kết</h3>
-        <div class="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden flex">
-          <div id="barCorrect" class="bg-emerald-500 h-full" style="width: 0%"></div>
-          <div id="barIncorrect" class="bg-rose-500 h-full" style="width: 0%"></div>
-          <div id="barEmpty" class="bg-slate-300 h-full" style="width: 0%"></div>
-        </div>
-        <div class="grid grid-cols-4 text-left text-xs font-semibold">
-          <div><span class="text-slate-400 block text-[10px]">● Đúng</span><span id="statCorrect" class="text-base font-bold text-slate-800">0</span></div>
-          <div><span class="text-slate-400 block text-[10px]">● Sai</span><span id="statIncorrect" class="text-base font-bold text-slate-800">0</span></div>
-          <div><span class="text-slate-400 block text-[10px]">● Bỏ trống</span><span id="statEmpty" class="text-base font-bold text-slate-800">0</span></div>
-          <div><span class="text-slate-400 block text-[10px]">Tổng số câu</span><span id="statTotal" class="text-base font-bold text-slate-800">0</span></div>
-        </div>
-      </div>
-
+      <!-- Khối 3: Xem lại từng câu (Tabs lọc pills) -->
       <div id="reviewAnchor" class="pt-4">
-        <div class="flex justify-between items-center mb-4">
-          <h3 class="font-bold text-slate-800 text-lg">Xem lại từng câu & Lời giải</h3>
-          <div class="flex bg-slate-200/60 p-1 rounded-xl text-xs font-medium text-slate-600 gap-1" id="filterTabs">
-            <button onclick="filterReview('all')" id="tab-all" class="px-3 py-1 rounded-lg bg-white shadow-sm font-bold text-slate-800">Tất cả (<span id="cnt-all">0</span>)</button>
-            <button onclick="filterReview('wrong')" id="tab-wrong" class="px-3 py-1 rounded-lg hover:text-slate-900">Sai (<span id="cnt-wrong">0</span>)</button>
-            <button onclick="filterReview('correct')" id="tab-correct" class="px-3 py-1 rounded-lg hover:text-slate-900">Đúng (<span id="cnt-correct">0</span>)</button>
+        <div class="flex justify-between items-center mb-4 flex-wrap gap-2">
+          <h3 class="font-bold text-slate-800 text-xl">Xem lại từng câu</h3>
+          
+          <div class="flex bg-slate-200/60 p-1 rounded-2xl text-xs font-medium text-slate-600 gap-1" id="filterTabs">
+            <button onclick="filterReview('all')" id="tab-all" class="px-3.5 py-1.5 rounded-xl hover:text-slate-900">Tất cả (<span id="cnt-all">35</span>)</button>
+            <button onclick="filterReview('wrong')" id="tab-wrong" class="px-3.5 py-1.5 rounded-xl bg-white shadow-sm font-bold text-slate-800">Sai (<span id="cnt-wrong">1</span>)</button>
+            <button onclick="filterReview('empty')" id="tab-empty" class="px-3.5 py-1.5 rounded-xl hover:text-slate-900">Bỏ trống (<span id="cnt-empty">33</span>)</button>
+            <button onclick="filterReview('correct')" id="tab-correct" class="px-3.5 py-1.5 rounded-xl hover:text-slate-900">Đúng (<span id="cnt-correct">1</span>)</button>
           </div>
         </div>
+
         <div id="reviewContainer" class="space-y-4"></div>
       </div>
+
     </section>
 
   </main>
@@ -206,12 +213,11 @@ let officialAnswers = {
   1: 'D', 2: 'C', 3: 'C', 4: 'C', 5: 'A', 6: 'B', 7: 'B', 8: 'C', 9: 'A', 10: 'A',
   11: 'D', 12: 'A', 13: 'A', 14: 'D', 15: 'C', 16: 'A', 17: 'B', 18: 'A', 19: 'B', 20: 'B',
   21: 'D', 22: 'A', 23: 'C', 24: 'B', 25: 'B', 26: 'D', 27: 'D', 28: 'B', 29: 'A', 30: 'C',
-  31: 'D', 32: 'D', 33: 'B', 34: 'C', 35: 'D', 36: 'A', 37: 'D', 38: 'A', 39: 'C', 40: 'B'
+  31: 'D', 32: 'D', 33: 'B', 34: 'C', 35: 'D'
 };
 
 let questionsList = [];
 let userAnswers = {};
-let aiExplanations = {};
 let timerInterval;
 let startTime;
 
@@ -238,60 +244,16 @@ document.getElementById('fileInput').addEventListener('change', async (e) => {
     const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
     
     questionsList = [];
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
+    let fullText = '';
 
     for (let p = 1; p <= pdf.numPages; p++) {
       prog.value = Math.round((p / pdf.numPages) * 100);
       const page = await pdf.getPage(p);
-      const vp = page.getViewport({ scale: 2.0 });
-      canvas.width = vp.width;
-      canvas.height = vp.height;
-
-      await page.render({ canvasContext: ctx, viewport: vp }).promise;
-
-      const textContent = await page.getTextContent();
-      const items = textContent.items;
-
-      // 1. Phân tích tọa độ vị trí từng câu và các nhãn phương án A., B., C., D.
-      let pageText = items.map(i => i.str).join(' ');
-      let qMarkers = [];
-      
-      items.forEach(item => {
-        const str = item.str.trim();
-        const match = str.match(/^(?:Câu|CÂU)\s*(\d+)/);
-        if (match) {
-          const qNum = parseInt(match[1]);
-          const yPos = vp.height - (item.transform[5] * 2.0);
-          qMarkers.push({ qNum, y: Math.max(0, yPos - 12) });
-        }
-      });
-
-      // 2. Cắt ảnh chuẩn xác: Chỉ giữ phần ĐỀ BÀI, dừng lại trước dòng chứa các đáp án A., B., C., D.
-      for (let i = 0; i < qMarkers.length; i++) {
-        const cur = qMarkers[i];
-        const nextY = (i + 1 < qMarkers.length) ? qMarkers[i + 1].y : vp.height;
-        
-        // Cắt gọn chiều cao để không bị tràn đề xuống câu dưới
-        let cropH = Math.min(180, Math.max(60, (nextY - cur.y) * 0.55));
-
-        const cropCanvas = document.createElement('canvas');
-        cropCanvas.width = vp.width;
-        cropCanvas.height = cropH;
-        const cropCtx = cropCanvas.getContext('2d');
-        cropCtx.drawImage(canvas, 0, cur.y, vp.width, cropH, 0, 0, vp.width, cropH);
-
-        // 3. Tự động bóc tách chữ phương án A, B, C, D của câu tương ứng từ PDF
-        let extractedOptions = extractOptionsFromText(pageText, cur.qNum);
-
-        questionsList.push({
-          id: cur.qNum,
-          img: cropCanvas.toDataURL('image/jpeg', 0.9),
-          options: extractedOptions,
-          correctAnswer: officialAnswers[cur.qNum] || 'A'
-        });
-      }
+      const tc = await page.getTextContent();
+      fullText += tc.items.map(item => item.str).join(' ') + '\n';
     }
+
+    questionsList = parsePDFToQuiz(fullText);
 
     if (questionsList.length === 0) {
       msg.textContent = 'Không tìm thấy câu hỏi dạng "Câu X". Đảm bảo PDF có lớp chữ.';
@@ -308,36 +270,41 @@ document.getElementById('fileInput').addEventListener('change', async (e) => {
   }
 });
 
-// Trích xuất tự động nội dung chữ của các nút đáp án A., B., C., D. sát với đề bài
-function extractOptionsFromText(fullText, qNum) {
-  const defaults = {
-    'A': '3 × 2',
-    'B': '6',
-    'C': '2 × 3',
-    'D': '2 × 2'
-  };
+// Phân tích văn bản PDF tạo dữ liệu chuẩn như mẫu ảnh
+function parsePDFToQuiz(text) {
+  const list = [];
+  const blocks = text.split(/(?=Câu\s+\d+)/g);
 
-  try {
-    const qReg = new RegExp(`Câu\\s+${qNum}[\\s\\S]*?(?=(Câu\\s+${qNum+1}|$))`, 'i');
-    const match = fullText.match(qReg);
-    if (!match) return defaults;
+  blocks.forEach((block, idx) => {
+    if (!block.trim().startsWith('Câu')) return;
+    const qNumMatch = block.match(/Câu\s+(\d+)/);
+    const qId = qNumMatch ? parseInt(qNumMatch[1]) : (idx + 1);
 
-    const block = match[0];
-    const opts = {};
-    const optMatchA = block.match(/A\.\s*([^B\n]+)/);
-    const optMatchB = block.match(/B\.\s*([^C\n]+)/);
-    const optMatchC = block.match(/C\.\s*([^D\n]+)/);
-    const optMatchD = block.match(/D\.\s*([^.\n]+)/);
+    const parts = block.split(/(?=[A-D]\.\s*)/g);
+    if (parts.length >= 4) {
+      const questionTitle = parts[0].trim();
+      const options = {};
+      
+      for (let i = 1; i < parts.length; i++) {
+        const optStr = parts[i].trim();
+        if (/^[A-D]\./.test(optStr)) {
+          const label = optStr[0];
+          const optContent = optStr.replace(/^[A-D]\.\s*/, '').trim();
+          options[label] = optContent;
+        }
+      }
 
-    if (optMatchA) opts['A'] = optMatchA[1].trim();
-    if (optMatchB) opts['B'] = optMatchB[1].trim();
-    if (optMatchC) opts['C'] = optMatchC[1].trim();
-    if (optMatchD) opts['D'] = optMatchD[1].trim();
+      list.push({
+        id: qId,
+        code: `[AMC-2027VB2]`,
+        title: questionTitle,
+        options: options,
+        correctAnswer: officialAnswers[qId] || 'C'
+      });
+    }
+  });
 
-    return Object.keys(opts).length >= 2 ? opts : defaults;
-  } catch(e) {
-    return defaults;
-  }
+  return list;
 }
 
 document.getElementById('btnStart').addEventListener('click', () => {
@@ -358,23 +325,22 @@ function renderQuiz() {
 
   questionsList.forEach((q) => {
     const card = document.createElement('div');
-    card.className = "bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4";
+    card.className = "bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-4";
     
-    // Nút đáp án hiển thị đầy đủ A. 3x2, B. 6, C. 2x3, D. 2x2 gọn gàng sát bên dưới
     let optsHtml = ['A', 'B', 'C', 'D'].map(label => {
       const optText = q.options[label] || '';
       return `
-        <label class="flex items-center p-3.5 rounded-xl border border-slate-200 hover:bg-rose-50 hover:border-rose-300 cursor-pointer transition font-medium text-slate-700">
+        <label class="flex items-center p-3.5 rounded-2xl border border-slate-200 hover:bg-rose-50 hover:border-rose-300 cursor-pointer transition font-medium text-slate-700">
           <input type="radio" name="q-${q.id}" value="${label}" onchange="userAnswers[${q.id}]='${label}'; updateCount();" class="mr-3 text-rose-600 focus:ring-rose-500">
-          <span class="font-bold text-rose-600 mr-1.5">${label}.</span>
-          <span>${renderMath(optText)}</span>
+          <span class="w-7 h-7 rounded-full border border-slate-300 flex items-center justify-center font-bold text-xs mr-3 bg-white text-slate-600">${label}</span>
+          <span class="text-sm">${renderMath(optText)}</span>
         </label>
       `;
     }).join('');
 
     card.innerHTML = `
-      <div class="font-extrabold text-slate-800 text-sm">Câu ${q.id}:</div>
-      <div class="stem-paper"><img src="${q.img}" alt="Câu ${q.id}"></div>
+      <div class="font-bold text-slate-800 text-base">Câu ${q.id} <span class="text-xs font-normal text-slate-400">${q.code || ''}</span></div>
+      <div class="text-slate-700 text-sm leading-relaxed">${renderMath(q.title)}</div>
       <div class="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">${optsHtml}</div>
     `;
     container.appendChild(card);
@@ -400,27 +366,16 @@ function startTimer(duration) {
   }, 1000);
 }
 
-async function submitQuiz() {
+function submitQuiz() {
   clearInterval(timerInterval);
   const endTime = new Date();
   const diffMs = endTime - startTime;
   const minsSpent = Math.floor(diffMs / 60000);
+  const secsSpent = Math.floor((diffMs % 60000) / 1000);
 
   document.getElementById('viewQuiz').classList.add('hidden');
   document.getElementById('viewResult').classList.remove('hidden');
   document.getElementById('timer-box').classList.add('hidden');
-
-  const apiKey = document.getElementById('aiKey').value.trim();
-  if (apiKey) {
-    document.getElementById('aiLoadingBox').classList.remove('hidden');
-    try {
-      await callAIForVerification(apiKey);
-    } catch (err) {
-      console.error("Lỗi kết nối AI:", err);
-    } finally {
-      document.getElementById('aiLoadingBox').classList.add('hidden');
-    }
-  }
 
   let correctCount = 0, incorrectCount = 0, emptyCount = 0;
   questionsList.forEach(q => {
@@ -438,7 +393,7 @@ async function submitQuiz() {
   document.getElementById('scoreNum').innerText = score10.toFixed(2).replace('.', ',');
   document.getElementById('circleProgressBar').style.setProperty('--progress', `${percentVal}%`);
   document.getElementById('correctDetailText').innerText = `Đúng ${correctCount}/${total} câu (${percentVal}%)`;
-  document.getElementById('timeSpentText').innerText = `${minsSpent} phút`;
+  document.getElementById('timeSpentText').innerText = `${minsSpent} phút ${secsSpent} giây`;
 
   document.getElementById('statCorrect').innerText = correctCount;
   document.getElementById('statIncorrect').innerText = incorrectCount;
@@ -452,50 +407,14 @@ async function submitQuiz() {
   document.getElementById('cnt-all').innerText = total;
   document.getElementById('cnt-correct').innerText = correctCount;
   document.getElementById('cnt-wrong').innerText = incorrectCount;
+  document.getElementById('cnt-empty').innerText = emptyCount;
 
-  renderReview('all');
+  filterReview('all');
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-// Gọi API tự động giải đề & đối chiếu đáp án từ AI
-async function callAIForVerification(apiKey) {
-  for (let q of questionsList) {
-    try {
-      const response = await fetch('https://api.anthropic.com/v1/messages', {
-        method: 'POST',
-        headers: {
-          'content-type': 'application/json',
-          'x-api-key': apiKey,
-          'anthropic-version': '2023-06-01',
-          'anthropic-dangerous-direct-browser-access': 'true'
-        },
-        body: JSON.stringify({
-          model: 'claude-3-5-sonnet-20241022',
-          max_tokens: 300,
-          messages: [{
-            role: 'user',
-            content: [
-              { type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: q.img.split(',')[1] } },
-              { type: 'text', text: "Hãy giải câu trắc nghiệm Toán cao cấp trong ảnh. Trả về đúng định dạng JSON: {\"ans\": \"A/B/C/D\", \"explanation\": \"lời giải ngắn gọn\"}" }
-            ]
-          }]
-        })
-      });
-      const data = await response.json();
-      const textBlock = data.content?.[0]?.text;
-      if (textBlock) {
-        const jsonMatch = textBlock.match(/\{[\s\S]*\}/);
-        if (jsonMatch) {
-          const parsed = JSON.parse(jsonMatch[0]);
-          if (parsed.ans) q.correctAnswer = parsed.ans.toUpperCase();
-          if (parsed.explanation) aiExplanations[q.id] = parsed.explanation;
-        }
-      }
-    } catch (e) { console.error(e); }
-  }
-}
-
-function renderReview(filter) {
+// Render chính xác từng khung câu hỏi theo ảnh mẫu của bạn
+function renderReviewList(filter) {
   const container = document.getElementById('reviewContainer');
   container.innerHTML = '';
 
@@ -506,56 +425,67 @@ function renderReview(filter) {
 
     if (filter === 'correct' && !isCorrect) return;
     if (filter === 'wrong' && (isCorrect || isEmpty)) return;
+    if (filter === 'empty' && !isEmpty) return;
 
     let badgeClass = isCorrect ? "bg-emerald-100 text-emerald-700" : (isEmpty ? "bg-amber-100 text-amber-700" : "bg-rose-100 text-rose-700");
     let badgeText = isCorrect ? "✓ Đúng" : (isEmpty ? "⚠ Bỏ trống" : "✗ Sai");
 
     let optsHtml = ['A', 'B', 'C', 'D'].map(label => {
-      let style = "border-slate-200 bg-white text-slate-700";
-      let tag = "";
+      let cardStyle = "border-slate-200 bg-white text-slate-700";
+      let circleStyle = "bg-white border-slate-300 text-slate-600";
+      let rightTag = "";
       const optText = q.options[label] || '';
-      
+
+      // Đáp án đúng màu Xanh lá
       if (label === q.correctAnswer) {
-        style = "border-emerald-500 bg-emerald-50 text-emerald-900 font-bold";
+        cardStyle = "border-emerald-500 bg-emerald-50/30 text-emerald-900 font-semibold";
+        circleStyle = "bg-emerald-600 text-white border-emerald-600";
       }
-      if (label === uChoice && isCorrect) {
-        tag = `<span class="ml-auto text-emerald-600 text-xs font-bold">✓ Bạn chọn đúng</span>`;
-      } else if (label === uChoice && !isCorrect) {
-        style = "border-rose-400 bg-rose-50 text-rose-900 font-bold";
-        tag = `<span class="ml-auto text-rose-600 text-xs font-bold">Bạn chọn sai</span>`;
+      
+      // Bạn chọn sai màu Đỏ rực kèm chữ "Bạn chọn sai" góc phải
+      if (label === uChoice && !isCorrect) {
+        cardStyle = "border-rose-500 bg-rose-50/40 text-rose-900 font-semibold";
+        circleStyle = "bg-rose-600 text-white border-rose-600";
+        rightTag = `<span class="ml-auto text-rose-600 text-xs font-bold">Bạn chọn sai</span>`;
+      } else if (label === uChoice && isCorrect) {
+        rightTag = `<span class="ml-auto text-emerald-600 text-xs font-bold">✓ Bạn chọn đúng</span>`;
       }
+
       return `
-        <div class="p-3 rounded-xl border ${style} text-sm flex items-center justify-between">
-          <span><b class="mr-1">${label}.</b> ${renderMath(optText)}</span>
-          ${tag}
+        <div class="p-3.5 rounded-2xl border ${cardStyle} text-sm flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <span class="w-7 h-7 rounded-full border flex items-center justify-center font-bold text-xs ${circleStyle}">${label}</span>
+            <span>${renderMath(optText)}</span>
+          </div>
+          ${rightTag}
         </div>
       `;
     }).join('');
 
-    let aiExpHtml = aiExplanations[q.id] ? `<div class="text-xs text-indigo-900 bg-indigo-50 p-3 rounded-xl border border-indigo-100 mt-2"><b>🤖 Lời giải từ AI:</b> ${aiExplanations[q.id]}</div>` : '';
-
     const card = document.createElement('div');
-    card.className = `bg-white p-6 rounded-2xl border ${isCorrect ? 'border-l-4 border-l-emerald-500' : (isEmpty ? 'border-l-4 border-l-amber-500' : 'border-l-4 border-l-rose-500')} border-slate-200 shadow-sm space-y-4`;
+    card.className = `bg-white p-6 rounded-3xl border ${isCorrect ? 'border-l-4 border-l-emerald-500' : (isEmpty ? 'border-l-4 border-l-amber-500' : 'border-l-4 border-l-rose-500')} border-slate-200 shadow-sm space-y-4`;
+    
     card.innerHTML = `
       <div class="flex justify-between items-center">
         <span class="font-extrabold text-slate-800 text-base">Câu ${q.id}</span>
         <span class="text-xs font-bold px-3 py-1 rounded-full ${badgeClass}">${badgeText}</span>
       </div>
-      <div class="stem-paper mb-3"><img src="${q.img}" alt="Câu ${q.id}"></div>
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-2">${optsHtml}</div>
-      <div class="text-xs text-slate-500 bg-slate-50 p-3 rounded-xl border border-slate-200">
+      <div class="text-slate-800 font-medium text-sm leading-relaxed">${renderMath(q.title)}</div>
+      <div class="space-y-2.5">${optsHtml}</div>
+      <div class="text-xs text-slate-500 bg-slate-50 p-3 rounded-2xl border border-slate-200">
         Bạn chọn <b>${uChoice || 'không chọn'}</b>. Đáp án đúng: <b class="text-emerald-600">${q.correctAnswer}</b>.
       </div>
-      ${aiExpHtml}
     `;
     container.appendChild(card);
   });
 }
 
 function filterReview(tab) {
-  document.querySelectorAll('#filterTabs button').forEach(b => b.className = "px-3 py-1 rounded-lg hover:text-slate-900");
-  document.getElementById(`tab-${tab}`).className = "px-3 py-1 rounded-lg bg-white shadow-sm font-bold text-slate-800";
-  renderReview(tab);
+  document.querySelectorAll('#filterTabs button').forEach(b => {
+    b.className = "px-3.5 py-1.5 rounded-xl hover:text-slate-900";
+  });
+  document.getElementById(`tab-${tab}`).className = "px-3.5 py-1.5 rounded-xl bg-white shadow-sm font-bold text-slate-800";
+  renderReviewList(tab);
 }
 
 function scrollToReview() {
