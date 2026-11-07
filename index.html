@@ -635,7 +635,6 @@ async function aiConvert(list, say){
 }
 
 /* ---------- xác định đáp án đúng của từng câu ---------- */
-// Đáp án nhập tay luôn được ưu tiên. Nếu không có thì dùng kết luận của AI.
 function verdict(q){
   const k = state.key[q.n], t = state.tx[q.n];
   if (k && !state.ai[q.n]) return { kind: 'key', ans: k };
@@ -686,7 +685,6 @@ async function handleFile(file){
     }
     state.qs = questions; state.byN = new Map(questions.map(q => [q.n, q]));
     loadKey(); state.tx = lsGet(txKey(), {});
-    // nếu cuối file có phần "Đáp án" thì tự đọc
     const all = pageTexts.join('\n'), idx = all.search(/đáp\s*án(?![\s\S]*đáp\s*án)/i);
     if (idx >= 0){
       const found = parseKey(all.slice(idx));
@@ -720,35 +718,57 @@ const fmtTime = s => { s = Math.max(0, Math.round(s)); return String(Math.floor(
 async function onStart(){
   const from = +$('#cFrom').value || 0, to = +$('#cTo').value || 1e9;
   let pool = state.qs.filter(q => q.n >= from && q.n <= to);
-  if (!pool.length){ $('#startMsg').textContent = 'Khoảng câu này không có câu hỏi nào.'; return; }
+  
+  if (!pool.length){ 
+    alert('Khoảng câu này không có câu hỏi nào! Vui lòng kiểm tra lại mục "Từ câu" và "Đến câu".');
+    $('#startMsg').textContent = 'Khoảng câu này không có câu hỏi nào.'; 
+    return; 
+  }
+  
   const count = Math.max(1, Math.min(+$('#cCount').value || pool.length, pool.length));
   pool = $('#cShuffle').checked ? shuffle(pool.slice()).slice(0, count) : pool.slice(0, count);
   const mins = Math.max(0, +$('#cMin').value || 0);
 
   if ($('#cAI').checked){
-    if (!aiAvailable()){ alert('Chưa có AI. Hãy mở “Cài đặt AI”, nhập API key rồi bấm Lưu, hoặc bỏ chọn ô AI để xem câu hỏi bằng ảnh.'); $('#aiBox').open = true; return; }
+    if (!aiAvailable()){ 
+      alert('Chưa có AI. Hãy mở “Cài đặt AI”, nhập API key rồi bấm Lưu, hoặc bỏ chọn ô AI để xem câu hỏi bằng ảnh.'); 
+      $('#aiBox').open = true; 
+      return; 
+    }
     const need = pool.filter(q => needAI(q, $('#cCross').checked));
     if (need.length){
       $('#btnStart').disabled = true;
       try {
         const fails = await aiConvert(need, t => { $('#startMsg').textContent = t; });
-        if (fails) alert(`${fails} câu AI chưa chuyển được, các câu này sẽ hiện bằng ảnh.`);
-      } catch (e){ alert('AI gặp lỗi: ' + e.message + '\nCác câu chưa chuyển sẽ hiện bằng ảnh.'); }
+        if (fails) console.warn(`${fails} câu AI chưa chuyển được.`);
+      } catch (e){ 
+        console.error("Lỗi gọi AI:", e);
+        alert('AI gặp lỗi kết nối hoặc CORS: ' + e.message + '\nChương trình sẽ tự động chuyển sang hiển thị câu hỏi bằng ảnh gốc.'); 
+      }
       $('#btnStart').disabled = false;
     }
   }
+  
   $('#startMsg').textContent = '';
+  
+  if (!pool || pool.length === 0) {
+    alert('Không thể tạo đề vì danh sách câu hỏi trống!');
+    return;
+  }
+  
   startQuiz(pool, mins);
 }
 
 const qHead = (i, q) => `<div class="qh"><b>Câu ${i + 1}</b><span class="grow"></span><span class="muted small">Đề gốc ${q.n}</span></div>`;
 function quizCard(q, i){
   const tx = state.tx[q.n];
-  if (tx) return `<article class="qc" id="q${i}" data-n="${q.n}">${qHead(i, q)}
-    <div class="stem">${rich(tx.stem)}</div>
-    <div class="optlist" role="group" aria-label="Chọn đáp án câu ${i + 1}">
-      ${tx.options.map((o, k) => `<button class="optrow" data-v="${'ABCDE'[k]}" aria-pressed="false"><span class="ol">${'ABCDE'[k]}</span><span class="ot">${rich(o)}</span></button>`).join('')}
-    </div></article>`;
+  if (tx && tx.stem && tx.options && tx.options.length) {
+    return `<article class="qc" id="q${i}" data-n="${q.n}">${qHead(i, q)}
+      <div class="stem">${rich(tx.stem)}</div>
+      <div class="optlist" role="group" aria-label="Chọn đáp án câu ${i + 1}">
+        ${tx.options.map((o, k) => `<button class="optrow" data-v="${'ABCDE'[k]}" aria-pressed="false"><span class="ol">${'ABCDE'[k]}</span><span class="ot">${rich(o)}</span></button>`).join('')}
+      </div></article>`;
+  }
   return `<article class="qc" id="q${i}" data-n="${q.n}">${qHead(i, q)}
     <div class="paper"><img src="${q.img}" alt="Nội dung câu ${i + 1}"></div>
     <div class="opts" role="group" aria-label="Chọn đáp án câu ${i + 1}">
@@ -896,7 +916,7 @@ function renderResultList(){
   $('#resList').innerHTML = list.map(({ q, i }) => {
     const tx = state.tx[q.n], v = q.v, k = v.kind === 'key' ? v.ans : '', a = Q.answers[q.n], on = marks.has(q.n);
     let body;
-    if (tx){
+    if (tx && tx.stem && tx.options){
       const rows = tx.options.map((o, j) => {
         const L = 'ABCDE'[j], right = L === k, sel = L === a;
         const cls = right ? 'right' : sel ? (k ? 'wrong' : 'sel') : '';
