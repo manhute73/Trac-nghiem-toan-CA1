@@ -14,26 +14,25 @@
         .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
         
-        /* Khung chứa thu gọn, thanh lịch, nền xám đồng bộ */
+        /* THUẬT TOÁN CHỐNG LỆCH: Canh giữa tuyệt đối và co giãn vừa khít khung */
         .question-frame-box {
             width: 100%;
-            height: 150px; /* Thu gọn chiều cao vừa vặn */
+            min-height: 140px;
             background-color: #f8fafc;
             border: 1px solid #e2e8f0;
             border-radius: 0.75rem;
             display: flex;
             align-items: center;
-            justify-content: flex-start; 
-            overflow-x: auto;
-            overflow-y: hidden;
-            padding-left: 20px; 
+            justify-content: center; /* Luôn canh giữa nội dung, không bao giờ lệch trái/phải */
+            overflow: hidden;
+            padding: 12px;
         }
         .question-frame-box img {
+            max-width: 100%;
             height: auto;
-            width: auto;
-            max-height: 85%;
-            object-fit: none;
+            object-fit: contain; /* Tự động co giãn cân đối, không méo hình */
         }
+
         .paste-zone:focus {
             outline: 2px solid #e11d48;
             background-color: #fff1f2 !important;
@@ -520,7 +519,7 @@
                         </div>
                     </div>
 
-                    <!-- Khung xám thu gọn gọn gàng, nền xám đồng bộ hoàn toàn -->
+                    <!-- Khung xám đồng bộ hoàn toàn, căn giữa tuyệt đối chống lệch -->
                     <div class="question-frame-box">
                         <img src="${q.imgUrl}" alt="Câu hỏi">
                     </div>
