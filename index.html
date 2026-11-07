@@ -8,40 +8,23 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- PDF.js library for rendering PDF files -->
+    
+    <!-- 1. PDF.js library for reading PDF files -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
     <script>
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
     </script>
     
-    <!-- KaTeX CSS & JS cho hiển thị toán học siêu nét -->
+    <!-- 2. KaTeX library for ultra-fast math & matrix rendering -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
     <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"></script>
-
-    <!-- MathJax Cấu hình đầy đủ gói ma trận và ký hiệu toán cao cấp -->
-    <script>
-        window.MathJax = {
-            tex: {
-                inlineMath: [['$', '$'], ['\\(', '\\)']],
-                displayMath: [['$$', '$$'], ['\\[', '\\]']],
-                processEscapes: true,
-                packages: {'[+]': ['ams', 'newcommand']}
-            },
-            options: {
-                skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre']
-            }
-        };
-    </script>
-    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
         body { font-family: 'Inter', sans-serif; background-color: #0f172a; }
         .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
-        /* Đảm bảo công thức toán không bị tràn và hiển thị khối chuẩn */
-        .MathJax { overflow-x: auto; overflow-y: hidden; max-width: 100%; }
     </style>
 </head>
 <body class="min-h-screen text-slate-800 flex flex-col">
@@ -56,7 +39,7 @@
         </div>
         <div class="flex items-center space-x-4">
             <button onclick="switchTab('dashboard')" class="hover:text-white transition"><i class="fa-solid fa-house mr-1"></i> Trang chủ</button>
-            <button onclick="switchTab('pdf-creator')" class="hover:text-white transition"><i class="fa-solid fa-file-arrow-up mr-1"></i> Tải PDF Tự Động Tách</button>
+            <button onclick="switchTab('pdf-creator')" class="hover:text-white transition"><i class="fa-solid fa-file-arrow-up mr-1"></i> Đọc File PDF & KaTeX</button>
         </div>
     </header>
 
@@ -69,7 +52,7 @@
                 <div class="flex justify-between items-center pb-4 mb-2 border-b border-slate-100">
                     <h2 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Bảng điều khiển luyện tập</h2>
                     <button onclick="switchTab('pdf-creator')" class="bg-rose-50 hover:bg-rose-100 text-rose-700 px-4 py-2 rounded-xl font-medium text-sm transition flex items-center gap-2 border border-rose-200">
-                        <i class="fa-solid fa-file-arrow-up"></i> Tải PDF Tự Động Tách Câu
+                        <i class="fa-solid fa-file-arrow-up"></i> Tải PDF & Xử Lý Đề
                     </button>
                 </div>
 
@@ -160,12 +143,12 @@
                 </div>
             </div>
 
-            <!-- TAB 2: TỰ ĐỘNG ĐỌC FILE PDF & TÁCH CÂU HỎI -->
+            <!-- TAB 2: ĐỌC FILE PDF & RENDER KaTeX -->
             <div id="tab-pdf-creator" class="hidden space-y-4 flex-1 flex flex-col">
                 <div class="border-b pb-3 flex justify-between items-center">
                     <div>
-                        <h2 class="text-lg font-bold text-slate-950">Tải File PDF & Tự Động Tách Câu Hỏi Toán Học</h2>
-                        <p class="text-xs text-slate-500">Hệ thống quét chữ <b>"Câu X"</b>, tự động tách nội dung và bóc tách đáp án toán học A, B, C, D.</p>
+                        <h2 class="text-lg font-bold text-slate-950">Tải File PDF & Xử Lý Văn Bản Toán Học</h2>
+                        <p class="text-xs text-slate-500">Sử dụng <b>PDF.js</b> để trích xuất text và <b>KaTeX</b> để render công thức, ma trận siêu tốc.</p>
                     </div>
                     <button onclick="switchTab('dashboard')" class="bg-rose-600 hover:bg-rose-700 text-white px-4 py-2 rounded-xl text-xs font-medium transition flex items-center gap-2 shadow-md shrink-0">
                         <i class="fa-solid fa-arrow-left"></i> Quay lại trang chủ
@@ -176,11 +159,11 @@
                     <!-- Cột trái: Tải file PDF -->
                     <div class="md:col-span-1 space-y-3">
                         <div class="border-2 border-dashed border-slate-300 rounded-xl p-4 text-center hover:border-rose-500 transition bg-slate-50">
-                            <input type="file" id="pdf-file-input" accept="application/pdf" class="hidden" onchange="handleAutoExtractPDF(event)">
+                            <input type="file" id="pdf-file-input" accept="application/pdf" class="hidden" onchange="handlePDFUpload(event)">
                             <label for="pdf-file-input" class="cursor-pointer flex flex-col items-center">
                                 <i class="fa-solid fa-cloud-arrow-up text-3xl text-rose-500 mb-1"></i>
                                 <span class="font-semibold text-xs text-slate-700">Chọn file PDF đề thi</span>
-                                <span class="text-[10px] text-slate-400 mt-0.5">(.pdf chứa text toán học)</span>
+                                <span class="text-[10px] text-slate-400 mt-0.5">(.pdf chứa đề toán cao cấp)</span>
                             </label>
                         </div>
 
@@ -189,16 +172,16 @@
                                 <span class="text-slate-400 block font-semibold">Tên đề thi:</span>
                                 <input type="text" id="pdf-extracted-title" class="w-full mt-1 bg-white border rounded px-2 py-1 font-medium text-slate-800">
                             </div>
-                            <button onclick="applyAutoExtractedExam()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-2 rounded-lg transition shadow">
+                            <button onclick="applyExtractedExam()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-2 rounded-lg transition shadow">
                                 Áp dụng bộ đề này vào bài thi
                             </button>
                         </div>
                     </div>
 
-                    <!-- Cột phải: List danh sách câu hỏi đã tự động tách -->
+                    <!-- Cột phải: List hiển thị câu hỏi -->
                     <div class="md:col-span-2 bg-slate-50 border rounded-xl p-4 flex flex-col space-y-3 min-h-[420px]">
                         <h3 class="font-bold text-slate-900 text-sm flex justify-between items-center border-b pb-2">
-                            <span>Danh sách câu hỏi tự động tách (<span id="extracted-q-count">0</span> câu)</span>
+                            <span>Danh sách câu hỏi xử lý (<span id="extracted-q-count">0</span> câu)</span>
                         </h3>
                         <div id="pdf-extracted-list" class="space-y-3 flex-1 max-h-[350px] overflow-y-auto custom-scrollbar pr-1 text-xs text-slate-600">
                             <p class="italic text-slate-400 text-center py-16">Chưa có dữ liệu. Hãy tải file PDF lên ở cột bên trái.</p>
@@ -409,8 +392,8 @@
             }
         }
 
-        // --- THUẬT TOÁN TÁCH ĐỀ, BÓC TÁCH ĐÁP ÁN TOÁN HỌC A, B, C, D ---
-        async function handleAutoExtractPDF(e) {
+        // --- XỬ LÝ ĐỌC PDF & TÍCH HỢP KaTeX ---
+        async function handlePDFUpload(e) {
             const file = e.target.files[0];
             if (!file) return;
 
@@ -443,7 +426,6 @@
                         let endIndex = (m < matches.length - 1) ? matches[m + 1].index : fullText.length;
                         let rawBlock = fullText.substring(startIndex, endIndex).trim();
 
-                        // Bóc tách các đáp án A, B, C, D toán học ra khỏi nội dung câu hỏi
                         let optA = "", optB = "", optC = "", optD = "";
                         let cleanText = rawBlock;
 
@@ -473,10 +455,10 @@
                         }
 
                         let optionsArr = [
-                            optA || "$\\dots$",
-                            optB || "$\\dots$",
-                            optC || "$\\dots$",
-                            optD || "$\\dots$"
+                            optA || "A",
+                            optB || "B",
+                            optC || "C",
+                            optD || "D"
                         ];
 
                         extractedQuestionsTemp.push({
@@ -490,7 +472,7 @@
                     extractedQuestionsTemp.push({
                         id: 1,
                         text: fullText.substring(0, 300),
-                        options: ["$\\dots$", "$\\dots$", "$\\dots$", "$\\dots$"],
+                        options: ["A", "B", "C", "D"],
                         correct: 0
                     });
                 }
@@ -520,13 +502,10 @@
                 </div>
             `).join('');
 
-            // Render lại toán học bằng cả MathJax và KaTeX
-            if (window.MathJax) {
-                MathJax.typesetPromise();
-            }
+            renderMath();
         }
 
-        function applyAutoExtractedExam() {
+        function applyExtractedExam() {
             if (extractedQuestionsTemp.length === 0) {
                 alert("Chưa có câu hỏi nào được trích xuất!");
                 return;
@@ -540,7 +519,7 @@
             document.getElementById('input-exam-topic').value = customTitle;
             updateDashboardInfo();
             switchTab('dashboard');
-            alert(`Đã nạp thành công ${currentExam.questions.length} câu hỏi toán học từ PDF vào đề thi!`);
+            alert(`Đã nạp thành công ${currentExam.questions.length} câu hỏi vào đề thi!`);
         }
 
         // --- BẮT ĐẦU LÀM BÀI ---
@@ -596,7 +575,6 @@
                         </div>
                     </div>
 
-                    <!-- Nội dung toán học đề thi -->
                     <div class="leading-relaxed text-slate-800 text-sm whitespace-pre-wrap">${q.text}</div>
 
                     <div class="space-y-2.5">
@@ -612,7 +590,7 @@
             `).join('');
 
             switchTab('quiz');
-            triggerMathRender();
+            renderMath();
         }
 
         function selectOption(qIdx, optIdx) {
@@ -750,11 +728,11 @@
 
             updateHistoryUI();
             switchTab('result');
-            triggerMathRender();
+            renderMath();
         }
 
-        // Hàm kích hoạt render toàn bộ ký hiệu toán học qua KaTeX và MathJax
-        function triggerMathRender() {
+        // Tự động render KaTeX cho toàn bộ các thành phần chứa công thức
+        function renderMath() {
             if (window.renderMathInElement) {
                 renderMathInElement(document.body, {
                     delimiters: [
@@ -766,14 +744,11 @@
                     throwOnError: false
                 });
             }
-            if (window.MathJax) {
-                MathJax.typesetPromise();
-            }
         }
 
         window.onload = function() {
             updateDashboardInfo();
-            triggerMathRender();
+            renderMath();
         };
     </script>
 </body>
