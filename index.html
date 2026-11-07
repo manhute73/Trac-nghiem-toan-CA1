@@ -139,12 +139,12 @@
                 </div>
             </div>
 
-            <!-- TAB 2: TỰ ĐỘNG ĐỌC FILE PDF & LIST RA DANH SÁCH CÂU HỎI (Đã loại bỏ phần đáp án thừa, hiển thị dạng toán học xuống dòng) -->
+            <!-- TAB 2: TỰ ĐỘNG ĐỌC FILE PDF & TÁCH CÂU HỎI -->
             <div id="tab-pdf-creator" class="hidden space-y-4 flex-1 flex flex-col">
                 <div class="border-b pb-3 flex justify-between items-center">
                     <div>
                         <h2 class="text-lg font-bold text-slate-950">Tải File PDF & Tự Động Tách Câu Hỏi</h2>
-                        <p class="text-xs text-slate-500">Hệ thống nhận diện dấu hiệu <b>"Câu X"</b> để tách chính xác từng câu và hiển thị định dạng toán học.</p>
+                        <p class="text-xs text-slate-500">Hệ thống quét chữ <b>"Câu X"</b>, tự động tách nội dung và bóc tách đáp án A, B, C, D xuống các lựa chọn.</p>
                     </div>
                     <button onclick="switchTab('dashboard')" class="bg-rose-600 hover:bg-rose-700 text-white px-4 py-2 rounded-xl text-xs font-medium transition flex items-center gap-2 shadow-md shrink-0">
                         <i class="fa-solid fa-arrow-left"></i> Quay lại trang chủ
@@ -388,7 +388,7 @@
             }
         }
 
-        // --- THUẬT TOÁN TÁCH ĐỀ CHÍNH XÁC DỰA TRÊN DẤU HIỆU CHỮ "Câu X" ---
+        // --- THUẬT TOÁN TÁCH ĐỀ, BÓC TÁCH ĐÁP ÁN A, B, C, D VÀ XOÁ KHỎI NỘI DUNG ĐỀ ---
         async function handleAutoExtractPDF(e) {
             const file = e.target.files[0];
             if (!file) return;
@@ -408,33 +408,67 @@
                 for (let i = 1; i <= pdf.numPages; i++) {
                     const page = await pdf.getPage(i);
                     const textContent = await page.getTextContent();
-                    // Sắp xếp các mục text theo tọa độ để chuẩn dòng toán học
                     const pageText = textContent.items.map(item => item.str).join(" ");
                     fullText += pageText + "\n";
                 }
 
                 extractedQuestionsTemp = [];
-                
-                // Dùng Regex tìm chính xác các vị trí bắt đầu bằng từ "Câu" theo sát đề chuẩn
-                let regex = /Câu\s+\d+[\.:]?/gi;
+                let regex = /Câu\s+\d+[:\.]?/gi;
                 let matches = [...fullText.matchAll(regex)];
 
                 if (matches.length > 0) {
                     for (let m = 0; m < matches.length; m++) {
                         let startIndex = matches[m].index;
                         let endIndex = (m < matches.length - 1) ? matches[m + 1].index : fullText.length;
-                        let questionBlock = fullText.substring(startIndex, endIndex).trim();
+                        let rawBlock = fullText.substring(startIndex, endIndex).trim();
 
-                        // Tách phần thân câu hỏi và các đáp án A, B, C, D nếu nằm trong text
+                        // Bóc tách các đáp án A, B, C, D ra khỏi nội dung câu hỏi
+                        let optA = "", optB = "", optC = "", optD = "";
+                        let cleanText = rawBlock;
+
+                        // Tìm vị trí xuất hiện của A., B., C., D.
+                        let idxA = cleanText.search(/\bA[\.\)]/i);
+                        let idxB = cleanText.search(/\bB[\.\)]/i);
+                        let idxC = cleanText.search(/\bC[\.\)]/i);
+                        let idxD = cleanText.search(/\bD[\.\)]/i);
+
+                        if (idxA !== -1) {
+                            let endIdx = idxB !== -1 ? idxB : cleanText.length;
+                            optA = cleanText.substring(idxA + 2, endIdx).trim();
+                        }
+                        if (idxB !== -1) {
+                            let endIdx = idxC !== -1 ? idxC : cleanText.length;
+                            optB = cleanText.substring(idxB + 2, endIdx).trim();
+                        }
+                        if (idxC !== -1) {
+                            let endIdx = idxD !== -1 ? idxD : cleanText.length;
+                            optC = cleanText.substring(idxC + 2, endIdx).trim();
+                        }
+                        if (idxD !== -1) {
+                            optD = cleanText.substring(idxD + 2).trim();
+                        }
+
+                        // Xoá toàn bộ phần đáp án A, B, C, D khỏi phần văn bản câu hỏi phía trên
+                        if (idxA !== -1) {
+                            cleanText = cleanText.substring(0, idxA).trim();
+                        }
+
+                        // Nếu bóc tách được đáp án, gán vào options; ngược lại dùng mặc định
+                        let optionsArr = [
+                            optA || "Lựa chọn A",
+                            optB || "Lựa chọn B",
+                            optC || "Lựa chọn C",
+                            optD || "Lựa chọn D"
+                        ];
+
                         extractedQuestionsTemp.push({
                             id: extractedQuestionsTemp.length + 1,
-                            text: questionBlock,
-                            options: ["Lựa chọn A", "Lựa chọn B", "Lựa chọn C", "Lựa chọn D"],
-                            correct: 0
+                            text: cleanText,
+                            options: optionsArr,
+                            correct: 0 // Mặc định đáp án A (người dùng có thể cấu hình hoặc tự động tuỳ ý)
                         });
                     }
                 } else {
-                    // Fallback nếu đề không chứa từ "Câu" chuẩn
                     extractedQuestionsTemp.push({
                         id: 1,
                         text: fullText.substring(0, 300),
@@ -452,18 +486,24 @@
             document.getElementById('extracted-q-count').innerText = extractedQuestionsTemp.length;
             const listEl = document.getElementById('pdf-extracted-list');
             
-            // Đã xóa bỏ phần lựa chọn đáp án đúng/sai rườm rà, chỉ hiển thị format toán học xuống dòng đúng chuẩn
             listEl.innerHTML = extractedQuestionsTemp.map((q, idx) => `
                 <div class="bg-white border p-3.5 rounded-xl space-y-2 shadow-sm">
                     <div class="font-bold text-slate-900 text-xs bg-slate-100 px-2.5 py-1 rounded inline-block">
                         Câu ${idx + 1}
                     </div>
-                    <!-- Định dạng hiển thị toán học xuống dòng rõ ràng -->
-                    <div class="text-slate-800 text-xs leading-relaxed whitespace-pre-wrap font-mono bg-slate-50 p-2.5 rounded border border-slate-100 max-h-32 overflow-y-auto custom-scrollbar">${q.text}</div>
+                    <!-- Nội dung câu hỏi đã được xoá sạch chữ A, B, C, D ở phần đề -->
+                    <div class="text-slate-800 text-xs leading-relaxed whitespace-pre-wrap font-mono bg-slate-50 p-2.5 rounded border border-slate-100 max-h-24 overflow-y-auto custom-scrollbar">${q.text}</div>
+                    
+                    <!-- Hiển thị các lựa chọn đã được bóc tách riêng biệt -->
+                    <div class="grid grid-cols-2 gap-1.5 pt-1 text-[11px] text-slate-600 font-medium">
+                        <div class="bg-slate-100 px-2 py-1 rounded truncate"><b>A:</b> ${q.options[0]}</div>
+                        <div class="bg-slate-100 px-2 py-1 rounded truncate"><b>B:</b> ${q.options[1]}</div>
+                        <div class="bg-slate-100 px-2 py-1 rounded truncate"><b>C:</b> ${q.options[2]}</div>
+                        <div class="bg-slate-100 px-2 py-1 rounded truncate"><b>D:</b> ${q.options[3]}</div>
+                    </div>
                 </div>
             `).join('');
 
-            // Kích hoạt MathJax render lại công thức toán học
             if (window.MathJax) {
                 MathJax.typesetPromise();
             }
@@ -539,7 +579,7 @@
                         </div>
                     </div>
 
-                    <!-- Hiển thị công thức toán học xuống dòng đúng chuẩn -->
+                    <!-- Nội dung câu hỏi (Đã sạch bóng phần A, B, C, D) -->
                     <div class="leading-relaxed text-slate-800 text-sm whitespace-pre-wrap">${q.text}</div>
 
                     <div class="space-y-2.5">
