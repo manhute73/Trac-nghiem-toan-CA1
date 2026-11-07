@@ -1,17 +1,29 @@
-<!-- ===== SETUP (Giao diện cấu hình & thông tin bài thi giống mẫu) ===== -->
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Luyện trắc nghiệm từ PDF</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.11/katex.min.css">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<main>
+
+<!-- ===== SETUP ===== -->
 <section id="viewSetup">
   <div class="test-card">
-    <!-- Nhãn thể loại -->
     <div class="badge-group">
       <span class="badge red">Thi thử</span>
       <span class="badge gray">Trung bình</span>
     </div>
 
-    <!-- Tiêu đề đề thi -->
     <h1 class="test-title">TEST LẦN 2</h1>
     <div class="subject-tag">📚 TOÁN CAO CẤP</div>
 
-    <!-- Lưới thông tin chi tiết (2 cột) -->
     <div class="info-grid">
       <div class="info-box">
         <div class="info-icon">🔢</div>
@@ -54,13 +66,11 @@
       </div>
     </div>
 
-    <!-- Chủ đề -->
     <div class="topic-row">
       Chủ đề: <span class="topic-pill">BÀI TẬP TEST LẦN 2</span>
     </div>
 
-    <!-- Khu vực ẩn để chọn file PDF và nhập đáp án (giữ logic cũ của bạn) -->
-    <div style="margin: 20px 0; padding-top: 15px; border-top: 1px dashed var(--line);">
+    <div class="upload-section">
       <label class="drop" id="drop">
         <strong id="dropTitle">Chọn hoặc kéo thả file PDF</strong>
         <span class="muted small" id="dropSub">Đề cần có số câu dạng “Câu 1.” hoặc “1.”</span>
@@ -79,18 +89,15 @@
       <div id="keyMsg" class="small muted" style="margin-top:8px"></div>
     </div>
 
-    <!-- Thông báo lưu ý -->
     <div class="warning-banner">
       ⚠️ Đồng hồ bắt đầu chạy ngay khi bạn bấm bắt đầu, kể cả khi thoát ra ngoài. Hết giờ hệ thống tự nộp bài.
     </div>
 
-    <!-- Nút bắt đầu -->
     <button class="btn-start" id="btnStart">
       ▶ Làm lại đề
     </button>
   </div>
 
-  <!-- Phần lịch sử làm bài trước -->
   <div class="history-card">
     <h3>Các lần làm trước</h3>
     <div class="history-item">
@@ -99,3 +106,35 @@
     </div>
   </div>
 </section>
+
+<!-- ===== QUIZ ===== -->
+<section id="viewQuiz" hidden>
+  <div class="bar">
+    <div class="grow">
+      <div class="small" id="qProgText" aria-live="polite"></div>
+      <progress id="qProg" max="1" value="0"></progress>
+    </div>
+    <div class="timer" id="qTimer">00:00</div>
+    <button class="primary" id="btnSubmit">Nộp bài</button>
+  </div>
+  <div id="quizList"></div>
+  <div class="row" style="justify-content:center; margin-top: 20px;"><button class="primary" id="btnSubmit2">Nộp bài</button></div>
+</section>
+
+<!-- ===== RESULT ===== -->
+<section id="viewResult" hidden>
+  <div class="panel">
+    <h2 id="rTitle">Kết quả bài làm</h2>
+    <p id="rMsg" class="muted"></p>
+    <div class="row" style="margin-top:14px">
+      <button class="primary" id="btnNew">Làm đề mới</button>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
