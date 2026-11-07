@@ -7,7 +7,6 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.11/katex.min.css">
 <style>
 :root{
   --bg:#eef2f5; --sheet:#ffffff; --ink:#12202e; --muted:#5b6b7a; --line:#d5dee6;
@@ -127,6 +126,11 @@ summary{cursor:pointer;font-weight:600}
 .ro.wrong{background:var(--bad-bg);border-color:var(--bad);color:var(--bad)}
 .badge.nokey{background:var(--warn-bg);color:var(--amber)}
 .rc.nokey{border-left-color:var(--amber)}
+
+/* simple layout for fallback */
+.qc{background:var(--sheet);border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:16px}
+.qh{display:flex;gap:10px;align-items:center;margin-bottom:8px}
+.qh .grow{flex:1}
 </style>
 </head>
 <body>
@@ -258,7 +262,6 @@ summary{cursor:pointer;font-weight:600}
 </main>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.11/katex.min.js"></script>
 <script>
 'use strict';
 pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
@@ -514,7 +517,6 @@ async function onStart(){
   
   if (!pool.length){ 
     alert('Khoảng câu này không có câu hỏi nào! Vui lòng kiểm tra lại mục "Từ câu" và "Đến câu".');
-    $('#startMsg').textContent = 'Khoảng câu này không có câu hỏi nào.'; 
     return; 
   }
   
@@ -522,31 +524,47 @@ async function onStart(){
   pool = $('#cShuffle').checked ? shuffle(pool.slice()).slice(0, count) : pool.slice(0, count);
   const mins = Math.max(0, +$('#cMin').value || 0);
 
-  $('#startMsg').textContent = '';
   startQuiz(pool, mins);
 }
 
-const qHead = (i, q) => `<div class="qh"><b>Câu ${i + 1}</b><span class="grow"></span><span class="muted small">Đề gốc ${q.n || '?'}</span></div>`;
-
-function quizCard(q, i){
-  if (!q) return '';
-  const imgSrc = q.img || '';
-  const imgHtml = imgSrc 
-    ? `<img src="${imgSrc}" alt="Nội dung câu ${i + 1}">` 
-    : `<div class="notice err">Lỗi: Không tìm thấy ảnh câu hỏi. (Đề gốc ${q.n})</div>`;
-
-  return `<article class="qc" id="q${i}" data-n="${q.n}">
-    ${qHead(i, q)}
-    <div class="paper">${imgHtml}</div>
-    <div class="opts" role="group" aria-label="Chọn đáp án câu ${i + 1}">
-      ${['A', 'B', 'C', 'D'].map(v => `<button class="opt" data-v="${v}" aria-pressed="false" aria-label="Đáp án ${v}">${v}</button>`).join('')}
-    </div>
-  </article>`;
-}
-
+// Hàm khởi tạo làm bài được viết lại CHẮC CHẮN hiển thị giao diện 
 function startQuiz(items, mins){
-  state.quiz = { items, answers: {}, start: Date.now(), limit: (mins || 0) * 60, mins: mins || 0, done: false };
-  $('#quizList').innerHTML = items.map(quizCard).join('');
+  state.quiz = { items: items, answers: {}, start: Date.now(), limit: (mins || 0) * 60, mins: mins || 0, done: false };
+  
+  const listDiv = $('#quizList');
+  listDiv.innerHTML = ''; 
+  
+  let html = '';
+  // Dùng vòng lặp for đơn giản, loại bỏ map tránh rủi ro đứt gãy DOM
+  for (let i = 0; i < items.length; i++) {
+    const q = items[i];
+    if (!q) continue;
+    
+    const imgSrc = q.img || '';
+    const imgTag = imgSrc 
+      ? `<img src="${imgSrc}" alt="Nội dung câu ${i + 1}">` 
+      : `<div class="notice err">Không tìm thấy ảnh câu hỏi</div>`;
+      
+    html += `<article class="qc" id="q${i}" data-n="${q.n}">
+      <div class="qh">
+        <b>Câu ${i + 1}</b>
+        <span class="grow"></span>
+        <span class="muted small">Đề gốc ${q.n}</span>
+      </div>
+      <div class="paper">${imgTag}</div>
+      <div class="opts" role="group" aria-label="Chọn đáp án câu ${i + 1}">
+        ${['A', 'B', 'C', 'D'].map(v => `<button class="opt" data-v="${v}" aria-pressed="false" aria-label="Đáp án ${v}">${v}</button>`).join('')}
+      </div>
+    </article>`;
+  }
+  
+  listDiv.innerHTML = html;
+  
+  // Báo lỗi nếu HTML vẫn không được gắn vào listDiv
+  if (listDiv.children.length === 0) {
+    listDiv.innerHTML = `<div class="notice err" style="margin-bottom:20px">Lỗi hệ thống: Không thể vẽ giao diện câu hỏi. (Đã tải ${items.length} câu).</div>`;
+  }
+
   updateProg();
   clearInterval(state.timer);
   const tick = () => {
@@ -558,13 +576,16 @@ function startQuiz(items, mins){
     } else $('#qTimer').textContent = fmtTime(el);
   };
   tick(); state.timer = setInterval(tick, 1000);
+  
   show('#viewQuiz');
 }
+
 function updateProg(){
   const Q = state.quiz, done = Q.items.filter(q => Q.answers[q.n]).length;
   $('#qProg').max = Q.items.length; $('#qProg').value = done;
   $('#qProgText').textContent = `Đã làm ${done}/${Q.items.length} câu`;
 }
+
 $('#quizList').addEventListener('click', e => {
   const b = e.target.closest('[data-v]'); if (!b || state.quiz.done) return;
   const card = b.closest('.qc'), n = card.dataset.n, v = b.dataset.v;
@@ -572,6 +593,7 @@ $('#quizList').addEventListener('click', e => {
   card.querySelectorAll('[data-v]').forEach(o => o.setAttribute('aria-pressed', String(state.quiz.answers[n] === o.dataset.v)));
   updateProg();
 });
+
 function submit(force){
   const Q = state.quiz; if (!Q || Q.done) return;
   const left = Q.items.filter(q => !Q.answers[q.n]).length;
