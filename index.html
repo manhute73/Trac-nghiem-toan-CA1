@@ -18,6 +18,15 @@
         body { font-family: 'Inter', sans-serif; background-color: #0f172a; }
         .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+        /* CSS cho vùng chọn cắt ảnh */
+        #crop-box {
+            position: absolute;
+            border: 2px dashed #f43f5e;
+            background: rgba(244, 63, 94, 0.15);
+            display: none;
+            pointer-events: none;
+            z-index: 50;
+        }
     </style>
 </head>
 <body class="min-h-screen text-slate-800 flex flex-col">
@@ -32,7 +41,7 @@
         </div>
         <div class="flex items-center space-x-4">
             <button onclick="switchTab('dashboard')" class="hover:text-white transition"><i class="fa-solid fa-house mr-1"></i> Trang chủ</button>
-            <button onclick="switchTab('pdf-creator')" class="hover:text-white transition"><i class="fa-solid fa-scissors mr-1"></i> Tạo Đề / Cắt PDF</button>
+            <button onclick="switchTab('pdf-creator')" class="hover:text-white transition"><i class="fa-solid fa-scissors mr-1"></i> Cắt Đề Thủ Công</button>
         </div>
     </header>
 
@@ -44,8 +53,8 @@
             <div id="tab-dashboard" class="space-y-6 flex-1 flex flex-col">
                 <div class="flex justify-between items-center pb-4 mb-2 border-b border-slate-100">
                     <h2 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Bảng điều khiển luyện tập</h2>
-                    <button onclick="switchTab('pdf-creator')" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 rounded-xl font-medium text-sm transition flex items-center gap-2">
-                        <i class="fa-solid fa-file-arrow-up text-rose-600"></i> Tạo Đề / Cắt PDF
+                    <button onclick="switchTab('pdf-creator')" class="bg-rose-50 hover:bg-rose-100 text-rose-700 px-4 py-2 rounded-xl font-medium text-sm transition flex items-center gap-2 border border-rose-200">
+                        <i class="fa-solid fa-scissors"></i> Cắt đề thủ công từ PDF
                     </button>
                 </div>
 
@@ -136,61 +145,63 @@
                 </div>
             </div>
 
-            <!-- TAB 2: PDF CROP & CREATE EXAM (Đã có Review đề và nút quay lại giao diện đầu) -->
-            <div id="tab-pdf-creator" class="hidden space-y-6 flex-1 flex flex-col">
-                <div class="border-b pb-4 flex justify-between items-center">
+            <!-- TAB 2: CÔNG CỤ CẮT THỦ CÔNG TỪ PDF (Đã tối ưu vừa khung) -->
+            <div id="tab-pdf-creator" class="hidden space-y-4 flex-1 flex flex-col">
+                <div class="border-b pb-3 flex justify-between items-center">
                     <div>
-                        <h2 class="text-xl font-bold text-slate-950">Tạo Đề Thi & Cắt Ảnh từ PDF</h2>
-                        <p class="text-sm text-slate-500">Tải file PDF lên để xem review, tự động tách câu hỏi và cấu hình đề thi.</p>
+                        <h2 class="text-lg font-bold text-slate-950">Công Cụ Cắt Câu Hỏi Thủ Công từ PDF</h2>
+                        <p class="text-xs text-slate-500">Tải PDF lên, sau đó <b>dùng chuột kéo khoanh vùng câu hỏi</b> trên trang giấy để cắt thành câu trắc nghiệm chính xác 100%.</p>
                     </div>
-                    <!-- Nút quay lại màn hình giao diện đầu -->
-                    <button onclick="switchTab('dashboard')" class="bg-rose-600 hover:bg-rose-700 text-white px-4 py-2.5 rounded-xl text-sm font-medium transition flex items-center gap-2 shadow-md">
+                    <button onclick="switchTab('dashboard')" class="bg-rose-600 hover:bg-rose-700 text-white px-4 py-2 rounded-xl text-xs font-medium transition flex items-center gap-2 shadow-md shrink-0">
                         <i class="fa-solid fa-arrow-left"></i> Quay lại trang chủ
                     </button>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div class="md:col-span-1 space-y-4">
-                        <div class="border-2 border-dashed border-slate-300 rounded-2xl p-6 text-center hover:border-rose-500 transition bg-slate-50">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-start">
+                    <!-- Cột trái: Tải file & Danh sách đã cắt -->
+                    <div class="md:col-span-1 space-y-3">
+                        <div class="border-2 border-dashed border-slate-300 rounded-xl p-4 text-center hover:border-rose-500 transition bg-slate-50">
                             <input type="file" id="pdf-file-input" accept="application/pdf" class="hidden" onchange="handlePDFUpload(event)">
                             <label for="pdf-file-input" class="cursor-pointer flex flex-col items-center">
-                                <i class="fa-solid fa-cloud-arrow-up text-4xl text-rose-500 mb-2"></i>
-                                <span class="font-semibold text-sm text-slate-700">Chọn file PDF đề thi</span>
-                                <span class="text-xs text-slate-400 mt-1">(.pdf tối đa 50MB)</span>
+                                <i class="fa-solid fa-cloud-arrow-up text-3xl text-rose-500 mb-1"></i>
+                                <span class="font-semibold text-xs text-slate-700">Chọn file PDF đề thi</span>
                             </label>
                         </div>
 
-                        <div id="pdf-meta-box" class="hidden bg-slate-50 p-4 rounded-xl space-y-3 text-sm border">
+                        <div id="pdf-meta-box" class="hidden bg-slate-50 p-3 rounded-xl space-y-2 text-xs border">
                             <div>
-                                <span class="text-xs text-slate-400 block font-semibold">Tên đề thi:</span>
-                                <input type="text" id="pdf-extracted-title" class="w-full mt-1 bg-white border rounded-lg px-3 py-2 font-medium text-slate-800">
+                                <span class="text-slate-400 block font-semibold">Tên đề thi:</span>
+                                <input type="text" id="pdf-extracted-title" class="w-full mt-1 bg-white border rounded px-2 py-1 font-medium text-slate-800">
                             </div>
-                            <div class="text-xs text-slate-500 font-medium" id="pdf-page-info">Số trang: 0</div>
-                            <button onclick="applyExtractedExam()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-2.5 rounded-xl text-sm transition shadow-md">
-                                Xác nhận sử dụng đề này
+                            <button onclick="applyExtractedExam()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-2 rounded-lg transition shadow">
+                                Áp dụng đề này vào bài thi
                             </button>
                         </div>
 
-                        <!-- Danh sách review các câu đã trích xuất -->
-                        <div class="border-t pt-3">
-                            <h3 class="font-bold text-slate-800 text-sm mb-2">Review câu hỏi đã tách (<span id="extracted-q-count">0</span>)</h3>
-                            <div id="pdf-extracted-list" class="space-y-2 max-h-48 overflow-y-auto custom-scrollbar pr-1 text-xs text-slate-500">
-                                Chưa có câu hỏi nào được trích xuất từ PDF.
+                        <div class="border-t pt-2">
+                            <h3 class="font-bold text-slate-800 text-xs mb-1.5 flex justify-between items-center">
+                                <span>Các câu đã cắt thủ công (<span id="extracted-q-count">0</span>)</span>
+                            </h3>
+                            <div id="pdf-extracted-list" class="space-y-1.5 max-h-56 overflow-y-auto custom-scrollbar pr-1 text-xs text-slate-500">
+                                <p class="italic text-slate-400 text-center py-4">Chưa có câu hỏi nào được cắt. Hãy kéo khoanh vùng bên phải.</p>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Khu vực Review trang PDF -->
-                    <div class="md:col-span-2 bg-slate-900 rounded-2xl p-4 flex flex-col items-center justify-center min-h-[450px] relative overflow-hidden">
-                        <div id="pdf-viewer-placeholder" class="text-center text-slate-400">
-                            <i class="fa-regular fa-file-pdf text-5xl mb-2 text-slate-600"></i>
-                            <p class="text-sm">Hãy tải file PDF lên để xem review các trang</p>
+                    <!-- Cột phải: Khu vực xem trước PDF và cắt ảnh (Vừa khít khung, không bị tràn) -->
+                    <div class="md:col-span-2 bg-slate-900 rounded-xl p-3 flex flex-col items-center justify-center relative overflow-hidden h-[460px]">
+                        <div id="pdf-viewer-placeholder" class="text-center text-slate-400 my-auto">
+                            <i class="fa-regular fa-file-pdf text-4xl mb-2 text-slate-600"></i>
+                            <p class="text-xs">Hãy tải file PDF lên để tiến hành cắt ảnh câu hỏi</p>
                         </div>
-                        <div id="pdf-canvas-container" class="hidden w-full flex flex-col items-center space-y-4 max-h-[480px] overflow-y-auto custom-scrollbar p-2">
+
+                        <!-- Khung chứa canvas vừa vặn với kích thước hiển thị -->
+                        <div id="pdf-canvas-container" class="hidden w-full h-full flex flex-col items-center justify-center overflow-auto custom-scrollbar relative p-1 cursor-crosshair">
+                            <div id="crop-box"></div>
                         </div>
                         
                         <!-- Toolbar chuyển trang PDF -->
-                        <div id="pdf-nav-bar" class="hidden absolute bottom-4 bg-slate-800/90 backdrop-blur px-4 py-2 rounded-xl text-white text-sm flex items-center gap-4 shadow-lg border border-slate-700">
+                        <div id="pdf-nav-bar" class="hidden absolute bottom-2 bg-slate-800/95 backdrop-blur px-3 py-1.5 rounded-lg text-white text-xs flex items-center gap-3 shadow-lg border border-slate-700 z-20">
                             <button onclick="prevPage()" class="hover:text-rose-400"><i class="fa-solid fa-chevron-left"></i></button>
                             <span>Trang <span id="current-page-num">1</span> / <span id="total-page-num">1</span></span>
                             <button onclick="nextPage()" class="hover:text-rose-400"><i class="fa-solid fa-chevron-right"></i></button>
@@ -225,7 +236,7 @@
                 </div>
             </div>
 
-            <!-- TAB 4: RESULT SCORE REPORT (Kết quả & Bảng xếp hạng) -->
+            <!-- TAB 4: RESULT SCORE REPORT -->
             <div id="tab-result" class="hidden space-y-6 flex-1 flex flex-col">
                 <div class="bg-slate-50 border rounded-2xl p-6 flex flex-col md:flex-row items-center justify-between gap-6">
                     <div class="flex items-center gap-6">
@@ -322,13 +333,15 @@
                     id: 1,
                     text: "Cho ba ma trận vuông cấp 3: $A = \\begin{pmatrix} 1 & 2 & -1 \\\\ 3 & 1 & 0 \\\\ 2 & 4 & 2 \\end{pmatrix}$. Tính phần tử $c_{32}$ của ma trận tổng $S = A + B + C$.",
                     options: ["3", "2", "0", "-1"],
-                    correct: 1 
+                    correct: 1,
+                    isImage: false
                 },
                 {
                     id: 2,
                     text: "Cho $A = (a_{ij})$ là ma trận vuông cấp 3 với $a_{ij} = i^2 + 3j - \\min(i, j)$. Gọi $A^T$ là ma trận chuyển vị của $A$, tính $\\det(2A^T)$.",
                     options: ["216", "108", "432", "54"],
-                    correct: 0
+                    correct: 0,
+                    isImage: false
                 }
             ]
         };
@@ -340,10 +353,13 @@
         let countdownSeconds = 0;
         let examHistory = [];
 
-        // PDF State
+        // PDF & Crop State
         let pdfDoc = null;
         let pageNum = 1;
-        let scale = 1.2;
+        let scale = 1.0;
+        let isDrawing = false;
+        let startX, startY, endX, endY;
+        let activeCanvas = null;
 
         function toggleShuffle() {
             isShuffleEnabled = !isShuffleEnabled;
@@ -405,7 +421,7 @@
             }
         }
 
-        // --- XỬ LÝ PDF UPLOAD & REVIEW CÂU HỎI ---
+        // --- XỬ LÝ UPLOAD PDF VÀ CÔNG CỤ CẮT THỦ CÔNG ---
         async function handlePDFUpload(e) {
             const file = e.target.files[0];
             if (!file) return;
@@ -422,39 +438,15 @@
                 pdfjsLib.getDocument(typedarray).promise.then(async function(pdfDoc_) {
                     pdfDoc = pdfDoc_;
                     document.getElementById('total-page-num').innerText = pdfDoc.numPages;
-                    document.getElementById('pdf-page-info').innerText = `Tổng số trang: ${pdfDoc.numPages}`;
                     document.getElementById('pdf-viewer-placeholder').classList.add('hidden');
                     document.getElementById('pdf-canvas-container').classList.remove('hidden');
                     document.getElementById('pdf-nav-bar').classList.remove('hidden');
                     
+                    // Reset danh sách câu hỏi mới từ file PDF này
+                    currentExam.questions = [];
+                    updateExtractedList();
+
                     await renderPage(pageNum);
-
-                    // Giả lập trích xuất câu hỏi từ file PDF
-                    currentExam.title = formattedTitle;
-                    currentExam.topic = formattedTitle;
-                    currentExam.questions = [
-                        {
-                            id: 1,
-                            text: `[Trích từ ${file.name}] Câu hỏi số 1: Khảo sát ma trận hoặc hệ phương trình.`,
-                            options: ["Đáp án A", "Đáp án B", "Đáp án C", "Đáp án D"],
-                            correct: 0
-                        },
-                        {
-                            id: 2,
-                            text: `[Trích từ ${file.name}] Câu hỏi số 2: Tính định thức ma trận vuông cấp 3.`,
-                            options: ["216", "108", "432", "54"],
-                            correct: 1
-                        }
-                    ];
-
-                    // Hiển thị danh sách review câu hỏi đã tách
-                    document.getElementById('extracted-q-count').innerText = currentExam.questions.length;
-                    document.getElementById('pdf-extracted-list').innerHTML = currentExam.questions.map((q, idx) => `
-                        <div class="bg-white border p-2 rounded-lg flex justify-between items-center">
-                            <span class="font-medium text-slate-800 truncate">Câu ${idx + 1}: ${q.text.substring(0, 30)}...</span>
-                            <span class="text-xs bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded shrink-0">Đã tách</span>
-                        </div>
-                    `).join('');
                 });
             };
             fileReader.readAsArrayBuffer(file);
@@ -464,17 +456,125 @@
             const page = await pdfDoc.getPage(num);
             const viewport = page.getViewport({ scale: scale });
             const container = document.getElementById('pdf-canvas-container');
-            container.innerHTML = '';
+            
+            // Xóa canvas cũ nếu có
+            let oldCanvas = container.querySelector('canvas');
+            if(oldCanvas) oldCanvas.remove();
 
             const canvas = document.createElement('canvas');
             const context = canvas.getContext('2d');
             canvas.height = viewport.height;
             canvas.width = viewport.width;
-            canvas.className = "shadow-lg rounded-lg border border-slate-700";
+            canvas.className = "shadow rounded border border-slate-700 relative";
 
             await page.render({ canvasContext: context, viewport: viewport }).promise;
-            container.appendChild(canvas);
+            container.insertBefore(canvas, document.getElementById('crop-box'));
+            activeCanvas = canvas;
+
+            // Thiết lập sự kiện kéo chuột để cắt ảnh
+            setupCropEvents(canvas);
             document.getElementById('current-page-num').innerText = num;
+        }
+
+        function setupCropEvents(canvas) {
+            const cropBox = document.getElementById('crop-box');
+
+            canvas.onmousedown = function(e) {
+                isDrawing = true;
+                const rect = canvas.getBoundingClientRect();
+                startX = e.clientX - rect.left;
+                startY = e.clientY - rect.top;
+
+                cropBox.style.left = startX + 'px';
+                cropBox.style.top = startY + 'px';
+                cropBox.style.width = '0px';
+                cropBox.style.height = '0px';
+                cropBox.style.display = 'block';
+            };
+
+            canvas.onmousemove = function(e) {
+                if (!isDrawing) return;
+                const rect = canvas.getBoundingClientRect();
+                let currentX = e.clientX - rect.left;
+                let currentY = e.clientY - rect.top;
+
+                let width = currentX - startX;
+                let height = currentY - startY;
+
+                cropBox.style.width = Math.abs(width) + 'px';
+                cropBox.style.height = Math.abs(height) + 'px';
+                if (width < 0) cropBox.style.left = currentX + 'px';
+                if (height < 0) cropBox.style.top = currentY + 'px';
+            };
+
+            canvas.onmouseup = function(e) {
+                if (!isDrawing) return;
+                isDrawing = false;
+                cropBox.style.display = 'none';
+
+                const rect = canvas.getBoundingClientRect();
+                endX = e.clientX - rect.left;
+                endY = e.clientY - rect.top;
+
+                let x = Math.min(startX, endX);
+                let y = Math.min(startY, endY);
+                let w = Math.abs(endX - startX);
+                let h = Math.abs(endY - startY);
+
+                if (w < 20 || h < 20) return; // Vùng chọn quá nhỏ thì bỏ qua
+
+                // Cắt ảnh từ canvas gốc
+                let cropCanvas = document.createElement('canvas');
+                cropCanvas.width = w;
+                cropCanvas.height = h;
+                let cropCtx = cropCanvas.getContext('2d');
+
+                // Tính tỉ lệ thực tế của canvas PDF
+                let scaleX = canvas.width / canvas.clientWidth;
+                let scaleY = canvas.height / canvas.clientHeight;
+
+                cropCtx.drawImage(canvas, x * scaleX, y * scaleY, w * scaleX, h * scaleY, 0, 0, w, h);
+                let imageUrl = cropCanvas.toDataURL('image/png');
+
+                // Thêm câu hỏi cắt được vào danh sách
+                let newQ = {
+                    id: currentExam.questions.length + 1,
+                    text: `Câu hỏi cắt thủ công số ${currentExam.questions.length + 1}`,
+                    isImage: true,
+                    imgUrl: imageUrl,
+                    options: ["Đáp án A", "Đáp án B", "Đáp án C", "Đáp án D"],
+                    correct: 0 // Mặc định đáp án A đúng, người dùng có thể cấu hình sau
+                };
+
+                currentExam.questions.push(newQ);
+                updateExtractedList();
+            };
+        }
+
+        function updateExtractedList() {
+            document.getElementById('extracted-q-count').innerText = currentExam.questions.length;
+            const listEl = document.getElementById('pdf-extracted-list');
+            if (currentExam.questions.length === 0) {
+                listEl.innerHTML = `<p class="italic text-slate-400 text-center py-4">Chưa có câu hỏi nào được cắt. Hãy kéo khoanh vùng bên phải.</p>`;
+                return;
+            }
+
+            listEl.innerHTML = currentExam.questions.map((q, idx) => `
+                <div class="bg-white border p-2 rounded-lg flex items-center justify-between gap-2 shadow-sm">
+                    <div class="flex items-center gap-2 truncate">
+                        <img src="${q.imgUrl}" class="w-10 h-8 object-cover rounded border">
+                        <span class="font-medium text-slate-800 text-xs">Câu ${idx + 1} (Đã cắt ảnh)</span>
+                    </div>
+                    <button onclick="removeExtractedQuestion(${idx})" class="text-rose-500 hover:text-rose-700 p-1"><i class="fa-solid fa-trash text-xs"></i></button>
+                </div>
+            `).join('');
+        }
+
+        function removeExtractedQuestion(idx) {
+            currentExam.questions.splice(idx, 1);
+            // Đánh lại số thứ tự id
+            currentExam.questions.forEach((q, i) => q.id = i + 1);
+            updateExtractedList();
         }
 
         function prevPage() {
@@ -490,6 +590,10 @@
         }
 
         function applyExtractedExam() {
+            if (currentExam.questions.length === 0) {
+                alert("Bạn chưa cắt câu hỏi nào từ file PDF!");
+                return;
+            }
             let customTitle = document.getElementById('pdf-extracted-title').value;
             currentExam.title = customTitle;
             currentExam.topic = customTitle;
@@ -497,7 +601,7 @@
             document.getElementById('input-exam-topic').value = customTitle;
             updateDashboardInfo();
             switchTab('dashboard');
-            alert("Đã cập nhật đề thi thành công từ file PDF!");
+            alert(`Đã lưu thành công bộ đề gồm ${currentExam.questions.length} câu cắt thủ công!`);
         }
 
         // --- BẮT ĐẦU LÀM BÀI ---
@@ -545,7 +649,9 @@
                 <div class="bg-white border border-slate-200 p-6 rounded-2xl shadow-sm space-y-4">
                     <div class="font-bold text-slate-900 text-base flex items-start gap-3">
                         <span class="bg-rose-100 text-rose-700 px-2.5 py-1 rounded-lg text-xs font-semibold shrink-0">Câu ${qIdx + 1}</span>
-                        <div class="leading-relaxed">${q.text}</div>
+                        <div class="w-full">
+                            ${q.isImage ? `<img src="${q.imgUrl}" class="max-w-full rounded-lg border shadow-sm my-2">` : `<div class="leading-relaxed">${q.text}</div>`}
+                        </div>
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-3 pl-2">
                         ${q.options.map((opt, optIdx) => `
@@ -612,7 +718,9 @@
                                 ${isCorrect ? 'Đúng' : 'Sai'}
                             </span>
                         </div>
-                        <div class="text-slate-800 text-sm">${q.text}</div>
+                        <div>
+                            ${q.isImage ? `<img src="${q.imgUrl}" class="max-w-full rounded-lg border shadow-sm my-2">` : `<div class="text-slate-800 text-sm">${q.text}</div>`}
+                        </div>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-2 mt-2">
                             ${q.options.map((opt, optIdx) => {
                                 let isUserPick = (userChoice === optIdx);
