@@ -7,514 +7,139 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap" rel="stylesheet">
-<style>
-:root{
-  --bg:#f8fafc; --sheet:#ffffff; --ink:#1e293b; --muted:#64748b; --line:#e2e8f0;
-  --accent:#2563eb; --accent-ink:#ffffff; --ok:#16a34a; --ok-bg:#f0fdf4; --bad:#dc2626; --bad-bg:#fef2f2;
-  --font:'Be Vietnam Pro',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
-}
-*{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font);font-size:16px;line-height:1.5}
-main{max-width:900px;margin:0 auto;padding:24px 16px 80px}
-h1{font-size:1.8rem;margin:0 0 8px}
-h2{font-size:1.2rem;margin:0 0 10px}
-p{margin:0 0 10px}
-.lead{color:var(--muted);margin-bottom:20px}
-.muted{color:var(--muted)}
-.small{font-size:.875rem}
-[hidden]{display:none!important}
-
-.panel{background:var(--sheet);border:1px solid var(--line);border-radius:16px;padding:24px;margin-bottom:16px;box-shadow:0 1px 3px rgba(0,0,0,.05)}
-.drop{display:block;border:2px dashed var(--line);border-radius:16px;padding:36px 20px;text-align:center;cursor:pointer;background:var(--sheet);transition:all .2s}
-.drop:hover{border-color:var(--accent);background:#f8fafc}
-.drop input{position:absolute;opacity:0;width:1px;height:1px}
-progress{width:100%;height:8px;accent-color:var(--accent);margin-top:14px;border-radius:4px;overflow:hidden}
-
-button,.btn{font:inherit;font-weight:600;border-radius:10px;border:1px solid var(--line);background:var(--sheet);color:var(--ink);padding:10px 18px;cursor:pointer;transition:all .15s}
-button:hover{border-color:var(--accent);background:#f8fafc}
-button.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
-button.primary:hover{opacity:.9}
-.row{display:flex;flex-wrap:wrap;gap:12px;align-items:end}
-.field{display:flex;flex-direction:column;gap:4px;font-size:.875rem;color:var(--muted)}
-.field input[type=number]{font:inherit;width:90px;padding:9px 12px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink)}
-.check{display:flex;gap:8px;align-items:center;margin:12px 0 0;cursor:pointer}
-textarea{width:100%;min-height:90px;font:inherit;font-size:.9rem;padding:12px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink);resize:vertical}
-.notice{padding:12px;border-radius:10px;background:#fef2f2;color:var(--bad);font-size:.9rem;margin-top:12px}
-
-.bar{position:sticky;top:0;z-index:10;background:var(--bg);border-bottom:1px solid var(--line);margin:0 -16px 20px;padding:12px 16px;display:flex;gap:14px;align-items:center;backdrop-filter:blur(8px)}
-.bar .grow{flex:1}
-.bar progress{margin:0;height:6px}
-.timer{font-variant-numeric:tabular-nums;font-weight:600}
-
-.q{background:var(--sheet);border:1px solid var(--line);border-radius:16px;padding:24px;margin-bottom:20px;box-shadow:0 1px 3px rgba(0,0,0,.04)}
-.q-header{font-weight:700;font-size:1.05rem;margin-bottom:16px}
-.paper{background:#fff;border-radius:8px;margin-bottom:16px;overflow-x:auto}
-.paper img{display:block;max-width:100%;height:auto}
-
-.opts-stack{display:flex;flex-direction:column;gap:12px;margin-top:12px}
-.opt-row{display:flex;align-items:center;gap:14px;width:100%;text-align:left;padding:12px 16px;border-radius:12px;border:1px solid var(--line);background:var(--sheet);color:var(--ink);cursor:pointer;transition:all .15s}
-.opt-row:hover{border-color:var(--accent);background:#f8fafc}
-.opt-circle{width:36px;height:36px;border-radius:50%;border:1px solid var(--line);display:grid;place-items:center;font-weight:700;font-size:.95rem;flex:none;background:var(--sheet)}
-.opt-text{flex:1;min-width:0;font-size:1rem}
-.opt-row[aria-pressed=true]{border-color:var(--accent);background:#eff6ff}
-.opt-row[aria-pressed=true] .opt-circle{background:var(--accent);color:#fff;border-color:var(--accent)}
-
-.result-box{text-align:center;padding:30px 20px}
-.score-big{font-size:3rem;font-weight:700;color:var(--accent);margin:10px 0}
-</style>
-</head>
-<body>
-<main>
-
-<section id="viewSetup">
-  <h1>Luyện trắc nghiệm từ file PDF</h1>
-  <p class="lead">Tải file PDF đề thi lên, hệ thống sẽ tự cắt ảnh từng câu hỏi và tạo bộ đề luyện tập chuẩn giao diện.</p>
-
-  <label class="drop" id="drop">
-    <strong id="dropTitle" style="font-size:1.1rem;margin-bottom:6px">Chọn hoặc kéo thả file PDF vào đây</strong>
-    <span class="muted small" id="dropSub">Hỗ trợ file PDF có cấu trúc chữ</span>
-    <input type="file" id="fileInput" accept="application/pdf,.pdf">
-  </label>
-  <progress id="parseProg" max="100" value="0" hidden></progress>
-  <div id="parseMsg" class="notice" hidden></div>
-
-  <div id="stepKey" class="panel" hidden style="margin-top:20px">
-    <h2>Nhập đáp án để chấm điểm (Tùy chọn)</h2>
-    <p class="muted small">Dán đáp án dạng: 1A 2B 3C 4D...</p>
-    <textarea id="keyText" placeholder="Ví dụ: 1A 2B 3C 4D..."></textarea>
-    <div class="row" style="margin-top:10px">
-      <button id="keyApply" class="primary">Xác nhận đáp án</button>
-      <span id="keyMsg" class="small muted"></span>
-    </div>
-  </div>
-
-  <div id="stepConfig" class="panel" hidden style="margin-top:20px">
-    <h2>Tùy chỉnh đề thi</h2>
-    <p id="parseInfo" class="muted"></p>
-    <div class="row" style="margin-top:12px">
-      <label class="field">Từ câu<input type="number" id="cFrom" min="1"></label>
-      <label class="field">Đến câu<input type="number" id="cTo" min="1"></label>
-      <label class="field">Số câu làm<input type="number" id="cCount" min="1" value="20"></label>
-    </div>
-    <label class="check"><input type="checkbox" id="cShuffle" checked> Trộn ngẫu nhiên thứ tự câu hỏi</label>
-    
-    <div class="row" style="margin-top:20px">
-      <button class="primary" id="btnStart" style="padding:12px 24px;font-size:1rem">Bắt đầu làm bài</button>
-    </div>
-  </div>
-</section>
-
-<section id="viewQuiz" hidden>
-  <div class="bar">
-    <div class="grow">
-      <div class="small muted" id="qProgText"></div>
-      <progress id="qProg" max="1" value="0"></progress>
-    </div>
-    <div class="timer" id="qTimer">00:00</div>
-    <button class="primary" id="btnSubmit">Nộp bài</button>
-  </div>
-  <div id="quizList"></div>
-  <div class="row" style="justify-content:center;margin-top:24px">
-    <button class="primary" id="btnSubmit2" style="padding:12px 32px;font-size:1rem">Nộp bài hoàn tất</button>
-  </div>
-</section>
-
-<section id="viewResult" hidden>
-  <div class="panel result-box">
-    <h2>Kết quả bài làm</h2>
-    <div class="score-big" id="rScore">--/10</div>
-    <p id="rMsg" class="muted" style="font-size:1.1rem"></p>
-    <div class="row" style="justify-content:center;margin-top:20px">
-      <button class="primary" id="btnNew">Làm đề mới</button>
-    </div>
-  </div>
-</section>
-
-</main>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-<script>
-'use strict';
-pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-const PDF_OPTS = { cMapUrl: 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/cmaps/', cMapPacked: true };
-
-const $ = s => document.querySelector(s);
-const state = { file: null, qs: [], byN: new Map(), key: {}, quiz: null };
-
-function buildLines(items, H){
-  const its = items.filter(i => i.str && i.str.trim() !== '').map(i => ({
-    s: i.str, x: i.transform[4], y: i.transform[5], h: i.height || 10
-  }));
-  its.sort((a, b) => b.y - a.y || a.x - b.x);
-  const groups = [];
-  for (const it of its){
-    const g = groups[groups.length - 1];
-    if (g && Math.abs(g.y - it.y) <= 2.5) g.items.push(it); else groups.push({ y: it.y, items: [it] });
-  }
-  return groups.map(g => ({
-    text: g.items.map(i => i.s).join(' ').trim(),
-    topU: H - Math.max(...g.items.map(i => i.y + i.h)),
-    x: g.items[0].x
-  }));
-}
-
-function inkRows(ctx, w, h){
-  const d = ctx.getImageData(0, 0, w, h).data;
-  const rows = new Uint8Array(h);
-  for (let y = 0; y < h; y++){
-    let o = y * w * 4;
-    for (let x = 0; x < w; x++, o += 4){
-      if (d[o] + d[o + 1] + d[o + 2] < 540) { rows[y] = 1; break; }
-    }
-  }
-  return rows;
-}
-
-async function extractQuestions(pdf, onProgress){
-  const canvas = document.createElement('canvas');
-  const ctx = canvas.getContext('2d', { willReadFrequently: true });
-  const questions = [];
-  let open = null, last = 0;
-
-  const finalize = q => {
-    if (!q || !q.pieces || !q.pieces.length) return;
-    const w = Math.max(...q.pieces.map(c => c.width));
-    const h = q.pieces.reduce((s, c) => s + c.height, 0) + (q.pieces.length - 1) * 6;
-    const c = document.createElement('canvas'); c.width = w; c.height = h;
-    const g = c.getContext('2d'); g.fillStyle = '#fff'; g.fillRect(0, 0, w, h);
-    let y = 0; for (const p of q.pieces){ g.drawImage(p, 0, y); y += p.height + 6; }
-    q.img = c.toDataURL('image/jpeg', 0.9);
-    delete q.pieces;
-  };
-  const closeQ = () => { if (open && open.pieces && open.pieces.length){ finalize(open); questions.push(open); } open = null; };
-
-  for (let p = 1; p <= pdf.numPages; p++){
-    onProgress(p, pdf.numPages);
-    const page = await pdf.getPage(p);
-    const vp1 = page.getViewport({ scale: 1 });
-    const W = vp1.width, H = vp1.height;
-    const tc = await page.getTextContent();
-    const lines = buildLines(tc.items, H);
-
-    const markers = [];
-    for (const l of lines){
-      let m = l.text.match(/^(?:Câu|CÂU)\s*(\d+)\s*[.:]/);
-      if (!m && l.x <= W * 0.25) m = l.text.match(/^(\d+)\s*[.:](?!\d)/);
-      if (!m) continue;
-      const num = +m[1];
-      if (!isNaN(num)) {
-        markers.push({ num, line: l });
-      }
-    }
-    if (!markers.length && !open) { page.cleanup(); continue; }
-
-    const vp = page.getViewport({ scale: 2 });
-    canvas.width = Math.round(vp.width); canvas.height = Math.round(vp.height);
-    ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, canvas.width, canvas.height);
-    await page.render({ canvasContext: ctx, viewport: vp }).promise;
-    const rows = inkRows(ctx, canvas.width, canvas.height);
-    const CH = canvas.height;
-
-    const findCut = T => {
-      let bestY = Math.floor(T * 2), minInk = 999999;
-      for (let y = Math.max(0, bestY - 40); y <= Math.min(CH, bestY + 20); y++){
-        let ink = 0; for (let x = 40; x < canvas.width - 40; x += 5) if (rows[y]) ink++;
-        if (ink < minInk) { minInk = ink; bestY = y; }
-      }
-      return bestY;
-    };
-
-    const crop = (y0, y1) => {
-      if (y1 <= y0) return null;
-      const c = document.createElement('canvas'); c.width = canvas.width - 40; c.height = y1 - y0;
-      c.getContext('2d').drawImage(canvas, 20, y0, c.width, c.height, 0, 0, c.width, c.height);
-      return c;
-    };
-
-    markers.forEach(m => { m.cut = findCut(m.line.topU); });
-    markers.sort((a, b) => a.cut - b.cut);
-
-    const firstCut = markers.length ? markers[0].cut : CH;
-    if (open && firstCut > 10){
-      const piece = crop(0, firstCut);
-      if (piece) open.pieces.push(piece);
-    }
-
-    for (let i = 0; i < markers.length; i++){
-      const m = markers[i];
-      const end = i + 1 < markers.length ? markers[i + 1].cut : CH;
-      closeQ();
-      open = { n: m.num, pieces: [] };
-      const piece = crop(m.cut, end);
-      if (piece) open.pieces.push(piece);
-    }
-    page.cleanup();
-  }
-  closeQ();
-  return { questions };
-}
-
-function parseKey(text){
-  const out = {};
-  for (const m of text.replace(/Câu/gi, '').matchAll(/(\d{1,4})\s*[.\-:)\]=]?\s*([A-Ea-e])/g)) out[+m[1]] = m[2].toUpperCase();
-  return out;
-}
-
-async function handleFile(file){
-  if (!file) return;
-  state.file = file; state.qs = [];
-  $('#parseMsg').hidden = true; $('#stepKey').hidden = true; $('#stepConfig').hidden = true;
-  const prog = $('#parseProg'); prog.hidden = false; prog.value = 0;
-  $('#dropTitle').textContent = file.name;
-  try {
-    const pdf = await pdfjsLib.getDocument({ data: await file.arrayBuffer(), ...PDF_OPTS }).promise;
-    const { questions } = await extractQuestions(pdf, (p, n) => {
-      prog.value = Math.round(p / n * 100);
-      $('#dropSub').textContent = `Đang đọc trang ${p}/${n}…`;
-    });
-    if (!questions.length) throw new Error("Không tìm thấy câu hỏi nào trong file PDF này.");
-    state.qs = questions; state.byN = new Map(questions.map(q => [q.n, q]));
-    prog.hidden = true;
-    $('#dropSub').textContent = `Đã tách thành công ${questions.length} câu hỏi.`;
-    $('#parseInfo').textContent = `Tìm thấy ${questions.length} câu (từ câu ${questions[0].n} đến câu ${questions[questions.length-1].n}).`;
-    $('#cFrom').value = questions[0].n; $('#cTo').value = questions[questions.length-1].n;
-    $('#cCount').value = Math.min(20, questions.length);
-    $('#stepKey').hidden = false; $('#stepConfig').hidden = false;
-  } catch (e){
-    $('#parseProg').hidden = true;
-    $('#parseMsg').textContent = 'Lỗi đọc PDF: ' + e.message;
-    $('#parseMsg').hidden = false;
-  }
-}
-
-function show(id){
-  for (const v of ['#viewSetup', '#viewQuiz', '#viewResult']) $(v).hidden = v !== id;
-  window.scrollTo(0, 0);
-}
-
-const shuffle = a => { for (let i = a.length - 1; i > 0; i--){ const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
-
-function startQuiz(items){
-  state.quiz = { items, answers: {}, start: Date.now(), done: false };
-  const listEl = $('#quizList');
-  listEl.innerHTML = '';
-
-  items.forEach((q, i) => {
-    const article = document.createElement('article');
-    article.className = 'q';
-    article.dataset.n = q.n;
-
-    article.innerHTML = `
-      <div class="q-header">Câu ${i + 1} <span class="muted small" style="font-weight:normal">(Gốc ${q.n})</span></div>
-      <div class="paper"><img src="${q.img}" alt="Câu ${q.n}"></div>
-      <div class="opts-stack" role="group">
-        ${['A', 'B', 'C', 'D'].map(v => `
-          <button class="opt-row" data-v="${v}" aria-pressed="false">
-            <div class="opt-circle">${v}</div>
-            <div class="opt-text">Đáp án ${v}</div>
-          </button>
-        `).join('')}
-      </div>
-    `;
-    listEl.appendChild(article);
-  });
-
-  updateProg();
-  show('#viewQuiz');
-}
-
-function updateProg(){
-  const Q = state.quiz, done = Q.items.filter(q => Q.answers[q.n]).length;
-  $('#qProg').max = Q.items.length; $('#qProg').value = done;
-  $('#qProgText').textContent = `Đã làm ${done}/${Q.items.length} câu`;
-}
-
-$('#quizList').addEventListener('click', e => {
-  const btn = e.target.closest('.opt-row'); if (!btn || state.quiz.done) return;
-  const card = btn.closest('.q'), n = card.dataset.n, v = btn.dataset.v;
-  
-  if (state.quiz.answers[n] === v) {
-    delete state.quiz.answers[n];
-  } else {
-    state.quiz.answers[n] = v;
-  }
-  
-  card.querySelectorAll('.opt-row').forEach(o => {
-    o.setAttribute('aria-pressed', String(state.quiz.answers[n] === o.dataset.v));
-  });
-  updateProg();
-});
-
-function submitQuiz(){
-  state.quiz.done = true;
-  let ok = 0;
-  state.quiz.items.forEach(q => {
-    const a = state.quiz.answers[q.n];
-    const k = state.key[q.n];
-    if (k && a === k) ok++;
-  });
-  const total = state.quiz.items.length;
-  const score = total ? ((ok / total) * 10).toFixed(2) : 0;
-  $('#rScore').textContent = `${score.replace('.', ',')}/10`;
-  $('#rMsg').textContent = `Bạn đã trả lời đúng ${ok}/${total} câu trên tổng số đáp án đối chiếu.`;
-  show('#viewResult');
-}
-
-$('#fileInput').addEventListener('change', e => handleFile(e.target.files[0]));
-$('#keyApply').addEventListener('click', () => {
-  state.key = parseKey($('#keyText').value);
-  $('#keyMsg').textContent = `Đã nhận diện ${Object.keys(state.key).length} đáp án chuẩn xác.`;
-});
-$('#btnStart').addEventListener('click', () => {
-  const from = +$('#cFrom').value || 0, to = +$('#cTo').value || 1e9;
-  let pool = state.qs.filter(q => q.n >= from && q.n <= to);
-  if (!pool.length) return alert('Không tìm thấy câu hỏi trong khoảng này.');
-  const count = Math.min(+$('#cCount').value || pool.length, pool.length);
-  if ($('#cShuffle').checked) pool = shuffle(pool);
-  startQuiz(pool.slice(0, count));
-});
-$('#btnSubmit').addEventListener('click', submitQuiz);
-$('#btnSubmit2').addEventListener('click', submitQuiz);
-$('#btnNew').addEventListener('click', () => show('#viewSetup'));
-</script>
-</body>
-</html><!doctype html>
-<html lang="vi">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Luyện trắc nghiệm từ PDF</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.11/katex.min.css">
 <style>
 :root{
-  --bg:#f8fafc; --sheet:#ffffff; --ink:#1e293b; --muted:#64748b; --line:#e2e8f0;
-  --accent:#2563eb; --accent-ink:#ffffff; --ok:#16a34a; --ok-bg:#f0fdf4; --bad:#dc2626; --bad-bg:#fef2f2;
+  --bg:#eef2f5; --sheet:#ffffff; --ink:#12202e; --muted:#5b6b7a; --line:#d5dee6;
+  --accent:#1357d6; --accent-ink:#ffffff; --ok:#137a4b; --ok-bg:#e4f5ec; --bad:#b3261e; --bad-bg:#fce9e7; --warn-bg:#fff4d6;
   --font:'Be Vietnam Pro',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
 }
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#0e151c; --sheet:#17212b; --ink:#e7eef5; --muted:#93a4b5; --line:#2b3948;
+    --accent:#6ea2ff; --accent-ink:#0b1a33; --ok:#5fd39b; --ok-bg:#12332a; --bad:#ff8f86; --bad-bg:#3a1d1b; --warn-bg:#3a3118;
+  }
+}
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font);font-size:16px;line-height:1.5}
-main{max-width:900px;margin:0 auto;padding:24px 16px 80px}
-h1{font-size:1.8rem;margin:0 0 8px}
-h2{font-size:1.2rem;margin:0 0 10px}
+html{scroll-padding-top:76px}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font);font-size:16px;line-height:1.55}
+main{max-width:880px;margin:0 auto;padding:28px 16px 80px}
+h1{font-size:clamp(1.7rem,4.5vw,2.4rem);line-height:1.15;margin:0 0 6px;letter-spacing:-.01em}
+h2{font-size:1.1rem;margin:0 0 10px}
 p{margin:0 0 10px}
-.lead{color:var(--muted);margin-bottom:20px}
+.lead{color:var(--muted);margin-bottom:22px;max-width:60ch}
 .muted{color:var(--muted)}
 .small{font-size:.875rem}
 [hidden]{display:none!important}
 
-.panel{background:var(--sheet);border:1px solid var(--line);border-radius:16px;padding:24px;margin-bottom:16px;box-shadow:0 1px 3px rgba(0,0,0,.05)}
-.drop{display:block;border:2px dashed var(--line);border-radius:16px;padding:36px 20px;text-align:center;cursor:pointer;background:var(--sheet);transition:all .2s}
-.drop:hover{border-color:var(--accent);background:#f8fafc}
+.panel{background:var(--sheet);border:1px solid var(--line);border-radius:14px;padding:20px;margin-bottom:16px}
+.drop{display:block;border:2px dashed var(--line);border-radius:14px;padding:38px 20px;text-align:center;cursor:pointer;background:var(--sheet);transition:border-color .15s,background .15s}
+.drop:hover,.drop.over,.drop:focus-within{border-color:var(--accent)}
+.drop strong{display:block;font-size:1.15rem;margin-bottom:4px}
 .drop input{position:absolute;opacity:0;width:1px;height:1px}
-progress{width:100%;height:8px;accent-color:var(--accent);margin-top:14px;border-radius:4px;overflow:hidden}
+progress{width:100%;height:10px;accent-color:var(--accent);margin-top:14px}
 
-button,.btn{font:inherit;font-weight:600;border-radius:10px;border:1px solid var(--line);background:var(--sheet);color:var(--ink);padding:10px 18px;cursor:pointer;transition:all .15s}
-button:hover{border-color:var(--accent);background:#f8fafc}
+button,.btn{font:inherit;font-weight:600;border-radius:10px;border:1px solid var(--line);background:var(--sheet);color:var(--ink);padding:10px 16px;cursor:pointer}
+button:hover{border-color:var(--accent)}
 button.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
-button.primary:hover{opacity:.9}
+button:disabled{opacity:.55;cursor:default}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
 .row{display:flex;flex-wrap:wrap;gap:12px;align-items:end}
 .field{display:flex;flex-direction:column;gap:4px;font-size:.875rem;color:var(--muted)}
-.field input[type=number]{font:inherit;width:90px;padding:9px 12px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink)}
-.check{display:flex;gap:8px;align-items:center;margin:12px 0 0;cursor:pointer}
-textarea{width:100%;min-height:90px;font:inherit;font-size:.9rem;padding:12px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink);resize:vertical}
-.notice{padding:12px;border-radius:10px;background:#fef2f2;color:var(--bad);font-size:.9rem;margin-top:12px}
+.field input[type=number]{font:inherit;width:96px;padding:9px 10px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink)}
+.check{display:flex;gap:8px;align-items:center;margin:12px 0 0}
+textarea{width:100%;min-height:84px;font:inherit;font-size:.9rem;padding:10px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink);resize:vertical}
+.notice{padding:10px 12px;border-radius:10px;background:var(--warn-bg);font-size:.9rem;margin-top:12px}
+.err{background:var(--bad-bg);color:var(--bad)}
+details{margin-top:12px}
+summary{cursor:pointer;font-weight:600}
 
-/* Quiz Bar & Layout chuẩn giống ảnh */
-.bar{position:sticky;top:0;z-index:10;background:var(--bg);border-bottom:1px solid var(--line);margin:0 -16px 20px;padding:12px 16px;display:flex;gap:14px;align-items:center;backdrop-filter:blur(8px)}
-.bar .grow{flex:1}
-.bar progress{margin:0;height:6px}
+/* quiz */
+.bar{position:sticky;top:0;z-index:5;background:var(--bg);border-bottom:1px solid var(--line);margin:0 -16px 18px;padding:10px 16px;display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.bar .grow{flex:1;min-width:140px}
+.bar progress{margin:0;height:8px}
 .timer{font-variant-numeric:tabular-nums;font-weight:600}
-
-/* Thẻ Câu hỏi */
-.q{background:var(--sheet);border:1px solid var(--line);border-radius:16px;padding:24px;margin-bottom:20px;box-shadow:0 1px 3px rgba(0,0,0,.04)}
-.q-header{display:flex;align-items:center;justify-content:between;margin-bottom:16px;font-weight:700;font-size:1.05rem}
-.paper{background:#fff;border-radius:8px;margin-bottom:16px;overflow-x:auto}
-.paper img{display:block;max-width:100%;height:auto}
-
-/* 4 dòng đáp án nằm sát A, B, C, D giống hệt mẫu yêu cầu */
-.opts-stack{display:flex;flex-direction:column;gap:12px;margin-top:12px}
-.opt-row{display:flex;align-items:center;gap:14px;width:100%;text-align:left;padding:12px 16px;border-radius:12px;border:1px solid var(--line);background:var(--sheet);color:var(--ink);cursor:pointer;transition:all .15s}
-.opt-row:hover{border-color:var(--accent);background:#f8fafc}
-.opt-circle{width:36px;height:36px;border-radius:50%;border:1px solid var(--line);display:grid;place-items:center;font-weight:700;font-size:.95rem;flex:none;background:var(--sheet);transition:all .15s}
-.opt-text{flex:1;min-width:0;font-size:1rem}
-
-/* Trạng thái chọn đáp án */
-.opt-row[aria-pressed=true]{border-color:var(--accent);background:#eff6ff}
-.opt-row[aria-pressed=true] .opt-circle{background:var(--accent);color:#fff;border-color:var(--accent)}
-
-/* Màn hình kết quả */
-.result-box{text-align:center;padding:30px 20px}
-.score-big{font-size:3rem;font-weight:700;color:var(--accent);margin:10px 0}
+.q{display:grid;grid-template-columns:84px 1fr;gap:0;margin-bottom:18px;border:1px solid var(--line);border-radius:14px;background:var(--sheet);overflow:hidden}
+.q-rail{padding:14px 10px;border-right:1px solid var(--line);font-weight:700;display:flex;flex-direction:column;gap:2px;background:var(--sheet)}
+.q-rail small{font-weight:400;color:var(--muted);font-size:.75rem}
+.q-body{padding:14px;min-width:0}
+.paper{background:#fff;border:1px solid #e3e8ed;border-radius:8px;padding:6px;overflow-x:auto}
+.paper img{display:block;max-width:100%;height:auto;margin:0 auto}
+.opts{display:flex;gap:10px;margin-top:12px;flex-wrap:wrap}
+.opt{width:56px;height:48px;font-size:1.1rem;padding:0;background:var(--sheet);border:1px solid var(--line);border-radius:8px;cursor:pointer}
+.opt[aria-pressed=true]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.score{display:flex;gap:22px;align-items:baseline;flex-wrap:wrap}
+.score .big{font-size:clamp(2.6rem,9vw,4rem);font-weight:700;line-height:1}
+@media (max-width:560px){
+  .q{grid-template-columns:1fr}
+  .q-rail{flex-direction:row;gap:10px;align-items:baseline;border-right:0;border-bottom:1px solid var(--line)}
+}
 </style>
 </head>
 <body>
 <main>
 
-<!-- ===== SETUP SECTION ===== -->
+<!-- ===== SETUP ===== -->
 <section id="viewSetup">
   <h1>Luyện trắc nghiệm từ file PDF</h1>
-  <p class="lead">Tải file PDF đề thi lên, hệ thống sẽ tự cắt ảnh từng câu hỏi và tạo bộ đề luyện tập chuẩn giao diện.</p>
+  <p class="lead">Thả file PDF đề vào đây. Web tự tách từng câu hỏi, cho bạn làm bài rồi chấm điểm ngay.</p>
 
   <label class="drop" id="drop">
-    <strong id="dropTitle" style="font-size:1.1rem;margin-bottom:6px">Chọn hoặc kéo thả file PDF vào đây</strong>
-    <span class="muted small" id="dropSub">Hỗ trợ file PDF có cấu trúc chữ (Câu 1, 2, 3...)</span>
+    <strong id="dropTitle">Chọn hoặc kéo thả file PDF</strong>
+    <span class="muted small" id="dropSub">Đề cần có số câu dạng “Câu 1.” hoặc “1.”</span>
     <input type="file" id="fileInput" accept="application/pdf,.pdf">
   </label>
   <progress id="parseProg" max="100" value="0" hidden></progress>
-  <div id="parseMsg" class="notice" hidden></div>
+  <div id="parseMsg" class="notice err" hidden></div>
 
-  <div id="stepKey" class="panel" hidden style="margin-top:20px">
-    <h2>Nhập đáp án để chấm điểm (Tùy chọn)</h2>
-    <p class="muted small">Dán đáp án dạng: 1A 2B 3C 4D...</p>
-    <textarea id="keyText" placeholder="Ví dụ: 1A 2B 3C 4D..."></textarea>
+  <div id="stepKey" class="panel" hidden style="margin-top:16px">
+    <h2>Đáp án</h2>
+    <p id="keyStatus"></p>
+    <textarea id="keyText" placeholder="Dán đáp án, ví dụ: 1A 2B 3C 4D…"></textarea>
     <div class="row" style="margin-top:10px">
-      <button id="keyApply" class="primary">Xác nhận đáp án</button>
-      <span id="keyMsg" class="small muted"></span>
+      <button id="keyApply">Áp dụng đáp án</button>
     </div>
+    <div id="keyMsg" class="small muted" style="margin-top:8px"></div>
   </div>
 
-  <div id="stepConfig" class="panel" hidden style="margin-top:20px">
-    <h2>Tùy chỉnh đề thi</h2>
+  <div id="stepConfig" class="panel" hidden>
+    <h2>Tạo đề</h2>
     <p id="parseInfo" class="muted"></p>
-    <div class="row" style="margin-top:12px">
+    <div class="row">
       <label class="field">Từ câu<input type="number" id="cFrom" min="1"></label>
       <label class="field">Đến câu<input type="number" id="cTo" min="1"></label>
       <label class="field">Số câu làm<input type="number" id="cCount" min="1" value="20"></label>
+      <label class="field">Giới hạn phút (0 = không)<input type="number" id="cMin" min="0" value="0"></label>
     </div>
-    <label class="check"><input type="checkbox" id="cShuffle" checked> Trộn ngẫu nhiên thứ tự câu hỏi</label>
+    <label class="check"><input type="checkbox" id="cShuffle" checked> Trộn ngẫu nhiên thứ tự câu</label>
     
-    <div class="row" style="margin-top:20px">
-      <button class="primary" id="btnStart" style="padding:12px 24px;font-size:1rem">Bắt đầu làm bài</button>
+    <div class="row" style="margin-top:16px">
+      <button class="primary" id="btnStart">Bắt đầu làm bài</button>
+      <span id="startMsg" class="small muted" role="status"></span>
     </div>
   </div>
 </section>
 
-<!-- ===== QUIZ SECTION ===== -->
+<!-- ===== QUIZ ===== -->
 <section id="viewQuiz" hidden>
   <div class="bar">
     <div class="grow">
-      <div class="small muted" id="qProgText"></div>
+      <div class="small" id="qProgText" aria-live="polite"></div>
       <progress id="qProg" max="1" value="0"></progress>
     </div>
     <div class="timer" id="qTimer">00:00</div>
     <button class="primary" id="btnSubmit">Nộp bài</button>
   </div>
   <div id="quizList"></div>
-  <div class="row" style="justify-content:center;margin-top:24px">
-    <button class="primary" id="btnSubmit2" style="padding:12px 32px;font-size:1rem">Nộp bài hoàn tất</button>
-  </div>
+  <div class="row" style="justify-content:center; margin-top: 20px;"><button class="primary" id="btnSubmit2">Nộp bài</button></div>
 </section>
 
-<!-- ===== RESULT SECTION ===== -->
+<!-- ===== RESULT ===== -->
 <section id="viewResult" hidden>
-  <div class="panel result-box">
-    <h2>Kết quả bài làm</h2>
-    <div class="score-big" id="rScore">--/10</div>
-    <p id="rMsg" class="muted" style="font-size:1.1rem"></p>
-    <div class="row" style="justify-content:center;margin-top:20px">
+  <div class="panel">
+    <h2 id="rTitle">Kết quả bài làm</h2>
+    <p id="rMsg" class="muted"></p>
+    <div class="row" style="margin-top:14px">
       <button class="primary" id="btnNew">Làm đề mới</button>
     </div>
   </div>
@@ -526,14 +151,19 @@ textarea{width:100%;min-height:90px;font:inherit;font-size:.9rem;padding:12px;bo
 <script>
 'use strict';
 pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-const PDF_OPTS = { cMapUrl: 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/cmaps/', cMapPacked: true };
+const PDF_OPTS = {
+  cMapUrl: 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/cmaps/',
+  cMapPacked: true,
+  standardFontDataUrl: 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/standard_fonts/'
+};
 
 const $ = s => document.querySelector(s);
 const state = { file: null, qs: [], byN: new Map(), key: {}, quiz: null, timer: null };
 
 function buildLines(items, H){
   const its = items.filter(i => i.str && i.str.trim() !== '').map(i => ({
-    s: i.str, x: i.transform[4], y: i.transform[5], h: i.height || 10
+    s: i.str, x: i.transform[4], y: i.transform[5],
+    h: i.height || Math.abs(i.transform[3]) || 10
   }));
   its.sort((a, b) => b.y - a.y || a.x - b.x);
   const groups = [];
@@ -541,10 +171,15 @@ function buildLines(items, H){
     const g = groups[groups.length - 1];
     if (g && Math.abs(g.y - it.y) <= 2.5) g.items.push(it); else groups.push({ y: it.y, items: [it] });
   }
-  return groups.map(g => ({
-    text: g.items.map(i => i.s).join(' ').trim(),
-    topU: H - Math.max(...g.items.map(i => i.y + i.h))
-  }));
+  return groups.map(g => {
+    g.items.sort((a, b) => a.x - b.x);
+    return {
+      text: g.items.map(i => i.s).join(' ').replace(/\s+/g, ' ').trim(),
+      x: g.items[0].x,
+      topU: H - Math.max(...g.items.map(i => i.y + i.h)),
+      botU: H - Math.min(...g.items.map(i => i.y)) + 2
+    };
+  });
 }
 
 function inkRows(ctx, w, h){
@@ -572,7 +207,7 @@ async function extractQuestions(pdf, onProgress){
     const c = document.createElement('canvas'); c.width = w; c.height = h;
     const g = c.getContext('2d'); g.fillStyle = '#fff'; g.fillRect(0, 0, w, h);
     let y = 0; for (const p of q.pieces){ g.drawImage(p, 0, y); y += p.height + 6; }
-    q.img = c.toDataURL('image/jpeg', 0.9);
+    q.img = c.toDataURL('image/jpeg', 0.88);
     delete q.pieces;
   };
   const closeQ = () => { if (open && open.pieces.length){ finalize(open); questions.push(open); } open = null; };
@@ -585,13 +220,15 @@ async function extractQuestions(pdf, onProgress){
     const tc = await page.getTextContent();
     const lines = buildLines(tc.items, H);
 
+    const isJunk = l => /Downloaded by|lOMoARcPSD|studocu/i.test(l.text) || (/^\d{1,3}$/.test(l.text) && l.topU > H * 0.93);
     const markers = [];
     for (const l of lines){
-      let m = l.text.match(/^(?:Câu|CÂU)\s*(\d+)\s*[.:]/);
+      if (isJunk(l)) continue;
+      let m = l.text.match(/^(?:Câu|CÂU)\s*(\d+)\s*(?:\[[^\]]*\])?\s*[.:]/), cau = !!m;
       if (!m && l.x <= W * 0.2) m = l.text.match(/^(\d+)\s*[.:](?!\d)/);
-      if (!m) continue;
+      if (!m || l.x > W * 0.25) continue;
       const num = +m[1];
-      if (num === last + 1 || num > last){ last = num; markers.push({ num, line: l }); }
+      if ((cau && num > last) || num === last + 1){ last = num; markers.push({ num, line: l }); }
     }
     if (!markers.length && !open) { page.cleanup(); continue; }
 
@@ -604,8 +241,9 @@ async function extractQuestions(pdf, onProgress){
 
     const findCut = T => {
       let bestY = Math.floor(T * 2), minInk = 999999;
-      for (let y = Math.max(0, bestY - 40); y <= Math.min(CH, bestY + 20); y++){
-        let ink = 0; for (let x = 40; x < canvas.width - 40; x += 5) if (rows[y]) ink++;
+      for (let y = Math.max(0, bestY - 50); y <= Math.min(CH, bestY + 20); y++){
+        let ink = 0;
+        for (let x = 50; x < canvas.width - 50; x += 5) if (rows[y]) ink++;
         if (ink < minInk) { minInk = ink; bestY = y; }
       }
       return bestY;
@@ -613,8 +251,8 @@ async function extractQuestions(pdf, onProgress){
 
     const crop = (y0, y1) => {
       if (y1 <= y0) return null;
-      const c = document.createElement('canvas'); c.width = canvas.width - 40; c.height = y1 - y0;
-      c.getContext('2d').drawImage(canvas, 20, y0, c.width, c.height, 0, 0, c.width, c.height);
+      const c = document.createElement('canvas'); c.width = canvas.width - 60; c.height = y1 - y0;
+      c.getContext('2d').drawImage(canvas, 30, y0, c.width, c.height, 0, 0, c.width, c.height);
       return c;
     };
 
@@ -690,17 +328,16 @@ function startQuiz(items){
     article.className = 'q';
     article.dataset.n = q.n;
 
-    // Layout chuẩn 4 dòng đáp án ôm trọn A, B, C, D giống hệt ảnh mẫu
     article.innerHTML = `
-      <div class="q-header">Câu ${i + 1} <span class="muted small" style="font-weight:normal">(Gốc ${q.n})</span></div>
-      <div class="paper"><img src="${q.img}" alt="Câu ${q.n}"></div>
-      <div class="opts-stack" role="group">
-        ${['A', 'B', 'C', 'D'].map(v => `
-          <button class="opt-row" data-v="${v}" aria-pressed="false">
-            <div class="opt-circle">${v}</div>
-            <div class="opt-text">Đáp án ${v}</div>
-          </button>
-        `).join('')}
+      <div class="q-rail">
+        <span>Câu ${i + 1}</span>
+        <small>Gốc ${q.n}</small>
+      </div>
+      <div class="q-body">
+        <div class="paper"><img src="${q.img}" alt="Câu ${q.n}"></div>
+        <div class="opts" role="group">
+          ${['A', 'B', 'C', 'D'].map(v => `<button class="opt" data-v="${v}" aria-pressed="false">${v}</button>`).join('')}
+        </div>
       </div>
     `;
     listEl.appendChild(article);
@@ -717,18 +354,10 @@ function updateProg(){
 }
 
 $('#quizList').addEventListener('click', e => {
-  const btn = e.target.closest('.opt-row'); if (!btn || state.quiz.done) return;
-  const card = btn.closest('.q'), n = card.dataset.n, v = btn.dataset.v;
-  
-  if (state.quiz.answers[n] === v) {
-    delete state.quiz.answers[n];
-  } else {
-    state.quiz.answers[n] = v;
-  }
-  
-  card.querySelectorAll('.opt-row').forEach(o => {
-    o.setAttribute('aria-pressed', String(state.quiz.answers[n] === o.dataset.v));
-  });
+  const b = e.target.closest('[data-v]'); if (!b || state.quiz.done) return;
+  const card = b.closest('.q'), n = card.dataset.n, v = b.dataset.v;
+  if (state.quiz.answers[n] === v) delete state.quiz.answers[n]; else state.quiz.answers[n] = v;
+  card.querySelectorAll('[data-v]').forEach(o => o.setAttribute('aria-pressed', String(state.quiz.answers[n] === o.dataset.v)));
   updateProg();
 });
 
@@ -740,23 +369,21 @@ function submitQuiz(){
     const k = state.key[q.n];
     if (k && a === k) ok++;
   });
-  const total = state.quiz.items.length;
-  const score = total ? ((ok / total) * 10).toFixed(2) : 0;
-  $('#rScore').textContent = `${score.replace('.', ',')}/10`;
-  $('#rMsg').textContent = `Bạn đã trả lời đúng ${ok}/${total} câu trên tổng số đáp án đối chiếu.`;
+  $('#rTitle').textContent = `Hoàn thành bài thi!`;
+  $('#rMsg').textContent = `Bạn trả lời đúng ${ok}/${state.quiz.items.length} câu (Dựa trên đáp án đã cung cấp).`;
   show('#viewResult');
 }
 
-// Gắn sự kiện điều hướng
+// Gắn sự kiện
 $('#fileInput').addEventListener('change', e => handleFile(e.target.files[0]));
 $('#keyApply').addEventListener('click', () => {
   state.key = parseKey($('#keyText').value);
-  $('#keyMsg').textContent = `Đã nhận diện ${Object.keys(state.key).length} đáp án chuẩn xác.`;
+  $('#keyMsg').textContent = `Đã nhận diện ${Object.keys(state.key).length} đáp án.`;
 });
 $('#btnStart').addEventListener('click', () => {
   const from = +$('#cFrom').value || 0, to = +$('#cTo').value || 1e9;
   let pool = state.qs.filter(q => q.n >= from && q.n <= to);
-  if (!pool.length) return alert('Không tìm thấy câu hỏi trong khoảng này.');
+  if (!pool.length) return alert('Không có câu hỏi trong khoảng này.');
   const count = Math.min(+$('#cCount').value || pool.length, pool.length);
   if ($('#cShuffle').checked) pool = shuffle(pool);
   startQuiz(pool.slice(0, count));
