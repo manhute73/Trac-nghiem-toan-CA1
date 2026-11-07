@@ -26,7 +26,7 @@
             justify-content: flex-start; 
             overflow-x: auto;
             overflow-y: hidden;
-            padding-left: 28px; /* Căn lề trái 1cm chuẩn xác */
+            padding-left: 28px; /* Lề trái chuẩn 1cm thẳng hàng tuyệt đối */
         }
         .question-frame-box img {
             height: auto;
@@ -48,7 +48,7 @@
         </div>
         <div class="flex items-center space-x-4">
             <button onclick="switchTab('dashboard')" class="hover:text-white transition"><i class="fa-solid fa-house mr-1"></i> Trang chủ</button>
-            <button onclick="switchTab('manual-creator')" class="hover:text-white transition text-rose-400 font-semibold"><i class="fa-solid fa-plus-circle mr-1"></i> Thêm Câu Hỏi Thủ Công</button>
+            <button onclick="switchTab('manual-creator')" class="hover:text-white transition text-rose-400 font-semibold"><i class="fa-solid fa-scissors mr-1"></i> Thêm Ảnh Câu Cắt Thủ Công</button>
         </div>
     </header>
 
@@ -61,7 +61,7 @@
                 <div class="flex justify-between items-center pb-4 mb-2 border-b border-slate-100">
                     <h2 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Bảng điều khiển luyện tập</h2>
                     <button onclick="switchTab('manual-creator')" class="bg-rose-50 hover:bg-rose-100 text-rose-700 px-4 py-2 rounded-xl font-medium text-sm transition flex items-center gap-2 border border-rose-200">
-                        <i class="fa-solid fa-plus-circle"></i> Thêm ảnh câu hỏi thủ công
+                        <i class="fa-solid fa-scissors"></i> Thêm ảnh câu cắt thủ công
                     </button>
                 </div>
 
@@ -72,8 +72,8 @@
 
                 <!-- Tên bài tập -->
                 <div>
-                    <label class="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1">Tên bài tập / Đề thi:</label>
-                    <input type="text" id="input-exam-title" value="ĐỀ THI TRẮC NGHIỆM TOÁN CAO CẤP" class="w-full text-2xl font-bold text-slate-900 tracking-tight border-b-2 border-dashed border-slate-300 focus:border-rose-600 focus:outline-none py-1 bg-transparent">
+                    <label class="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1">Tên bài tập:</label>
+                    <input type="text" id="input-exam-title" value="BUỔI 01 - MA TRẬN VÀ CÁC PHÉP TÍNH TOÁN MA TRẬN (1)" class="w-full text-2xl font-bold text-slate-900 tracking-tight border-b-2 border-dashed border-slate-300 focus:border-rose-600 focus:outline-none py-1 bg-transparent">
                     <p class="text-rose-600 font-semibold text-sm mt-3 flex items-center gap-1.5">
                         <span class="w-1.5 h-1.5 rounded-full bg-rose-600 inline-block"></span> TOÁN CAO CẤP
                     </p>
@@ -84,7 +84,7 @@
                     <div class="bg-slate-50 border border-slate-100 p-4 rounded-xl flex items-start gap-3">
                         <div class="text-slate-400 mt-0.5"><i class="fa-solid fa-list-check text-lg"></i></div>
                         <div class="flex-1">
-                            <div class="text-xs font-bold text-slate-400 uppercase tracking-wider">Số câu đã tải lên</div>
+                            <div class="text-xs font-bold text-slate-400 uppercase tracking-wider">Số câu đã thêm</div>
                             <div class="flex items-center gap-2 mt-1">
                                 <span id="display-exam-count" class="font-semibold text-slate-800 text-sm">0 câu trắc nghiệm</span>
                             </div>
@@ -94,7 +94,7 @@
                     <div class="bg-slate-50 border border-slate-100 p-4 rounded-xl flex items-start gap-3">
                         <div class="text-slate-400 mt-0.5"><i class="fa-solid fa-clock text-lg"></i></div>
                         <div class="flex-1">
-                            <div class="text-xs font-bold text-slate-400 uppercase tracking-wider">Thời gian làm bài (phút)</div>
+                            <div class="text-xs font-bold text-slate-400 uppercase tracking-wider">Thời gian (phút)</div>
                             <div class="flex items-center gap-2 mt-1">
                                 <input type="number" id="input-exam-time" value="0" min="0" max="180" class="w-20 bg-white border border-slate-300 rounded-lg px-2 py-1 font-semibold text-slate-800 text-sm focus:border-rose-600 focus:outline-none">
                                 <span class="text-sm font-medium text-slate-600">(0 = Không giới hạn)</span>
@@ -106,72 +106,93 @@
                         <div class="text-slate-400 mt-0.5"><i class="fa-solid fa-calculator text-lg"></i></div>
                         <div>
                             <div class="text-xs font-bold text-slate-400 uppercase tracking-wider">Cách tính điểm</div>
-                            <div class="font-semibold text-slate-800 text-sm mt-0.5">Mỗi câu điểm bằng nhau, thang 10. Bỏ trống không tính điểm.</div>
+                            <div class="font-semibold text-slate-800 text-sm mt-0.5">Mỗi câu bằng nhau, thang 10. Bỏ trống không có điểm, sai không bị trừ.</div>
                         </div>
                     </div>
 
                     <div class="bg-slate-50 border border-slate-100 p-4 rounded-xl flex items-start gap-3 cursor-pointer hover:bg-slate-100 transition select-none" onclick="toggleShuffle()">
                         <div class="text-rose-500 mt-0.5"><i class="fa-solid fa-shuffle text-lg"></i></div>
                         <div class="flex-1">
-                            <div class="text-xs font-bold text-slate-400 uppercase tracking-wider">Thứ tự câu hỏi</div>
+                            <div class="text-xs font-bold text-slate-400 uppercase tracking-wider">Thứ tự</div>
                             <div class="font-semibold text-slate-800 text-sm mt-0.5 flex items-center justify-between">
-                                <span id="shuffle-status-text">Trộn thứ tự khi làm bài</span>
+                                <span id="shuffle-status-text">Trộn thứ tự câu hỏi và đáp án</span>
                                 <span id="shuffle-badge" class="bg-rose-100 text-rose-700 text-xs px-2 py-0.5 rounded font-bold">Bật</span>
                             </div>
                         </div>
                     </div>
                 </div>
 
+                <div class="bg-slate-50 border border-slate-100 p-4 rounded-xl flex items-start gap-3">
+                    <div class="text-rose-500 mt-0.5"><i class="fa-solid fa-circle-question text-lg"></i></div>
+                    <div>
+                        <div class="text-xs font-bold text-slate-400 uppercase tracking-wider">Đáp án và giải thích</div>
+                        <div class="font-semibold text-slate-800 text-sm mt-0.5">Bấm nộp bài để xem kết quả đúng/sai từng câu chi tiết.</div>
+                    </div>
+                </div>
+
+                <!-- Chủ đề -->
+                <div class="flex items-center gap-2 text-xs text-slate-500 mt-2">
+                    <span class="font-bold">Chủ đề:</span>
+                    <input type="text" id="input-exam-topic" value="BUỔI 01 - MA TRẬN VÀ CÁC PHÉP TÍNH TOÁN MA TRẬN (1)" class="flex-1 bg-slate-50 border border-slate-200 text-slate-700 px-3 py-1.5 rounded-lg font-medium focus:border-rose-600 focus:outline-none">
+                </div>
+
+                <!-- Thanh cảnh báo màu vàng -->
+                <div class="bg-amber-50 border border-amber-200 text-amber-800 p-4 rounded-xl flex items-start gap-3 text-sm">
+                    <i class="fa-solid fa-triangle-exclamation text-amber-600 mt-0.5"></i>
+                    <div>
+                        Đồng hồ bắt đầu chạy ngay khi bạn bấm bắt đầu, kể cả khi thoát ra ngoài. Hết giờ hệ thống tự nộp bài.
+                    </div>
+                </div>
+
                 <!-- Nút bắt đầu -->
                 <div class="pt-2">
                     <button onclick="startExam()" class="w-full bg-[#dc2626] hover:bg-[#b91c1c] text-white font-semibold py-4 rounded-xl shadow-lg shadow-rose-600/30 transition flex items-center justify-center gap-2 text-base cursor-pointer">
-                        <i class="fa-solid fa-circle-play text-lg"></i> Bắt đầu làm đề ngay
+                        <i class="fa-solid fa-circle-play text-lg"></i> Bắt đầu làm đề
                     </button>
                 </div>
             </div>
 
-            <!-- TAB 2: THÊM CÂU HỎI THỦ CÔNG -->
-            <div id="tab-manual-creator" class="hidden space-y-6 flex-1 flex flex-col">
+            <!-- TAB 2: THÊM ẢNH CÂU CẮT THỦ CÔNG -->
+            <div id="tab-manual-creator" class="hidden space-y-4 flex-1 flex flex-col">
                 <div class="border-b pb-3 flex justify-between items-center">
                     <div>
-                        <h2 class="text-lg font-bold text-slate-950">Thêm Ảnh Câu Hỏi Thủ Công</h2>
-                        <p class="text-xs text-slate-500">Tải ảnh từng câu bạn đã cắt sẵn vào đây và chọn đáp án đúng tương ứng.</p>
+                        <h2 class="text-lg font-bold text-slate-950">Thêm Ảnh Câu Cắt Thủ Công</h2>
+                        <p class="text-xs text-slate-500">Tải ảnh từng câu bạn đã tự cắt thủ công vào hệ thống.</p>
                     </div>
                     <button onclick="switchTab('dashboard')" class="bg-rose-600 hover:bg-rose-700 text-white px-4 py-2 rounded-xl text-xs font-medium transition flex items-center gap-2 shadow-md shrink-0">
                         <i class="fa-solid fa-arrow-left"></i> Xong, về trang chủ
                     </button>
                 </div>
 
-                <!-- Form thêm câu hỏi -->
-                <div class="bg-slate-50 border border-slate-200 p-5 rounded-2xl space-y-4">
-                    <h3 class="font-bold text-slate-800 text-sm"><i class="fa-solid fa-cloud-arrow-up text-rose-600 mr-1.5"></i> Tải ảnh câu hỏi lên</h3>
-                    
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-start">
+                    <!-- Cột trái: Form tải ảnh thủ công -->
+                    <div class="md:col-span-1 space-y-3 bg-slate-50 p-4 rounded-xl border">
                         <div>
-                            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Chọn file ảnh câu hỏi (PNG/JPG):</label>
-                            <input type="file" id="manual-img-input" accept="image/*" class="w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-rose-50 file:text-rose-700 hover:file:bg-rose-100 cursor-pointer border border-slate-300 rounded-xl bg-white p-1.5">
+                            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Chọn ảnh câu cắt (PNG/JPG):</label>
+                            <input type="file" id="manual-img-input" accept="image/*" class="w-full text-xs text-slate-500 file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-rose-50 file:text-rose-700 hover:file:bg-rose-100 cursor-pointer border border-slate-300 rounded-lg bg-white p-1">
                         </div>
+
                         <div>
-                            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Chọn đáp án đúng của câu này:</label>
-                            <select id="manual-correct-select" class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-sm font-bold text-slate-800 focus:border-rose-600 focus:outline-none">
+                            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Chọn đáp án đúng:</label>
+                            <select id="manual-correct-select" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-1.5 text-xs font-bold text-slate-800 focus:border-rose-600 focus:outline-none">
                                 <option value="0">Đáp án A đúng</option>
                                 <option value="1">Đáp án B đúng</option>
                                 <option value="2">Đáp án C đúng</option>
                                 <option value="3">Đáp án D đúng</option>
                             </select>
                         </div>
+
+                        <button onclick="addManualQuestion()" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-semibold py-2 rounded-lg transition shadow text-xs">
+                            <i class="fa-solid fa-plus mr-1"></i> Thêm vào danh sách đề thi
+                        </button>
                     </div>
 
-                    <button onclick="addManualQuestion()" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-semibold py-3 rounded-xl transition shadow text-sm">
-                        <i class="fa-solid fa-plus mr-1"></i> Thêm vào danh sách đề thi
-                    </button>
-                </div>
-
-                <!-- Danh sách các câu đã thêm -->
-                <div class="space-y-3">
-                    <h3 class="font-bold text-slate-800 text-sm">Danh sách câu hỏi hiện có trong đề (<span id="manual-q-count">0</span> câu)</h3>
-                    <div id="manual-question-list" class="space-y-3 max-h-80 overflow-y-auto custom-scrollbar pr-2">
-                        <p class="text-sm text-slate-400 italic text-center py-8">Chưa có câu hỏi nào. Hãy tải ảnh câu hỏi lên ở phía trên!</p>
+                    <!-- Cột phải: Danh sách các câu đã thêm -->
+                    <div class="md:col-span-2 space-y-2">
+                        <h3 class="font-bold text-slate-800 text-xs">Danh sách câu đã thêm (<span id="manual-q-count">0</span> câu)</h3>
+                        <div id="manual-question-list" class="space-y-2 max-h-[380px] overflow-y-auto custom-scrollbar pr-1 text-xs">
+                            <p class="italic text-slate-400 text-center py-12">Chưa có câu hỏi nào. Hãy tải ảnh câu cắt thủ công lên ở cột bên trái.</p>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -181,7 +202,7 @@
                 <div class="flex justify-between items-center bg-slate-50 p-4 rounded-xl border">
                     <div>
                         <h3 id="quiz-active-title" class="font-bold text-slate-900 text-lg">BÀI TẬP</h3>
-                        <p class="text-xs text-slate-500">Đang làm bài trắc nghiệm</p>
+                        <p class="text-xs text-slate-500" id="quiz-active-subtitle">Đang làm bài trắc nghiệm</p>
                     </div>
                     <div class="flex items-center gap-4">
                         <div class="text-sm font-semibold text-rose-600 bg-rose-50 px-3 py-1.5 rounded-lg border border-rose-100">
@@ -215,7 +236,7 @@
                         <div>
                             <span class="bg-rose-100 text-rose-700 text-xs px-2.5 py-1 rounded-full font-semibold">Hoàn thành!</span>
                             <h2 class="text-xl font-bold text-slate-900 mt-2" id="res-msg-title">Bạn đã hoàn thành bài thi.</h2>
-                            <p class="text-xs text-slate-500 mt-1" id="res-details-text">Đúng 0/0 câu</p>
+                            <p class="text-xs text-slate-500 mt-1" id="res-details-text">Đúng 0/0 câu • 0 phút 15 giây</p>
                         </div>
                     </div>
                     <div class="flex flex-col gap-2 w-full md:w-auto">
@@ -223,7 +244,7 @@
                             <i class="fa-solid fa-rotate-right mr-1"></i> Làm lại đề
                         </button>
                         <button onclick="switchTab('dashboard')" class="bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 font-medium px-5 py-2.5 rounded-xl text-sm transition text-center">
-                            <i class="fa-solid fa-house mr-1"></i> Về trang chủ
+                            <i class="fa-solid fa-house mr-1"></i> Về trang môn học
                         </button>
                     </div>
                 </div>
@@ -235,11 +256,15 @@
                         <div class="flex gap-4 mt-2 text-sm font-semibold">
                             <span class="text-emerald-600">● Đúng: <span id="res-correct-count">0</span></span>
                             <span class="text-rose-600">● Sai: <span id="res-wrong-count">0</span></span>
+                            <span class="text-slate-400">● Bỏ trống: 0</span>
                         </div>
                     </div>
                     <div class="bg-slate-50 border p-4 rounded-xl">
-                        <div class="text-xs font-bold text-slate-400 uppercase">Tỷ lệ chính xác</div>
-                        <div class="text-sm font-semibold text-emerald-600 mt-2" id="res-topic-percent">0%</div>
+                        <div class="text-xs font-bold text-slate-400 uppercase">Điểm theo chủ đề</div>
+                        <div class="text-sm font-semibold text-slate-800 mt-2 flex justify-between">
+                            <span id="res-topic-name">ĐỀ THI</span>
+                            <span id="res-topic-percent" class="text-emerald-600">0%</span>
+                        </div>
                     </div>
                 </div>
 
@@ -320,7 +345,7 @@
 
                 fileInput.value = "";
                 updateManualListUI();
-                alert("Đã thêm câu hỏi thành công!");
+                alert("Đã thêm câu hỏi thủ công thành công!");
             };
 
             reader.readAsDataURL(file);
@@ -328,7 +353,6 @@
 
         function removeManualQuestion(index) {
             manualQuestions.splice(index, 1);
-            // Đánh lại số thứ tự ID
             manualQuestions.forEach((q, idx) => { q.id = idx + 1; });
             updateManualListUI();
         }
@@ -338,22 +362,19 @@
             const listEl = document.getElementById('manual-question-list');
 
             if (manualQuestions.length === 0) {
-                listEl.innerHTML = `<p class="text-sm text-slate-400 italic text-center py-8">Chưa có câu hỏi nào. Hãy tải ảnh câu hỏi lên ở phía trên!</p>`;
+                listEl.innerHTML = `<p class="italic text-slate-400 text-center py-12">Chưa có câu hỏi nào. Hãy tải ảnh câu cắt thủ công lên ở cột bên trái.</p>`;
                 return;
             }
 
             let correctLetters = ['A', 'B', 'C', 'D'];
             listEl.innerHTML = manualQuestions.map((q, idx) => `
-                <div class="bg-white border border-slate-200 p-3 rounded-xl flex items-center justify-between gap-3 shadow-sm">
-                    <div class="flex items-center gap-3">
-                        <img src="${q.imgUrl}" class="w-16 h-10 object-cover rounded border">
-                        <div>
-                            <span class="font-bold text-slate-900 text-xs block">Câu ${idx + 1}</span>
-                            <span class="text-emerald-600 font-semibold text-xs">Đáp án đúng: ${correctLetters[q.correct]}</span>
-                        </div>
+                <div class="bg-white border p-2 rounded-lg flex items-center justify-between gap-2 shadow-sm">
+                    <div class="flex items-center gap-2 truncate">
+                        <img src="${q.imgUrl}" class="w-12 h-8 object-cover rounded border">
+                        <span class="font-medium text-slate-800 text-xs">Câu ${idx + 1} (Đáp án: ${correctLetters[q.correct]})</span>
                     </div>
-                    <button onclick="removeManualQuestion(${idx})" class="text-rose-500 hover:text-rose-700 text-xs font-semibold px-2.5 py-1 rounded-lg border border-rose-100 hover:bg-rose-50 transition">
-                        <i class="fa-solid fa-trash"></i> Xóa
+                    <button onclick="removeManualQuestion(${idx})" class="text-rose-500 hover:text-rose-700 text-xs px-2 py-1 rounded border border-rose-100 hover:bg-rose-50 transition">
+                        <i class="fa-solid fa-trash"></i>
                     </button>
                 </div>
             `).join('');
@@ -401,17 +422,21 @@
             }, 1000);
 
             let examTitle = document.getElementById('input-exam-title').value;
+            let examTopic = document.getElementById('input-exam-topic').value;
             document.getElementById('quiz-active-title').innerText = examTitle;
+            document.getElementById('quiz-active-subtitle').innerText = examTopic;
 
             const container = document.getElementById('quiz-questions-container');
             container.innerHTML = activeQuestions.map((q, qIdx) => `
                 <div class="bg-white border border-slate-200 p-6 rounded-2xl shadow-sm space-y-4">
                     <div class="flex items-center justify-between pb-2 border-b border-slate-100">
                         <span class="font-bold text-slate-900 text-sm bg-slate-100 px-3 py-1 rounded-lg">Câu ${qIdx + 1}</span>
-                        <span class="text-xs font-semibold text-slate-500">${examTitle}</span>
+                        <div class="flex items-center gap-3">
+                            <span class="text-xs font-semibold text-slate-500">${examTitle}</span>
+                        </div>
                     </div>
 
-                    <!-- Khung chứa ảnh giữ nguyên bản gốc, lề trái 1cm, nền xám liền mạch -->
+                    <!-- Khung xám đồng bộ, căn lề trái 1cm, giữ nguyên vẹn bản gốc -->
                     <div class="question-frame-box">
                         <img src="${q.imgUrl}" alt="Câu hỏi">
                     </div>
@@ -420,7 +445,7 @@
                         ${q.options.map((opt, optIdx) => `
                             <label id="label_q_${qIdx}_${optIdx}" onclick="selectOption(${qIdx}, ${optIdx})" class="flex items-center justify-center gap-2 p-3.5 rounded-xl border border-slate-200 hover:border-emerald-500 hover:bg-emerald-50/20 cursor-pointer transition select-none">
                                 <input type="radio" name="q_${qIdx}" value="${optIdx}" class="w-4 h-4 text-emerald-600 focus:ring-emerald-500 hidden">
-                                <span id="badge_q_${qIdx}_${optIdx}" class="font-bold text-slate-700 text-sm w-7 h-7 rounded-full bg-slate-100 flex items-center justify-center shrink-0 border border-slate-200">${opt}</span>
+                                <span id="badge_q_${qIdx}_${optIdx}" class="font-bold text-slate-700 text-sm w-7 h-7 rounded-full bg-slate-100 flex items-center justify-center shrink-0 border border-slate-200">${String.fromCharCode(65 + optIdx)}</span>
                             </label>
                         `).join('')}
                     </div>
@@ -472,10 +497,16 @@
             document.getElementById('res-score').innerText = score;
             document.getElementById('res-correct-count').innerText = correctCount;
             document.getElementById('res-wrong-count').innerText = total - correctCount;
+            document.getElementById('res-topic-name').innerText = document.getElementById('input-exam-title').value;
             
             let percent = Math.round((correctCount / total) * 100);
             document.getElementById('res-topic-percent').innerText = percent + '%';
-            document.getElementById('res-details-text').innerText = `Đúng ${correctCount}/${total} câu (${percent}%)`;
+            
+            let m = Math.floor(secondsElapsed / 60);
+            let s = secondsElapsed % 60;
+            let durationStr = `${m} phút ${s} giây`;
+            document.getElementById('res-details-text').innerText = `Đúng ${correctCount}/${total} câu (${percent}%) • ${durationStr}`;
+            document.getElementById('res-msg-title').innerText = percent >= 80 ? "Bạn nắm rất chắc nội dung này." : "Cần ôn tập thêm kiến thức phần này.";
 
             const reviewContainer = document.getElementById('review-questions-container');
             reviewContainer.innerHTML = activeQuestions.map((q, qIdx) => {
