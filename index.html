@@ -28,19 +28,16 @@
             border-radius: 1rem;
             display: flex;
             align-items: center;
-            /* Căn lề trái chuẩn xác theo đường thẳng màu xanh (1cm tương đương padding-left) */
             justify-content: flex-start; 
             overflow: hidden;
-            padding-left: 28px; /* Khoảng cách lề trái 1cm chuẩn */
+            padding-left: 28px; /* Lề trái chuẩn 1cm thẳng hàng tuyệt đối */
         }
 
-        /* Đồng bộ cỡ chữ & tỷ lệ hiển thị lấy Câu 3 làm chuẩn tuyệt đối */
+        /* Đồng bộ kích thước ảnh để tất cả các câu có cùng cỡ chữ chuẩn xác */
         .question-frame-box img {
-            height: 100%;
+            height: 85%; /* Giới hạn chiều cao đồng đều giúp cỡ chữ các câu bằng nhau */
             width: auto;
-            max-width: none;
             object-fit: contain;
-            transform-origin: left center;
         }
     </style>
 </head>
@@ -164,8 +161,8 @@
             <div id="tab-pdf-creator" class="hidden space-y-4 flex-1 flex flex-col">
                 <div class="border-b pb-3 flex justify-between items-center">
                     <div>
-                        <h2 class="text-lg font-bold text-slate-950">Tự Động Cắt Ảnh Đề Thi (Căn Lề 1cm & Đồng Bộ Cỡ Chữ)</h2>
-                        <p class="text-xs text-slate-500">Khử nền trắng, đồng bộ cỡ chữ theo mẫu chuẩn của Câu 3.</p>
+                        <h2 class="text-lg font-bold text-slate-950">Tự Động Cắt Ảnh Đề Thi (Đồng Bộ Tuyệt Đối Cỡ Chữ & Lề)</h2>
+                        <p class="text-xs text-slate-500">Cố định kích thước khung cắt, thẳng hàng 1cm và cùng cỡ chữ 100% cho mọi câu.</p>
                     </div>
                     <button onclick="switchTab('dashboard')" class="bg-rose-600 hover:bg-rose-700 text-white px-4 py-2 rounded-xl text-xs font-medium transition flex items-center gap-2 shadow-md shrink-0">
                         <i class="fa-solid fa-arrow-left"></i> Quay lại trang chủ
@@ -207,12 +204,12 @@
                     <div class="md:col-span-2 bg-slate-900 rounded-xl p-6 flex flex-col items-center justify-center text-center relative overflow-hidden h-[460px]">
                         <div id="auto-crop-status" class="space-y-3">
                             <i class="fa-solid fa-wand-magic-sparkles text-4xl text-rose-500 animate-pulse"></i>
-                            <h3 class="text-white font-bold text-sm">Sẵn sàng tự động cắt ảnh chuẩn lề</h3>
-                            <p class="text-xs text-slate-400 max-w-xs">Chọn file PDF ở cột bên trái, hệ thống tự động căn lề chuẩn 1cm và đồng bộ cỡ chữ.</p>
+                            <h3 class="text-white font-bold text-sm">Sẵn sàng tự động cắt ảnh chuẩn đồng bộ</h3>
+                            <p class="text-xs text-slate-400 max-w-xs">Chọn file PDF ở cột bên trái, hệ thống tự động cố định chiều rộng và lề trái 1cm thẳng hàng tuyệt đối.</p>
                         </div>
                         <div id="auto-crop-loading" class="hidden space-y-3">
                             <i class="fa-solid fa-spinner fa-spin text-4xl text-emerald-400"></i>
-                            <h3 class="text-white font-bold text-sm">Đang xử lý phân tích và khử nền...</h3>
+                            <h3 class="text-white font-bold text-sm">Đang xử lý chuẩn hóa kích thước...</h3>
                             <p id="crop-progress-text" class="text-xs text-slate-400">Đang đọc trang 1...</p>
                         </div>
                     </div>
@@ -408,7 +405,7 @@
             }
         }
 
-        // --- THUẬT TOÁN CẮT ẢNH CỐ ĐỊNH LỀ TRÁI 1CM VÀ KHỬ NỀN TRẮNG ---
+        // --- THUẬT TOÁN CẮT ẢNH CỐ ĐỊNH CHIỀU RỘNG VÀ LỀ TRÁI CHUẨN 1CM ---
         async function handleAutoCropPDF(e) {
             const file = e.target.files[0];
             if (!file) return;
@@ -428,10 +425,13 @@
 
                 const renderScale = 2.5; // Độ nét cao
                 
-                // Lề trái cố định 1cm chính xác theo vạch màu xanh (~37.8 pixels ở 1x nhân 2.5 = ~95 pixels)
+                // Cố định lề trái đúng 1cm (~37.8 pixels ở 1x nhân 2.5 scale = ~95 pixels)
                 const marginLeft1cm = Math.round(1 * 37.8 * renderScale); 
                 const marginTopBuffer = Math.round(0.6 * 37.8 * renderScale); 
                 const marginBottomBuffer = Math.round(0.6 * 37.8 * renderScale); 
+
+                // Cố định chiều rộng cắt (`cropWidth`) đồng nhất cho tất cả các câu để cùng cỡ chữ
+                const fixedCropWidth = Math.round(16 * 37.8 * renderScale); 
 
                 for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
                     document.getElementById('crop-progress-text').innerText = `Đang xử lý trang ${pageNum}/${pdf.numPages}...`;
@@ -468,7 +468,7 @@
                         }
                     }
 
-                    // Cắt ảnh bám sát nội dung từ lề trái 1cm
+                    // Cắt ảnh với kích thước đồng bộ tuyệt đối
                     for (let i = 0; i < filteredQItems.length; i++) {
                         let startY = Math.max(0, filteredQItems[i].y - marginTopBuffer);
                         
@@ -478,8 +478,7 @@
                         if (height < 60) continue;
 
                         let cropCanvas = document.createElement('canvas');
-                        let cropWidth = canvas.width - marginLeft1cm - 30; 
-                        cropCanvas.width = cropWidth;
+                        cropCanvas.width = fixedCropWidth;
                         cropCanvas.height = height;
                         let cropCtx = cropCanvas.getContext('2d');
 
@@ -488,12 +487,12 @@
 
                         cropCtx.drawImage(
                             canvas, 
-                            marginLeft1cm, startY, cropWidth, height, 
-                            0, 0, cropWidth, height
+                            marginLeft1cm, startY, fixedCropWidth, height, 
+                            0, 0, fixedCropWidth, height
                         );
 
                         // Tự động khử nền trắng thành màu xám đồng bộ (#f8fafc)
-                        let imgData = cropCtx.getImageData(0, 0, cropWidth, height);
+                        let imgData = cropCtx.getImageData(0, 0, fixedCropWidth, height);
                         let data = imgData.data;
                         for (let p = 0; p < data.length; p += 4) {
                             let r = data[p], g = data[p+1], b = data[p+2];
@@ -539,7 +538,7 @@
                 <div class="bg-white border p-2 rounded-lg flex items-center justify-between gap-2 shadow-sm">
                     <div class="flex items-center gap-2 truncate">
                         <img src="${q.imgUrl}" class="w-12 h-8 object-cover rounded border">
-                        <span class="font-medium text-slate-800 text-xs">Câu ${idx + 1} (Chuẩn lề & Cỡ chữ)</span>
+                        <span class="font-medium text-slate-800 text-xs">Câu ${idx + 1} (Đồng bộ cỡ chữ & lề)</span>
                     </div>
                 </div>
             `).join('');
@@ -621,7 +620,7 @@
                         </div>
                     </div>
 
-                    <!-- Khung xám đồng bộ, căn lề trái chuẩn 1cm và đồng đều cỡ chữ -->
+                    <!-- Khung xám đồng bộ, thẳng hàng tuyệt đối và cùng cỡ chữ -->
                     <div class="question-frame-box">
                         <img src="${q.imgUrl}" alt="Câu hỏi">
                     </div>
