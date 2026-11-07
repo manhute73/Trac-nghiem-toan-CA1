@@ -18,15 +18,6 @@
         body { font-family: 'Inter', sans-serif; background-color: #0f172a; }
         .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
-        /* Khung chọn hình chữ nhật khi cắt ảnh PDF */
-        #crop-selection-box {
-            position: absolute;
-            border: 2px dashed #f43f5e;
-            background: rgba(244, 63, 94, 0.2);
-            display: none;
-            pointer-events: none;
-            z-index: 50;
-        }
     </style>
 </head>
 <body class="min-h-screen text-slate-800 flex flex-col">
@@ -41,7 +32,7 @@
         </div>
         <div class="flex items-center space-x-4">
             <button onclick="switchTab('dashboard')" class="hover:text-white transition"><i class="fa-solid fa-house mr-1"></i> Trang chủ</button>
-            <button onclick="switchTab('pdf-creator')" class="hover:text-white transition"><i class="fa-solid fa-scissors mr-1"></i> Cắt Đề Thủ Công</button>
+            <button onclick="switchTab('pdf-creator')" class="hover:text-white transition"><i class="fa-solid fa-wand-magic-sparkles mr-1"></i> Tự Động Cắt Ảnh PDF</button>
         </div>
     </header>
 
@@ -54,7 +45,7 @@
                 <div class="flex justify-between items-center pb-4 mb-2 border-b border-slate-100">
                     <h2 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Bảng điều khiển luyện tập</h2>
                     <button onclick="switchTab('pdf-creator')" class="bg-rose-50 hover:bg-rose-100 text-rose-700 px-4 py-2 rounded-xl font-medium text-sm transition flex items-center gap-2 border border-rose-200">
-                        <i class="fa-solid fa-scissors"></i> Cắt đề thủ công từ PDF
+                        <i class="fa-solid fa-wand-magic-sparkles"></i> Tự động cắt ảnh từ PDF
                     </button>
                 </div>
 
@@ -145,12 +136,12 @@
                 </div>
             </div>
 
-            <!-- TAB 2: CÔNG CỤ CẮT THỦ CÔNG HÌNH CHỮ NHẬT TỪ PDF -->
+            <!-- TAB 2: HỆ THỐNG TỰ ĐỘNG CẮT ẢNH TỪ PDF -->
             <div id="tab-pdf-creator" class="hidden space-y-4 flex-1 flex flex-col">
                 <div class="border-b pb-3 flex justify-between items-center">
                     <div>
-                        <h2 class="text-lg font-bold text-slate-950">Công Cụ Cắt Câu Hỏi Thủ Công (Hình Chữ Nhật)</h2>
-                        <p class="text-xs text-slate-500">Tải PDF lên, sau đó <b>dùng chuột trái kéo rê hình chữ nhật</b> quanh câu hỏi trên trang giấy để cắt chính xác.</p>
+                        <h2 class="text-lg font-bold text-slate-950">Tự Động Cắt Ảnh Từng Câu Từ File PDF</h2>
+                        <p class="text-xs text-slate-500">Hệ thống quét chữ <b>"Câu X"</b>, tự động khoanh vùng và cắt thành ảnh các câu hỏi cực nhanh.</p>
                     </div>
                     <button onclick="switchTab('dashboard')" class="bg-rose-600 hover:bg-rose-700 text-white px-4 py-2 rounded-xl text-xs font-medium transition flex items-center gap-2 shadow-md shrink-0">
                         <i class="fa-solid fa-arrow-left"></i> Quay lại trang chủ
@@ -158,10 +149,10 @@
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-start">
-                    <!-- Cột trái: Tải file & Danh sách đã cắt -->
+                    <!-- Cột trái: Tải file & Danh sách đã tự cắt -->
                     <div class="md:col-span-1 space-y-3">
                         <div class="border-2 border-dashed border-slate-300 rounded-xl p-4 text-center hover:border-rose-500 transition bg-slate-50">
-                            <input type="file" id="pdf-file-input" accept="application/pdf" class="hidden" onchange="handlePDFUpload(event)">
+                            <input type="file" id="pdf-file-input" accept="application/pdf" class="hidden" onchange="handleAutoCropPDF(event)">
                             <label for="pdf-file-input" class="cursor-pointer flex flex-col items-center">
                                 <i class="fa-solid fa-cloud-arrow-up text-3xl text-rose-500 mb-1"></i>
                                 <span class="font-semibold text-xs text-slate-700">Chọn file PDF đề thi</span>
@@ -173,55 +164,38 @@
                                 <span class="text-slate-400 block font-semibold">Tên đề thi:</span>
                                 <input type="text" id="pdf-extracted-title" class="w-full mt-1 bg-white border rounded px-2 py-1 font-medium text-slate-800">
                             </div>
-                            <!-- Cấu hình đáp án đúng cho câu vừa cắt gần nhất -->
-                            <div id="crop-config-box" class="hidden bg-rose-50 border border-rose-200 p-2.5 rounded-lg space-y-1.5">
-                                <span class="font-bold text-rose-700 block">Chọn đáp án đúng cho câu này:</span>
-                                <div class="flex gap-3">
-                                    <label class="cursor-pointer font-semibold"><input type="radio" name="cfg_correct" value="0" checked> A</label>
-                                    <label class="cursor-pointer font-semibold"><input type="radio" name="cfg_correct" value="1"> B</label>
-                                    <label class="cursor-pointer font-semibold"><input type="radio" name="cfg_correct" value="2"> C</label>
-                                    <label class="cursor-pointer font-semibold"><input type="radio" name="cfg_correct" value="3"> D</label>
-                                </div>
-                                <button onclick="saveCurrentCropConfig()" class="w-full bg-rose-600 text-white py-1 rounded text-xs font-semibold">Lưu câu hỏi này</button>
-                            </div>
-
-                            <button onclick="applyExtractedExam()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-2 rounded-lg transition shadow">
-                                Áp dụng đề này vào bài thi
+                            <button onclick="applyAutoCroppedExam()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-2 rounded-lg transition shadow">
+                                Áp dụng bộ đề này vào bài thi
                             </button>
                         </div>
 
                         <div class="border-t pt-2">
                             <h3 class="font-bold text-slate-800 text-xs mb-1.5 flex justify-between items-center">
-                                <span>Các câu đã cắt thủ công (<span id="extracted-q-count">0</span>)</span>
+                                <span>Danh sách tự cắt (<span id="extracted-q-count">0</span> câu)</span>
                             </h3>
-                            <div id="pdf-extracted-list" class="space-y-1.5 max-h-52 overflow-y-auto custom-scrollbar pr-1 text-xs text-slate-500">
-                                <p class="italic text-slate-400 text-center py-4">Chưa có câu hỏi nào. Hãy kéo hình chữ nhật bên phải để cắt.</p>
+                            <div id="pdf-extracted-list" class="space-y-1.5 max-h-56 overflow-y-auto custom-scrollbar pr-1 text-xs text-slate-500">
+                                <p class="italic text-slate-400 text-center py-6">Chưa có dữ liệu. Hãy tải file PDF lên.</p>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Cột phải: Khu vực xem trước PDF và cắt ảnh -->
-                    <div class="md:col-span-2 bg-slate-900 rounded-xl p-3 flex flex-col items-center justify-center relative overflow-hidden h-[460px]">
-                        <div id="pdf-viewer-placeholder" class="text-center text-slate-400 my-auto">
-                            <i class="fa-regular fa-file-pdf text-4xl mb-2 text-slate-600"></i>
-                            <p class="text-xs">Hãy tải file PDF lên để tiến hành kéo hình chữ nhật cắt ảnh</p>
+                    <!-- Cột phải: Thông báo tiến trình tự động cắt -->
+                    <div class="md:col-span-2 bg-slate-900 rounded-xl p-6 flex flex-col items-center justify-center text-center relative overflow-hidden h-[460px]">
+                        <div id="auto-crop-status" class="space-y-3">
+                            <i class="fa-solid fa-wand-magic-sparkles text-4xl text-rose-500 animate-pulse"></i>
+                            <h3 class="text-white font-bold text-sm">Sẵn sàng tự động cắt ảnh</h3>
+                            <p class="text-xs text-slate-400 max-w-xs">Chọn file PDF ở cột bên trái, hệ thống sẽ tự tìm các chữ "Câu X" và cắt toàn bộ câu hỏi thành ảnh cho bạn.</p>
                         </div>
-
-                        <div id="pdf-canvas-container" class="hidden w-full h-full flex flex-col items-center justify-center overflow-auto custom-scrollbar relative p-1 cursor-crosshair">
-                            <div id="crop-selection-box"></div>
-                        </div>
-                        
-                        <!-- Toolbar chuyển trang PDF -->
-                        <div id="pdf-nav-bar" class="hidden absolute bottom-2 bg-slate-800/95 backdrop-blur px-3 py-1.5 rounded-lg text-white text-xs flex items-center gap-3 shadow-lg border border-slate-700 z-20">
-                            <button onclick="prevPage()" class="hover:text-rose-400"><i class="fa-solid fa-chevron-left"></i></button>
-                            <span>Trang <span id="current-page-num">1</span> / <span id="total-page-num">1</span></span>
-                            <button onclick="nextPage()" class="hover:text-rose-400"><i class="fa-solid fa-chevron-right"></i></button>
+                        <div id="auto-crop-loading" class="hidden space-y-3">
+                            <i class="fa-solid fa-spinner fa-spin text-4xl text-emerald-400"></i>
+                            <h3 class="text-white font-bold text-sm">Đang tự động phân tích và cắt ảnh...</h3>
+                            <p id="crop-progress-text" class="text-xs text-slate-400">Đang đọc trang 1...</p>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- TAB 3: QUIZ SOLVING INTERFACE (Làm bài dạng ảnh chụp câu hỏi) -->
+            <!-- TAB 3: QUIZ SOLVING INTERFACE (Làm bài) -->
             <div id="tab-quiz" class="hidden space-y-6 flex-1 flex flex-col">
                 <div class="flex justify-between items-center bg-slate-50 p-4 rounded-xl border">
                     <div>
@@ -258,8 +232,8 @@
                             </div>
                         </div>
                         <div>
-                            <span class="bg-rose-100 text-rose-700 text-xs px-2.5 py-1 rounded-full font-semibold">Xuất sắc!</span>
-                            <h2 class="text-xl font-bold text-slate-900 mt-2" id="res-msg-title">Bạn nắm rất chắc nội dung này.</h2>
+                            <span class="bg-rose-100 text-rose-700 text-xs px-2.5 py-1 rounded-full font-semibold">Hoàn thành!</span>
+                            <h2 class="text-xl font-bold text-slate-900 mt-2" id="res-msg-title">Bạn đã hoàn thành bài thi.</h2>
                             <p class="text-xs text-slate-500 mt-1" id="res-details-text">Đúng 2/2 câu • 0 phút 15 giây</p>
                         </div>
                     </div>
@@ -342,17 +316,11 @@
             questions: [
                 {
                     id: 1,
-                    text: "Mẫu câu hỏi số 1",
-                    options: ["Đáp án A", "Đáp án B", "Đáp án C", "Đáp án D"],
-                    correct: 1,
-                    isImage: false
-                },
-                {
-                    id: 2,
-                    text: "Mẫu câu hỏi số 2",
-                    options: ["Đáp án A", "Đáp án B", "Đáp án C", "Đáp án D"],
-                    correct: 0,
-                    isImage: false
+                    text: "",
+                    isImage: true,
+                    imgUrl: "",
+                    options: ["14", "4", "2", "6"],
+                    correct: 0
                 }
             ]
         };
@@ -363,14 +331,7 @@
         let secondsElapsed = 0;
         let countdownSeconds = 0;
         let examHistory = [];
-
-        // PDF & Crop State
-        let pdfDoc = null;
-        let pageNum = 1;
-        let scale = 1.0;
-        let isDrawing = false;
-        let startX, startY, endX, endY;
-        let latestCroppedImg = null;
+        let autoExtractedQuestions = [];
 
         function toggleShuffle() {
             isShuffleEnabled = !isShuffleEnabled;
@@ -432,8 +393,8 @@
             }
         }
 
-        // --- XỬ LÝ UPLOAD PDF VÀ CÔNG CỤ CẮT HÌNH CHỮ NHẬT ---
-        async function handlePDFUpload(e) {
+        // --- THUẬT TOÁN TỰ ĐỘNG CẮT ẢNH CÂU HỎI TỪ PDF ---
+        async function handleAutoCropPDF(e) {
             const file = e.target.files[0];
             if (!file) return;
 
@@ -441,184 +402,111 @@
             let formattedTitle = fileNameWithoutExt.replace(/[_]/g, ' ').toUpperCase();
 
             document.getElementById('pdf-extracted-title').value = formattedTitle;
-            document.getElementById('pdf-meta-box').classList.remove('hidden');
+            document.getElementById('auto-crop-status').classList.add('hidden');
+            document.getElementById('auto-crop-loading').classList.remove('hidden');
 
             const fileReader = new FileReader();
             fileReader.onload = async function() {
                 const typedarray = new Uint8Array(this.result);
-                pdfjsLib.getDocument(typedarray).promise.then(async function(pdfDoc_) {
-                    pdfDoc = pdfDoc_;
-                    document.getElementById('total-page-num').innerText = pdfDoc.numPages;
-                    document.getElementById('pdf-viewer-placeholder').classList.add('hidden');
-                    document.getElementById('pdf-canvas-container').classList.remove('hidden');
-                    document.getElementById('pdf-nav-bar').classList.remove('hidden');
-                    
-                    currentExam.questions = [];
-                    updateExtractedList();
+                const pdf = await pdfjsLib.getDocument(typedarray).promise;
+                autoExtractedQuestions = [];
 
-                    await renderPage(pageNum);
-                });
+                for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+                    document.getElementById('crop-progress-text').innerText = `Đang quét trang ${pageNum}/${pdf.numPages}...`;
+                    const page = await pdf.getPage(pageNum);
+                    const viewport = page.getViewport({ scale: 1.5 }); // Scale lớn để ảnh sắc nét
+
+                    const canvas = document.createElement('canvas');
+                    const context = canvas.getContext('2d');
+                    canvas.height = viewport.height;
+                    canvas.width = viewport.width;
+
+                    await page.render({ canvasContext: context, viewport: viewport }).promise;
+                    const textContent = await page.getTextContent();
+
+                    // Tìm tất cả các tọa độ có chữ "Câu X"
+                    let qItems = [];
+                    textContent.items.forEach(item => {
+                        let match = item.str.match(/Câu\s+(\d+)/i);
+                        if (match) {
+                            let tx = item.transform[4] * 1.5;
+                            let ty = canvas.height - (item.transform[5] * 1.5);
+                            qItems.push({ num: parseInt(match[1]), y: ty, x: tx });
+                        }
+                    });
+
+                    // Sắp xếp các câu theo thứ tự từ trên xuống dưới
+                    qItems.sort((a, b) => a.y - b.y);
+
+                    // Cắt tự động từng khoảng giữa các câu
+                    for (let i = 0; i < qItems.length; i++) {
+                        let startY = Math.max(0, qItems[i].y - 25);
+                        let endY = (i < qItems.length - 1) ? qItems[i + 1].y - 15 : canvas.height;
+                        let height = endY - startY;
+
+                        if (height < 30) continue; // Bỏ qua nếu quá ngắn
+
+                        let cropCanvas = document.createElement('canvas');
+                        cropCanvas.width = canvas.width - 40;
+                        cropCanvas.height = height;
+                        let cropCtx = cropCanvas.getContext('2d');
+
+                        cropCtx.drawImage(canvas, 20, startY, canvas.width - 40, height, 0, 0, cropCanvas.width, height);
+                        let imgDataUrl = cropCanvas.toDataURL('image/png');
+
+                        autoExtractedQuestions.push({
+                            id: autoExtractedQuestions.length + 1,
+                            text: "",
+                            isImage: true,
+                            imgUrl: imgDataUrl,
+                            options: ["A", "B", "C", "D"], // Tuỳ chỉnh mặc định
+                            correct: 0
+                        });
+                    }
+                }
+
+                document.getElementById('auto-crop-loading').classList.add('hidden');
+                document.getElementById('auto-crop-status').classList.remove('hidden');
+                document.getElementById('pdf-meta-box').classList.remove('hidden');
+                updateAutoExtractedListUI();
             };
             fileReader.readAsArrayBuffer(file);
         }
 
-        async function renderPage(num) {
-            const page = await pdfDoc.getPage(num);
-            const viewport = page.getViewport({ scale: scale });
-            const container = document.getElementById('pdf-canvas-container');
-            
-            let oldCanvas = container.querySelector('canvas');
-            if(oldCanvas) oldCanvas.remove();
-
-            const canvas = document.createElement('canvas');
-            const context = canvas.getContext('2d');
-            canvas.height = viewport.height;
-            canvas.width = viewport.width;
-            canvas.className = "shadow rounded border border-slate-700 relative";
-
-            await page.render({ canvasContext: context, viewport: viewport }).promise;
-            container.insertBefore(canvas, document.getElementById('crop-selection-box'));
-
-            setupRectangleCrop(canvas);
-            document.getElementById('current-page-num').innerText = num;
-        }
-
-        function setupRectangleCrop(canvas) {
-            const cropBox = document.getElementById('crop-selection-box');
-
-            canvas.onmousedown = function(e) {
-                isDrawing = true;
-                const rect = canvas.getBoundingClientRect();
-                startX = e.clientX - rect.left;
-                startY = e.clientY - rect.top;
-
-                cropBox.style.left = startX + 'px';
-                cropBox.style.top = startY + 'px';
-                cropBox.style.width = '0px';
-                cropBox.style.height = '0px';
-                cropBox.style.display = 'block';
-            };
-
-            canvas.onmousemove = function(e) {
-                if (!isDrawing) return;
-                const rect = canvas.getBoundingClientRect();
-                let currentX = e.clientX - rect.left;
-                let currentY = e.clientY - rect.top;
-
-                let width = currentX - startX;
-                let height = currentY - startY;
-
-                cropBox.style.width = Math.abs(width) + 'px';
-                cropBox.style.height = Math.abs(height) + 'px';
-                if (width < 0) cropBox.style.left = currentX + 'px';
-                if (height < 0) cropBox.style.top = currentY + 'px';
-            };
-
-            canvas.onmouseup = function(e) {
-                if (!isDrawing) return;
-                isDrawing = false;
-                cropBox.style.display = 'none';
-
-                const rect = canvas.getBoundingClientRect();
-                endX = e.clientX - rect.left;
-                endY = e.clientY - rect.top;
-
-                let x = Math.min(startX, endX);
-                let y = Math.min(startY, endY);
-                let w = Math.abs(endX - startX);
-                let h = Math.abs(endY - startY);
-
-                if (w < 20 || h < 20) return;
-
-                let cropCanvas = document.createElement('canvas');
-                cropCanvas.width = w;
-                cropCanvas.height = h;
-                let cropCtx = cropCanvas.getContext('2d');
-
-                let scaleX = canvas.width / canvas.clientWidth;
-                let scaleY = canvas.height / canvas.clientHeight;
-
-                cropCtx.drawImage(canvas, x * scaleX, y * scaleY, w * scaleX, h * scaleY, 0, 0, w, h);
-                latestCroppedImg = cropCanvas.toDataURL('image/png');
-
-                document.getElementById('crop-config-box').classList.remove('hidden');
-            };
-        }
-
-        function saveCurrentCropConfig() {
-            if (!latestCroppedImg) return;
-            let correctRadios = document.getElementsByName('cfg_correct');
-            let correctIdx = 0;
-            for (let r of correctRadios) {
-                if (r.checked) { correctIdx = parseInt(r.value); break; }
-            }
-
-            let newQ = {
-                id: currentExam.questions.length + 1,
-                text: "",
-                isImage: true,
-                imgUrl: latestCroppedImg,
-                options: ["14", "4", "2", "6"], // Ví dụ mẫu đáp án
-                correct: correctIdx
-            };
-
-            currentExam.questions.push(newQ);
-            latestCroppedImg = null;
-            document.getElementById('crop-config-box').classList.add('hidden');
-            updateExtractedList();
-            alert("Đã lưu câu hỏi cắt ảnh thành công!");
-        }
-
-        function updateExtractedList() {
-            document.getElementById('extracted-q-count').innerText = currentExam.questions.length;
+        function updateAutoExtractedListUI() {
+            document.getElementById('extracted-q-count').innerText = autoExtractedQuestions.length;
             const listEl = document.getElementById('pdf-extracted-list');
-            if (currentExam.questions.length === 0) {
-                listEl.innerHTML = `<p class="italic text-slate-400 text-center py-4">Chưa có câu hỏi nào. Hãy kéo hình chữ nhật bên phải để cắt.</p>`;
+            
+            if (autoExtractedQuestions.length === 0) {
+                listEl.innerHTML = `<p class="italic text-slate-400 text-center py-6">Không tìm thấy định dạng "Câu X" tự động.</p>`;
                 return;
             }
 
-            listEl.innerHTML = currentExam.questions.map((q, idx) => `
+            listEl.innerHTML = autoExtractedQuestions.map((q, idx) => `
                 <div class="bg-white border p-2 rounded-lg flex items-center justify-between gap-2 shadow-sm">
                     <div class="flex items-center gap-2 truncate">
                         <img src="${q.imgUrl}" class="w-12 h-8 object-cover rounded border">
-                        <span class="font-medium text-slate-800 text-xs">Câu ${idx + 1} (Đáp án đúng: ${String.fromCharCode(65 + q.correct)})</span>
+                        <span class="font-medium text-slate-800 text-xs">Câu ${idx + 1} (Đã cắt ảnh)</span>
                     </div>
-                    <button onclick="removeExtractedQuestion(${idx})" class="text-rose-500 hover:text-rose-700 p-1"><i class="fa-solid fa-trash text-xs"></i></button>
                 </div>
             `).join('');
         }
 
-        function removeExtractedQuestion(idx) {
-            currentExam.questions.splice(idx, 1);
-            currentExam.questions.forEach((q, i) => q.id = i + 1);
-            updateExtractedList();
-        }
-
-        function prevPage() {
-            if (pageNum <= 1) return;
-            pageNum--;
-            renderPage(pageNum);
-        }
-
-        function nextPage() {
-            if (pageNum >= pdfDoc.numPages) return;
-            pageNum++;
-            renderPage(pageNum);
-        }
-
-        function applyExtractedExam() {
-            if (currentExam.questions.length === 0) {
-                alert("Bạn chưa cắt câu hỏi nào từ file PDF!");
+        function applyAutoCroppedExam() {
+            if (autoExtractedQuestions.length === 0) {
+                alert("Chưa có câu hỏi nào được cắt tự động!");
                 return;
             }
             let customTitle = document.getElementById('pdf-extracted-title').value;
             currentExam.title = customTitle;
             currentExam.topic = customTitle;
+            currentExam.questions = [...autoExtractedQuestions];
+
             document.getElementById('input-exam-title').value = customTitle;
             document.getElementById('input-exam-topic').value = customTitle;
             updateDashboardInfo();
             switchTab('dashboard');
-            alert(`Đã áp dụng thành công bộ đề gồm ${currentExam.questions.length} câu cắt ảnh!`);
+            alert(`Đã tự động cắt và nạp thành công ${currentExam.questions.length} câu vào đề thi!`);
         }
 
         // --- BẮT ĐẦU LÀM BÀI ---
@@ -674,18 +562,16 @@
                         </div>
                     </div>
 
-                    <!-- Hiển thị ảnh câu hỏi cắt từ PDF -->
+                    <!-- Hiển thị ảnh câu hỏi do hệ thống tự cắt -->
                     <div class="w-full bg-slate-50 p-3 rounded-xl border border-slate-100 flex justify-center">
-                        ${q.isImage ? `<img src="${q.imgUrl}" class="max-w-full rounded border shadow-sm">` : `<div class="leading-relaxed text-slate-800">${q.text}</div>`}
+                        <img src="${q.imgUrl}" class="max-w-full rounded border shadow-sm">
                     </div>
 
-                    <!-- Các lựa chọn A, B, C, D chuẩn form -->
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
                         ${q.options.map((opt, optIdx) => `
-                            <label id="label_q_${qIdx}_${optIdx}" onclick="selectOption(${qIdx}, ${optIdx})" class="flex items-center gap-3 p-3.5 rounded-xl border border-slate-200 hover:border-emerald-500 hover:bg-emerald-50/20 cursor-pointer transition select-none">
+                            <label id="label_q_${qIdx}_${optIdx}" onclick="selectOption(${qIdx}, ${optIdx})" class="flex items-center justify-center gap-2 p-3.5 rounded-xl border border-slate-200 hover:border-emerald-500 hover:bg-emerald-50/20 cursor-pointer transition select-none">
                                 <input type="radio" name="q_${qIdx}" value="${optIdx}" class="w-4 h-4 text-emerald-600 focus:ring-emerald-500 hidden">
                                 <span id="badge_q_${qIdx}_${optIdx}" class="font-bold text-slate-700 text-sm w-7 h-7 rounded-full bg-slate-100 flex items-center justify-center shrink-0 border border-slate-200">${String.fromCharCode(65 + optIdx)}</span>
-                                <span class="text-slate-800 text-sm font-semibold">${opt}</span>
                             </label>
                         `).join('')}
                     </div>
@@ -701,10 +587,10 @@
                 let lbl = document.getElementById(`label_q_${qIdx}_${i}`);
                 let badge = document.getElementById(`badge_q_${qIdx}_${i}`);
                 if (i === optIdx) {
-                    lbl.className = "flex items-center gap-3 p-3.5 rounded-xl border border-emerald-500 bg-emerald-50/40 cursor-pointer transition select-none shadow-sm";
+                    lbl.className = "flex items-center justify-center gap-2 p-3.5 rounded-xl border border-emerald-500 bg-emerald-50/40 cursor-pointer transition select-none shadow-sm";
                     badge.className = "font-bold text-white text-sm w-7 h-7 rounded-full bg-emerald-600 flex items-center justify-center shrink-0";
                 } else {
-                    lbl.className = "flex items-center gap-3 p-3.5 rounded-xl border border-slate-200 hover:border-emerald-500 hover:bg-emerald-50/20 cursor-pointer transition select-none";
+                    lbl.className = "flex items-center justify-center gap-2 p-3.5 rounded-xl border border-slate-200 hover:border-emerald-500 hover:bg-emerald-50/20 cursor-pointer transition select-none";
                     badge.className = "font-bold text-slate-700 text-sm w-7 h-7 rounded-full bg-slate-100 flex items-center justify-center shrink-0 border border-slate-200";
                 }
             }
@@ -779,36 +665,7 @@
                         </div>
 
                         <div class="w-full bg-slate-50 p-3 rounded-xl border border-slate-100 flex justify-center">
-                            ${q.isImage ? `<img src="${q.imgUrl}" class="max-w-full rounded border shadow-sm">` : `<div class="text-slate-800 text-sm leading-relaxed">${q.text}</div>`}
-                        </div>
-
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                            ${q.options.map((opt, optIdx) => {
-                                let isUserPick = (userChoice === optIdx);
-                                let isRightPick = (q.correct === optIdx);
-                                let styleClass = "border-slate-200 text-slate-700 bg-white";
-                                let badgeClass = "bg-slate-100 text-slate-700 border-slate-200";
-                                let statusBadge = "";
-
-                                if (isRightPick) {
-                                    styleClass = "border-emerald-500 bg-emerald-50/40 text-emerald-900 font-medium";
-                                    badgeClass = "bg-emerald-600 text-white";
-                                    statusBadge = `<span class="ml-auto text-xs font-bold text-emerald-600 bg-emerald-100 px-3 py-1 rounded-full"><i class="fa-solid fa-check mr-1"></i> Bạn chọn đúng</span>`;
-                                }
-                                if (isUserPick && !isRightPick) {
-                                    styleClass = "border-rose-500 bg-rose-50/40 text-rose-900 font-medium";
-                                    badgeClass = "bg-rose-600 text-white";
-                                    statusBadge = `<span class="ml-auto text-xs font-bold text-rose-600 bg-rose-100 px-3 py-1 rounded-full"><i class="fa-solid fa-xmark mr-1"></i> Bạn chọn sai</span>`;
-                                }
-
-                                return `
-                                    <div class="flex items-center gap-3 p-3.5 rounded-xl border ${styleClass} text-sm">
-                                        <span class="w-7 h-7 rounded-full ${badgeClass} flex items-center justify-center text-xs font-bold shrink-0 border">${String.fromCharCode(65 + optIdx)}</span>
-                                        <span>${opt}</span>
-                                        ${statusBadge}
-                                    </div>
-                                `;
-                            }).join('')}
+                            <img src="${q.imgUrl}" class="max-w-full rounded border shadow-sm">
                         </div>
 
                         <div class="text-xs font-medium text-slate-700 mt-3 pt-3 border-t border-slate-100">
