@@ -1,65 +1,529 @@
-<!-- TAB 1: DASHBOARD / EXAM PREVIEW (Giống ảnh yêu cầu) -->
-<div id="tab-dashboard" class="space-y-6 flex-1 flex flex-col">
-    <div class="flex items-center gap-2">
-        <span class="bg-slate-100 text-slate-600 text-xs px-2.5 py-1 rounded-full font-medium">Luyện tập</span>
-        <span class="bg-amber-100 text-amber-700 text-xs px-2.5 py-1 rounded-full font-medium">Trung bình</span>
-    </div>
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web Luyện Đề Thi - TestMaster Pro</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- PDF.js library for rendering PDF files -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+    <script>
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #0f172a; }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+    </style>
+</head>
+<body class="min-h-screen text-slate-800 flex flex-col">
 
-    <div>
-        <h2 id="view-exam-title" class="text-2xl font-bold text-slate-900 tracking-tight">BÀI TẬP BUỔI 6 - HẠNG VÀ ĐLTT PTTT</h2>
-        <p id="view-exam-subject" class="text-rose-600 font-semibold text-sm mt-1 flex items-center gap-1.5">
-            <span class="w-1.5 h-1.5 rounded-full bg-rose-600 inline-block"></span> TOÁN CAO CẤP
-        </p>
-    </div>
+    <!-- Top Browser Bar -->
+    <header class="bg-[#1e293b] text-slate-300 px-4 py-2.5 flex items-center justify-between text-sm select-none border-b border-slate-700">
+        <div class="flex items-center space-x-2">
+            <span class="w-3 h-3 rounded-full bg-rose-500 inline-block"></span>
+            <span class="w-3 h-3 rounded-full bg-amber-500 inline-block"></span>
+            <span class="w-3 h-3 rounded-full bg-emerald-500 inline-block"></span>
+            <span class="ml-3 font-medium text-slate-200">Web Luyện Đề Thi</span>
+        </div>
+        <div class="flex items-center space-x-4">
+            <button onclick="switchTab('dashboard')" class="hover:text-white transition"><i class="fa-solid fa-house mr-1"></i> Trang chủ</button>
+            <button onclick="switchTab('pdf-creator')" class="hover:text-white transition"><i class="fa-solid fa-scissors mr-1"></i> Tạo Đề / Cắt PDF</button>
+            <button onclick="loadSampleExam()" class="hover:text-rose-400 transition font-medium"><i class="fa-solid fa-bolt mr-1"></i> Đề Mẫu</button>
+        </div>
+    </header>
 
-    <!-- Thẻ thông tin đề thi -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div class="bg-slate-50 border border-slate-100 p-4 rounded-xl flex items-start gap-3">
-            <div class="text-slate-400 mt-0.5"><i class="fa-solid fa-list-check text-lg"></i></div>
-            <div>
-                <div class="text-xs font-bold text-slate-400 uppercase tracking-wider">Số câu</div>
-                <div id="view-exam-count" class="font-semibold text-slate-800 text-sm mt-0.5">36 câu trắc nghiệm</div>
+    <!-- Main Container Card -->
+    <main class="flex-1 max-w-5xl w-full mx-auto p-4 md:p-6">
+        <div class="bg-white rounded-2xl shadow-2xl p-6 md:p-8 min-h-[600px] flex flex-col">
+            
+            <!-- App Header Navigation inside card -->
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center pb-6 mb-6 border-b border-slate-100 gap-4">
+                <div class="flex items-center space-x-3">
+                    <div class="w-12 h-12 bg-rose-600 rounded-xl flex items-center justify-center text-white text-2xl shadow-md shadow-rose-200">
+                        <i class="fa-solid fa-graduation-cap"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-xl font-bold text-slate-900">TestMaster Pro</h1>
+                        <p class="text-xs text-slate-500">Nền tảng luyện đề thông minh từ PDF</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-3">
+                    <button onclick="switchTab('pdf-creator')" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2.5 rounded-xl font-medium text-sm transition flex items-center gap-2">
+                        <i class="fa-solid fa-file-arrow-up text-rose-600"></i> Tạo Đề / Cắt PDF
+                    </button>
+                    <button onclick="loadSampleExam()" class="bg-rose-50 hover:bg-rose-100 text-rose-700 px-4 py-2.5 rounded-xl font-medium text-sm transition flex items-center gap-2 border border-rose-200">
+                        <i class="fa-solid fa-bolt"></i> Đề Mẫu Sẵn Có
+                    </button>
+                </div>
             </div>
-        </div>
-        <div class="bg-slate-50 border border-slate-100 p-4 rounded-xl flex items-start gap-3">
-            <div class="text-slate-400 mt-0.5"><i class="fa-solid fa-clock text-lg"></i></div>
-            <div>
-                <div class="text-xs font-bold text-slate-400 uppercase tracking-wider">Thời gian</div>
-                <div class="font-semibold text-slate-800 text-sm mt-0.5">Không giới hạn</div>
-            </div>
-        </div>
-        <div class="bg-slate-50 border border-slate-100 p-4 rounded-xl flex items-start gap-3">
-            <div class="text-slate-400 mt-0.5"><i class="fa-solid fa-calculator text-lg"></i></div>
-            <div>
-                <div class="text-xs font-bold text-slate-400 uppercase tracking-wider">Cách tính điểm</div>
-                <div class="font-semibold text-slate-800 text-sm mt-0.5">Mỗi câu bằng nhau, thang 10. Bỏ trống không có điểm, sai không bị trừ.</div>
-            </div>
-        </div>
-        <div class="bg-slate-50 border border-slate-100 p-4 rounded-xl flex items-start gap-3">
-            <div class="text-slate-400 mt-0.5"><i class="fa-solid fa-shuffle text-lg"></i></div>
-            <div>
-                <div class="text-xs font-bold text-slate-400 uppercase tracking-wider">Thứ tự</div>
-                <div class="font-semibold text-slate-800 text-sm mt-0.5">Trộn thứ tự câu hỏi và đáp án</div>
-            </div>
-        </div>
-    </div>
 
-    <div class="bg-slate-50 border border-slate-100 p-4 rounded-xl flex items-start gap-3">
-        <div class="text-rose-500 mt-0.5"><i class="fa-solid fa-circle-question text-lg"></i></div>
-        <div>
-            <div class="text-xs font-bold text-slate-400 uppercase tracking-wider">Đáp án và giải thích</div>
-            <div class="font-semibold text-slate-800 text-sm mt-0.5">Bấm "Kiểm tra" để xem đúng/sai và giải thích ngay từng câu.</div>
+            <!-- TAB 1: DASHBOARD / EXAM PREVIEW (Giao diện Trang chủ / Thông tin đề thi) -->
+            <div id="tab-dashboard" class="space-y-6 flex-1 flex flex-col">
+                <div class="flex items-center gap-2">
+                    <span class="bg-slate-100 text-slate-600 text-xs px-2.5 py-1 rounded-full font-medium">Luyện tập</span>
+                    <span class="bg-amber-100 text-amber-700 text-xs px-2.5 py-1 rounded-full font-medium">Trung bình</span>
+                </div>
+
+                <div>
+                    <h2 id="view-exam-title" class="text-2xl font-bold text-slate-900 tracking-tight">BÀI TẬP BUỔI 6 - HẠNG VÀ ĐLTT PTTT</h2>
+                    <p id="view-exam-subject" class="text-rose-600 font-semibold text-sm mt-1 flex items-center gap-1.5">
+                        <span class="w-1.5 h-1.5 rounded-full bg-rose-600 inline-block"></span> TOÁN CAO CẤP
+                    </p>
+                </div>
+
+                <!-- Thẻ thông tin đề thi -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="bg-slate-50 border border-slate-100 p-4 rounded-xl flex items-start gap-3">
+                        <div class="text-slate-400 mt-0.5"><i class="fa-solid fa-list-check text-lg"></i></div>
+                        <div>
+                            <div class="text-xs font-bold text-slate-400 uppercase tracking-wider">Số câu</div>
+                            <div id="view-exam-count" class="font-semibold text-slate-800 text-sm mt-0.5">36 câu trắc nghiệm</div>
+                        </div>
+                    </div>
+                    <div class="bg-slate-50 border border-slate-100 p-4 rounded-xl flex items-start gap-3">
+                        <div class="text-slate-400 mt-0.5"><i class="fa-solid fa-clock text-lg"></i></div>
+                        <div>
+                            <div class="text-xs font-bold text-slate-400 uppercase tracking-wider">Thời gian</div>
+                            <div class="font-semibold text-slate-800 text-sm mt-0.5">Không giới hạn</div>
+                        </div>
+                    </div>
+                    <div class="bg-slate-50 border border-slate-100 p-4 rounded-xl flex items-start gap-3">
+                        <div class="text-slate-400 mt-0.5"><i class="fa-solid fa-calculator text-lg"></i></div>
+                        <div>
+                            <div class="text-xs font-bold text-slate-400 uppercase tracking-wider">Cách tính điểm</div>
+                            <div class="font-semibold text-slate-800 text-sm mt-0.5">Mỗi câu bằng nhau, thang 10. Bỏ trống không có điểm, sai không bị trừ.</div>
+                        </div>
+                    </div>
+                    <div class="bg-slate-50 border border-slate-100 p-4 rounded-xl flex items-start gap-3">
+                        <div class="text-slate-400 mt-0.5"><i class="fa-solid fa-shuffle text-lg"></i></div>
+                        <div>
+                            <div class="text-xs font-bold text-slate-400 uppercase tracking-wider">Thứ tự</div>
+                            <div class="font-semibold text-slate-800 text-sm mt-0.5">Trộn thứ tự câu hỏi và đáp án</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-slate-50 border border-slate-100 p-4 rounded-xl flex items-start gap-3">
+                    <div class="text-rose-500 mt-0.5"><i class="fa-solid fa-circle-question text-lg"></i></div>
+                    <div>
+                        <div class="text-xs font-bold text-slate-400 uppercase tracking-wider">Đáp án và giải thích</div>
+                        <div class="font-semibold text-slate-800 text-sm mt-0.5">Bấm "Kiểm tra" để xem đúng/sai và giải thích ngay từng câu.</div>
+                    </div>
+                </div>
+
+                <div class="text-xs text-slate-500 mt-2">
+                    Chủ đề: <span id="view-exam-topic" class="bg-slate-100 text-slate-700 px-2.5 py-1 rounded font-medium">BÀI TẬP BUỔI 6 HẠNG VÀ ĐLTT PTTT</span>
+                </div>
+
+                <!-- Nút bắt đầu -->
+                <div class="pt-4 mt-auto">
+                    <button onclick="startExam()" class="w-full bg-[#dc2626] hover:bg-[#b91c1c] text-white font-semibold py-4 rounded-xl shadow-lg shadow-rose-600/30 transition flex items-center justify-center gap-2 text-base">
+                        <i class="fa-solid fa-circle-play text-lg"></i> Bắt đầu làm bài
+                    </button>
+                </div>
+            </div>
+
+            <!-- TAB 2: PDF CROP & CREATE EXAM -->
+            <div id="tab-pdf-creator" class="hidden space-y-6 flex-1 flex flex-col">
+                <div class="border-b pb-4">
+                    <h2 class="text-xl font-bold text-slate-950">Tạo Đề Thi & Cắt Ảnh từ PDF</h2>
+                    <p class="text-sm text-slate-500">Tải file PDF lên, hệ thống sẽ tự động lấy tên file làm tên bài tập và chủ đề. Sau đó chọn vùng ảnh câu hỏi để tạo đề.</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="md:col-span-1 space-y-4">
+                        <div class="border-2 border-dashed border-slate-300 rounded-2xl p-6 text-center hover:border-rose-500 transition bg-slate-50">
+                            <input type="file" id="pdf-file-input" accept="application/pdf" class="hidden" onchange="handlePDFUpload(event)">
+                            <label for="pdf-file-input" class="cursor-pointer flex flex-col items-center">
+                                <i class="fa-solid fa-cloud-arrow-up text-4xl text-rose-500 mb-2"></i>
+                                <span class="font-semibold text-sm text-slate-700">Chọn file PDF đề thi</span>
+                                <span class="text-xs text-slate-400 mt-1">(.pdf tối đa 50MB)</span>
+                            </label>
+                        </div>
+
+                        <div id="pdf-meta-box" class="hidden bg-slate-50 p-4 rounded-xl space-y-3 text-sm border">
+                            <div>
+                                <span class="text-xs text-slate-400 block">Tên bài tập (từ tên file):</span>
+                                <input type="text" id="extracted-title" class="w-full mt-1 bg-white border rounded-lg px-3 py-2 font-medium text-slate-800">
+                            </div>
+                            <div>
+                                <span class="text-xs text-slate-400 block">Chủ đề:</span>
+                                <input type="text" id="extracted-topic" class="w-full mt-1 bg-white border rounded-lg px-3 py-2 font-medium text-slate-800">
+                            </div>
+                            <div class="text-xs text-slate-500" id="pdf-page-count">Tổng số trang: 0</div>
+                        </div>
+
+                        <button id="btn-save-custom-exam" onclick="saveCustomExam()" disabled class="w-full bg-slate-300 text-white font-medium py-3 rounded-xl transition cursor-not-allowed">
+                            Lưu Đề Thi (<span id="question-count-badge">0</span> câu)
+                        </button>
+                    </div>
+
+                    <div class="md:col-span-2 bg-slate-900 rounded-2xl p-4 flex flex-col items-center justify-center min-h-[450px] relative overflow-hidden">
+                        <div id="pdf-viewer-placeholder" class="text-center text-slate-400">
+                            <i class="fa-regular fa-file-pdf text-5xl mb-2 text-slate-600"></i>
+                            <p class="text-sm">Hãy tải file PDF lên để hiển thị các trang và cắt câu hỏi</p>
+                        </div>
+                        <div id="pdf-canvas-container" class="hidden w-full flex flex-col items-center space-y-4 max-h-[500px] overflow-y-auto custom-scrollbar p-2">
+                            <!-- Render canvas pages here -->
+                        </div>
+                        
+                        <!-- Tool bar chuyển trang PDF -->
+                        <div id="pdf-nav-bar" class="hidden absolute bottom-4 bg-slate-800/90 backdrop-blur px-4 py-2 rounded-xl text-white text-sm flex items-center gap-4 shadow-lg border border-slate-700">
+                            <button onclick="prevPage()" class="hover:text-rose-400"><i class="fa-solid fa-chevron-left"></i></button>
+                            <span>Trang <span id="current-page-num">1</span> / <span id="total-page-num">1</span></span>
+                            <button onclick="nextPage()" class="hover:text-rose-400"><i class="fa-solid fa-chevron-right"></i></button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Danh sách câu hỏi đã cắt tạm thời -->
+                <div class="border-t pt-4">
+                    <h3 class="font-bold text-slate-800 mb-3">Danh sách câu hỏi đã tạo (<span id="list-q-count">0</span>)</h3>
+                    <div id="draft-questions-list" class="space-y-2 max-h-60 overflow-y-auto custom-scrollbar pr-2 text-sm text-slate-500">
+                        Chưa có câu hỏi nào được cắt. Bạn hãy chọn vùng trên trang PDF để thêm câu hỏi.
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 3: QUIZ SOLVING INTERFACE -->
+            <div id="tab-quiz" class="hidden space-y-6 flex-1 flex flex-col">
+                <div class="flex justify-between items-center bg-slate-50 p-4 rounded-xl border">
+                    <div>
+                        <h3 id="quiz-active-title" class="font-bold text-slate-900 text-lg">BÀI TẬP BUỔI 6</h3>
+                        <p class="text-xs text-slate-500" id="quiz-active-subtitle">Đang làm bài trắc nghiệm</p>
+                    </div>
+                    <div class="flex items-center gap-4">
+                        <div class="text-sm font-semibold text-rose-600 bg-rose-50 px-3 py-1.5 rounded-lg border border-rose-100">
+                            <i class="fa-solid fa-clock mr-1.5"></i> <span id="timer-display">00:00</span>
+                        </div>
+                        <button onclick="submitExam()" class="bg-rose-600 hover:bg-rose-700 text-white font-medium px-5 py-2 rounded-xl text-sm transition shadow-md shadow-rose-200">
+                            Nộp bài
+                        </button>
+                    </div>
+                </div>
+
+                <div id="quiz-questions-container" class="space-y-6 flex-1">
+                    <!-- Render dynamic questions here -->
+                </div>
+            </div>
+
+            <!-- TAB 4: RESULT SCORE REPORT -->
+            <div id="tab-result" class="hidden space-y-6 flex-1 flex flex-col">
+                <div class="bg-slate-50 border rounded-2xl p-6 flex flex-col md:flex-row items-center justify-between gap-6">
+                    <div class="flex items-center gap-6">
+                        <div class="relative w-28 h-28 flex items-center justify-center rounded-full bg-rose-50 border-4 border-rose-600 shadow-inner">
+                            <div class="text-center">
+                                <span id="res-score" class="text-2xl font-black text-rose-600">9,29</span>
+                                <span class="text-xs text-slate-500 block">/10 điểm</span>
+                            </div>
+                        </div>
+                        <div>
+                            <span class="bg-rose-100 text-rose-700 text-xs px-2.5 py-1 rounded-full font-semibold">Xuất sắc!</span>
+                            <h2 class="text-xl font-bold text-slate-900 mt-2">Bạn nắm rất chắc nội dung này. Hãy thử bộ đề khó hơn.</h2>
+                            <p class="text-xs text-slate-500 mt-1" id="res-details-text">Đúng 13/14 câu (92,9%) • 24 phút 36 giây</p>
+                        </div>
+                    </div>
+                    <div class="flex flex-col gap-2 w-full md:w-auto">
+                        <button onclick="startExam()" class="bg-rose-600 hover:bg-rose-700 text-white font-medium px-5 py-2.5 rounded-xl text-sm transition text-center shadow-md">
+                            <i class="fa-solid fa-rotate-right mr-1"></i> Làm lại đáp án
+                        </button>
+                        <button onclick="switchTab('dashboard')" class="bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 font-medium px-5 py-2.5 rounded-xl text-sm transition text-center">
+                            <i class="fa-solid fa-house mr-1"></i> Về trang môn học
+                        </button>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="bg-slate-50 border p-4 rounded-xl">
+                        <div class="text-xs font-bold text-slate-400 uppercase">Tổng kết</div>
+                        <div class="flex gap-4 mt-2 text-sm font-semibold">
+                            <span class="text-emerald-600">● Đúng: <span id="res-correct-count">13</span></span>
+                            <span class="text-rose-600">● Sai: <span id="res-wrong-count">1</span></span>
+                            <span class="text-slate-400">● Bỏ trống: 0</span>
+                        </div>
+                    </div>
+                    <div class="bg-slate-50 border p-4 rounded-xl">
+                        <div class="text-xs font-bold text-slate-400 uppercase">Điểm theo chủ đề</div>
+                        <div class="text-sm font-semibold text-slate-800 mt-2 flex justify-between">
+                            <span id="res-topic-name">Bài tập TEST Lần 2</span>
+                            <span id="res-topic-percent" class="text-emerald-600">93%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="border-t pt-4">
+                    <h3 class="font-bold text-slate-800 mb-4">Xem lại từng câu</h3>
+                    <div id="review-questions-container" class="space-y-4">
+                        <!-- Review item generated by JS -->
+                    </div>
+                </div>
+            </div>
+
         </div>
-    </div>
+    </main>
 
-    <div class="text-xs text-slate-500 mt-2">
-        Chủ đề: <span id="view-exam-topic" class="bg-slate-100 text-slate-700 px-2.5 py-1 rounded font-medium">BÀI TẬP BUỔI 6 HẠNG VÀ ĐLTT PTTT</span>
-    </div>
+    <!-- Footer -->
+    <footer class="text-center py-4 text-xs text-slate-500">
+        TestMaster Pro &copy; 2026 - Nền tảng học tập thông minh
+    </footer>
 
-    <!-- Nút bắt đầu -->
-    <div class="pt-4 mt-auto">
-        <button onclick="startExam()" class="w-full bg-[#dc2626] hover:bg-[#b91c1c] text-white font-semibold py-4 rounded-xl shadow-lg shadow-rose-600/30 transition flex items-center justify-center gap-2 text-base">
-            <i class="fa-solid fa-circle-play text-lg"></i> Bắt đầu làm bài
-        </button>
-    </div>
-</div>
+    <!-- Script xử lý ứng dụng -->
+    <script>
+        let currentTab = 'dashboard';
+        let currentExam = {
+            title: "BÀI TẬP BUỔI 6 - HẠNG VÀ ĐLTT PTTT",
+            subject: "TOÁN CAO CẤP",
+            topic: "BÀI TẬP BUỔI 6 HẠNG VÀ ĐLTT PTTT",
+            questions: []
+        };
+
+        let userAnswers = {};
+        let examTimer = null;
+        let secondsElapsed = 0;
+
+        // PDF state
+        let pdfDoc = null;
+        let pageNum = 1;
+        let scale = 1.2;
+
+        // Dữ liệu mẫu ban đầu
+        function loadSampleExam() {
+            currentExam = {
+                title: "BÀI TẬP BUỔI 6 - HẠNG VÀ ĐLTT PTTT",
+                subject: "TOÁN CAO CẤP",
+                topic: "BÀI TẬP BUỔI 6 HẠNG VÀ ĐLTT PTTT",
+                questions: [
+                    {
+                        id: 1,
+                        text: "Cho ba ma trận vuông cấp 3: $A = \\begin{pmatrix} 1 & 2 & -1 \\\\ 3 & 1 & 0 \\\\ 2 & 4 & 2 \\end{pmatrix}$, $B = \\begin{pmatrix} 2 & -1 & 4 \\\\ 0 & 3 & 2 \\\\ 1 & -3 & 1 \\end{pmatrix}$, $C = \\begin{pmatrix} 1 & 0 & 2 \\\\ 1 & -2 & 3 \\\\ 2 & 1 & -4 \\end{pmatrix}$. Tính phần tử $c_{32}$ của ma trận tổng $S = A + B + C$.",
+                        options: ["3", "2", "0", "-1"],
+                        correct: 1 
+                    },
+                    {
+                        id: 2,
+                        text: "Cho $A = (a_{ij})$ là ma trận vuông cấp 3 với $a_{ij} = i^2 + 3j - \\min(i, j)$. Gọi $A^T$ là ma trận chuyển vị của $A$, tính $\\det(2A^T)$.",
+                        options: ["216", "108", "432", "54"],
+                        correct: 0
+                    }
+                ]
+            };
+            updateDashboardView();
+            switchTab('dashboard');
+        }
+
+        function switchTab(tabId) {
+            document.getElementById('tab-dashboard').classList.add('hidden');
+            document.getElementById('tab-pdf-creator').classList.add('hidden');
+            document.getElementById('tab-quiz').classList.add('hidden');
+            document.getElementById('tab-result').classList.add('hidden');
+
+            currentTab = tabId;
+            if(tabId === 'dashboard') document.getElementById('tab-dashboard').classList.remove('hidden');
+            if(tabId === 'pdf-creator') document.getElementById('tab-pdf-creator').classList.remove('hidden');
+            if(tabId === 'quiz') document.getElementById('tab-quiz').classList.remove('hidden');
+            if(tabId === 'result') document.getElementById('tab-result').classList.remove('hidden');
+        }
+
+        function updateDashboardView() {
+            document.getElementById('view-exam-title').innerText = currentExam.title;
+            document.getElementById('view-exam-subject').innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-rose-600 inline-block"></span> ${currentExam.subject}`;
+            document.getElementById('view-exam-count').innerText = `${currentExam.questions.length} câu trắc nghiệm`;
+            document.getElementById('view-exam-topic').innerText = currentExam.topic;
+        }
+
+        // --- PDF HANDLING & CROP LOGIC ---
+        async function handlePDFUpload(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            let fileNameWithoutExt = file.name.replace(/\.[^/.]+$/, "");
+            let formattedTitle = fileNameWithoutExt.replace(/[_]/g, ' ').toUpperCase();
+
+            document.getElementById('extracted-title').value = formattedTitle;
+            document.getElementById('extracted-topic').value = formattedTitle;
+            document.getElementById('pdf-meta-box').classList.remove('hidden');
+
+            currentExam.title = formattedTitle;
+            currentExam.topic = formattedTitle;
+
+            const fileReader = new FileReader();
+            fileReader.onload = async function() {
+                const typedarray = new Uint8Array(this.result);
+                pdfjsLib.getDocument(typedarray).promise.then(async function(pdfDoc_) {
+                    pdfDoc = pdfDoc_;
+                    document.getElementById('total-page-num').innerText = pdfDoc.numPages;
+                    document.getElementById('pdf-page-count').innerText = `Tổng số trang: ${pdfDoc.numPages}`;
+                    document.getElementById('pdf-viewer-placeholder').classList.add('hidden');
+                    document.getElementById('pdf-canvas-container').classList.remove('hidden');
+                    document.getElementById('pdf-nav-bar').classList.remove('hidden');
+                    
+                    await renderPage(pageNum);
+                    
+                    currentExam.questions = [
+                        {
+                            id: 1,
+                            text: `Câu hỏi trích xuất từ tài liệu: ${formattedTitle}`,
+                            options: ["Đáp án A", "Đáp án B", "Đáp án C", "Đáp án D"],
+                            correct: 0
+                        }
+                    ];
+                    updateDraftList();
+                });
+            };
+            fileReader.readAsArrayBuffer(file);
+        }
+
+        async function renderPage(num) {
+            const page = await pdfDoc.getPage(num);
+            const viewport = page.getViewport({ scale: scale });
+            const container = document.getElementById('pdf-canvas-container');
+            container.innerHTML = '';
+
+            const canvas = document.createElement('canvas');
+            const context = canvas.getContext('2d');
+            canvas.height = viewport.height;
+            canvas.width = viewport.width;
+            canvas.className = "shadow-lg rounded-lg border border-slate-700 cursor-crosshair";
+
+            await page.render({ canvasContext: context, viewport: viewport }).promise;
+            container.appendChild(canvas);
+
+            document.getElementById('current-page-num').innerText = num;
+        }
+
+        function prevPage() {
+            if (pageNum <= 1) return;
+            pageNum--;
+            renderPage(pageNum);
+        }
+
+        function nextPage() {
+            if (pageNum >= pdfDoc.numPages) return;
+            pageNum++;
+            renderPage(pageNum);
+        }
+
+        function updateDraftList() {
+            const listEl = document.getElementById('draft-questions-list');
+            document.getElementById('list-q-count').innerText = currentExam.questions.length;
+            document.getElementById('question-count-badge').innerText = currentExam.questions.length;
+            
+            if (currentExam.questions.length > 0) {
+                document.getElementById('btn-save-custom-exam').removeAttribute('disabled');
+                document.getElementById('btn-save-custom-exam').className = "w-full bg-rose-600 hover:bg-rose-700 text-white font-medium py-3 rounded-xl transition shadow-md shadow-rose-200 cursor-pointer";
+                
+                listEl.innerHTML = currentExam.questions.map((q, idx) => `
+                    <div class="bg-slate-50 border p-3 rounded-xl flex justify-between items-center">
+                        <span class="font-medium text-slate-800">Câu ${idx + 1}: ${q.text.substring(0, 50)}...</span>
+                        <span class="text-xs bg-emerald-100 text-emerald-700 px-2 py-1 rounded font-semibold">Đã cắt ảnh</span>
+                    </div>
+                `).join('');
+            }
+        }
+
+        function saveCustomExam() {
+            currentExam.title = document.getElementById('extracted-title').value;
+            currentExam.topic = document.getElementById('extracted-topic').value;
+            updateDashboardView();
+            switchTab('dashboard');
+            alert("Đã tạo đề thi thành công từ file PDF!");
+        }
+
+        // --- QUIZ SOLVING LOGIC ---
+        function startExam() {
+            if(currentExam.questions.length === 0) {
+                loadSampleExam();
+            }
+            userAnswers = {};
+            secondsElapsed = 0;
+            if(examTimer) clearInterval(examTimer);
+            examTimer = setInterval(() => {
+                secondsElapsed++;
+                let m = Math.floor(secondsElapsed / 60);
+                let s = secondsElapsed % 60;
+                document.getElementById('timer-display').innerText = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+            }, 1000);
+
+            document.getElementById('quiz-active-title').innerText = currentExam.title;
+            document.getElementById('quiz-active-subtitle').innerText = currentExam.topic;
+
+            const container = document.getElementById('quiz-questions-container');
+            container.innerHTML = currentExam.questions.map((q, qIdx) => `
+                <div class="bg-white border border-slate-200 p-6 rounded-2xl shadow-sm space-y-4">
+                    <div class="font-bold text-slate-900 text-base flex items-start gap-3">
+                        <span class="bg-rose-100 text-rose-700 px-2.5 py-1 rounded-lg text-xs font-semibold shrink-0">Câu ${qIdx + 1}</span>
+                        <div class="leading-relaxed">${q.text}</div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 pl-2">
+                        ${q.options.map((opt, optIdx) => `
+                            <label class="flex items-center gap-3 p-3 rounded-xl border border-slate-200 hover:border-rose-500 hover:bg-rose-50/30 cursor-pointer transition select-none">
+                                <input type="radio" name="q_${qIdx}" value="${optIdx}" onchange="userAnswers[${qIdx}] = ${optIdx}" class="w-4 h-4 text-rose-600 focus:ring-rose-500">
+                                <span class="font-semibold text-slate-700 text-sm w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center shrink-0">${String.fromCharCode(65 + optIdx)}</span>
+                                <span class="text-slate-800 text-sm">${opt}</span>
+                            </label>
+                        `).join('')}
+                    </div>
+                </div>
+            `).join('');
+
+            switchTab('quiz');
+        }
+
+        function submitExam() {
+            clearInterval(examTimer);
+            let correctCount = 0;
+            let total = currentExam.questions.length;
+
+            currentExam.questions.forEach((q, idx) => {
+                if(userAnswers[idx] === q.correct) {
+                    correctCount++;
+                }
+            });
+
+            let score = ((correctCount / total) * 10).toFixed(2);
+            document.getElementById('res-score').innerText = score.replace('.', ',');
+            document.getElementById('res-correct-count').innerText = correctCount;
+            document.getElementById('res-wrong-count').innerText = total - correctCount;
+            document.getElementById('res-topic-name').innerText = currentExam.title;
+            let percent = Math.round((correctCount / total) * 100);
+            document.getElementById('res-topic-percent').innerText = percent + '%';
+            
+            let m = Math.floor(secondsElapsed / 60);
+            let s = secondsElapsed % 60;
+            document.getElementById('res-details-text').innerText = `Đúng ${correctCount}/${total} câu (${percent}%) • ${m} phút ${s} giây`;
+
+            const reviewContainer = document.getElementById('review-questions-container');
+            reviewContainer.innerHTML = currentExam.questions.map((q, qIdx) => {
+                let userChoice = userAnswers[qIdx];
+                let isCorrect = userChoice === q.correct;
+                return `
+                    <div class="bg-white border ${isCorrect ? 'border-emerald-200' : 'border-rose-200'} p-5 rounded-2xl space-y-3 shadow-sm">
+                        <div class="flex items-center justify-between">
+                            <span class="font-bold text-slate-900 text-sm">Câu ${qIdx + 1}</span>
+                            <span class="text-xs px-2.5 py-1 rounded-full font-semibold ${isCorrect ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}">
+                                ${isCorrect ? 'Đúng' : 'Sai'}
+                            </span>
+                        </div>
+                        <div class="text-slate-800 text-sm">${q.text}</div>
+                        <div class="text-xs font-medium text-slate-600 mt-2">
+                            Bạn chọn: <span class="font-bold ${isCorrect ? 'text-emerald-600' : 'text-rose-600'}">${userChoice !== undefined ? String.fromCharCode(65 + userChoice) : 'Không chọn'}</span> | 
+                            Đáp án đúng: <span class="font-bold text-emerald-600">${String.fromCharCode(65 + q.correct)}</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            switchTab('result');
+        }
+
+        window.onload = function() {
+            loadSampleExam();
+        };
+    </script>
+</body>
+</html>
