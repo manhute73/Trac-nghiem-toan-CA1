@@ -13,11 +13,35 @@
     <script>
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
     </script>
+    
+    <!-- KaTeX CSS & JS cho hiển thị toán học siêu nét -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"></script>
+
+    <!-- MathJax Cấu hình đầy đủ gói ma trận và ký hiệu toán cao cấp -->
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']],
+                processEscapes: true,
+                packages: {'[+]': ['ams', 'newcommand']}
+            },
+            options: {
+                skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre']
+            }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
         body { font-family: 'Inter', sans-serif; background-color: #0f172a; }
         .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+        /* Đảm bảo công thức toán không bị tràn và hiển thị khối chuẩn */
+        .MathJax { overflow-x: auto; overflow-y: hidden; max-width: 100%; }
     </style>
 </head>
 <body class="min-h-screen text-slate-800 flex flex-col">
@@ -32,7 +56,7 @@
         </div>
         <div class="flex items-center space-x-4">
             <button onclick="switchTab('dashboard')" class="hover:text-white transition"><i class="fa-solid fa-house mr-1"></i> Trang chủ</button>
-            <button onclick="switchTab('pdf-creator')" class="hover:text-white transition"><i class="fa-solid fa-wand-magic-sparkles mr-1"></i> Tự Động Cắt Ảnh PDF</button>
+            <button onclick="switchTab('pdf-creator')" class="hover:text-white transition"><i class="fa-solid fa-file-arrow-up mr-1"></i> Tải PDF Tự Động Tách</button>
         </div>
     </header>
 
@@ -45,7 +69,7 @@
                 <div class="flex justify-between items-center pb-4 mb-2 border-b border-slate-100">
                     <h2 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Bảng điều khiển luyện tập</h2>
                     <button onclick="switchTab('pdf-creator')" class="bg-rose-50 hover:bg-rose-100 text-rose-700 px-4 py-2 rounded-xl font-medium text-sm transition flex items-center gap-2 border border-rose-200">
-                        <i class="fa-solid fa-wand-magic-sparkles"></i> Tự động cắt ảnh từ PDF
+                        <i class="fa-solid fa-file-arrow-up"></i> Tải PDF Tự Động Tách Câu
                     </button>
                 </div>
 
@@ -136,12 +160,12 @@
                 </div>
             </div>
 
-            <!-- TAB 2: HỆ THỐNG TỰ ĐỘNG CẮT ẢNH TỪ PDF -->
+            <!-- TAB 2: TỰ ĐỘNG ĐỌC FILE PDF & TÁCH CÂU HỎI -->
             <div id="tab-pdf-creator" class="hidden space-y-4 flex-1 flex flex-col">
                 <div class="border-b pb-3 flex justify-between items-center">
                     <div>
-                        <h2 class="text-lg font-bold text-slate-950">Tự Động Cắt Ảnh Từng Câu Từ File PDF</h2>
-                        <p class="text-xs text-slate-500">Hệ thống quét chữ <b>"Câu X"</b>, tự động khoanh vùng và cắt thành ảnh các câu hỏi cực nhanh.</p>
+                        <h2 class="text-lg font-bold text-slate-950">Tải File PDF & Tự Động Tách Câu Hỏi Toán Học</h2>
+                        <p class="text-xs text-slate-500">Hệ thống quét chữ <b>"Câu X"</b>, tự động tách nội dung và bóc tách đáp án toán học A, B, C, D.</p>
                     </div>
                     <button onclick="switchTab('dashboard')" class="bg-rose-600 hover:bg-rose-700 text-white px-4 py-2 rounded-xl text-xs font-medium transition flex items-center gap-2 shadow-md shrink-0">
                         <i class="fa-solid fa-arrow-left"></i> Quay lại trang chủ
@@ -149,13 +173,14 @@
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-start">
-                    <!-- Cột trái: Tải file & Danh sách đã tự cắt -->
+                    <!-- Cột trái: Tải file PDF -->
                     <div class="md:col-span-1 space-y-3">
                         <div class="border-2 border-dashed border-slate-300 rounded-xl p-4 text-center hover:border-rose-500 transition bg-slate-50">
-                            <input type="file" id="pdf-file-input" accept="application/pdf" class="hidden" onchange="handleAutoCropPDF(event)">
+                            <input type="file" id="pdf-file-input" accept="application/pdf" class="hidden" onchange="handleAutoExtractPDF(event)">
                             <label for="pdf-file-input" class="cursor-pointer flex flex-col items-center">
                                 <i class="fa-solid fa-cloud-arrow-up text-3xl text-rose-500 mb-1"></i>
                                 <span class="font-semibold text-xs text-slate-700">Chọn file PDF đề thi</span>
+                                <span class="text-[10px] text-slate-400 mt-0.5">(.pdf chứa text toán học)</span>
                             </label>
                         </div>
 
@@ -164,32 +189,19 @@
                                 <span class="text-slate-400 block font-semibold">Tên đề thi:</span>
                                 <input type="text" id="pdf-extracted-title" class="w-full mt-1 bg-white border rounded px-2 py-1 font-medium text-slate-800">
                             </div>
-                            <button onclick="applyAutoCroppedExam()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-2 rounded-lg transition shadow">
+                            <button onclick="applyAutoExtractedExam()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-2 rounded-lg transition shadow">
                                 Áp dụng bộ đề này vào bài thi
                             </button>
                         </div>
-
-                        <div class="border-t pt-2">
-                            <h3 class="font-bold text-slate-800 text-xs mb-1.5 flex justify-between items-center">
-                                <span>Danh sách tự cắt (<span id="extracted-q-count">0</span> câu)</span>
-                            </h3>
-                            <div id="pdf-extracted-list" class="space-y-1.5 max-h-56 overflow-y-auto custom-scrollbar pr-1 text-xs text-slate-500">
-                                <p class="italic text-slate-400 text-center py-6">Chưa có dữ liệu. Hãy tải file PDF lên.</p>
-                            </div>
-                        </div>
                     </div>
 
-                    <!-- Cột phải: Thông báo tiến trình tự động cắt -->
-                    <div class="md:col-span-2 bg-slate-900 rounded-xl p-6 flex flex-col items-center justify-center text-center relative overflow-hidden h-[460px]">
-                        <div id="auto-crop-status" class="space-y-3">
-                            <i class="fa-solid fa-wand-magic-sparkles text-4xl text-rose-500 animate-pulse"></i>
-                            <h3 class="text-white font-bold text-sm">Sẵn sàng tự động cắt ảnh</h3>
-                            <p class="text-xs text-slate-400 max-w-xs">Chọn file PDF ở cột bên trái, hệ thống sẽ tự tìm các chữ "Câu X" và cắt toàn bộ câu hỏi thành ảnh cho bạn.</p>
-                        </div>
-                        <div id="auto-crop-loading" class="hidden space-y-3">
-                            <i class="fa-solid fa-spinner fa-spin text-4xl text-emerald-400"></i>
-                            <h3 class="text-white font-bold text-sm">Đang tự động phân tích và cắt ảnh...</h3>
-                            <p id="crop-progress-text" class="text-xs text-slate-400">Đang đọc trang 1...</p>
+                    <!-- Cột phải: List danh sách câu hỏi đã tự động tách -->
+                    <div class="md:col-span-2 bg-slate-50 border rounded-xl p-4 flex flex-col space-y-3 min-h-[420px]">
+                        <h3 class="font-bold text-slate-900 text-sm flex justify-between items-center border-b pb-2">
+                            <span>Danh sách câu hỏi tự động tách (<span id="extracted-q-count">0</span> câu)</span>
+                        </h3>
+                        <div id="pdf-extracted-list" class="space-y-3 flex-1 max-h-[350px] overflow-y-auto custom-scrollbar pr-1 text-xs text-slate-600">
+                            <p class="italic text-slate-400 text-center py-16">Chưa có dữ liệu. Hãy tải file PDF lên ở cột bên trái.</p>
                         </div>
                     </div>
                 </div>
@@ -316,10 +328,14 @@
             questions: [
                 {
                     id: 1,
-                    text: "",
-                    isImage: true,
-                    imgUrl: "",
-                    options: ["14", "4", "2", "6"],
+                    text: "Cho ba ma trận vuông cấp 3: $A = \\begin{pmatrix} 1 & 2 & -1 \\\\ 3 & 1 & 0 \\\\ 2 & 4 & 2 \\end{pmatrix}$. Tính phần tử $c_{32}$ của ma trận tổng $S = A + B + C$.",
+                    options: ["3", "2", "0", "-1"],
+                    correct: 1
+                },
+                {
+                    id: 2,
+                    text: "Cho $A = (a_{ij})$ là ma trận vuông cấp 3 với $a_{ij} = i^2 + 3j - \\min(i, j)$. Gọi $A^T$ là ma trận chuyển vị của $A$, tính $\\det(2A^T)$.",
+                    options: ["216", "108", "432", "54"],
                     correct: 0
                 }
             ]
@@ -331,7 +347,7 @@
         let secondsElapsed = 0;
         let countdownSeconds = 0;
         let examHistory = [];
-        let autoExtractedQuestions = [];
+        let extractedQuestionsTemp = [];
 
         function toggleShuffle() {
             isShuffleEnabled = !isShuffleEnabled;
@@ -393,8 +409,8 @@
             }
         }
 
-        // --- THUẬT TOÁN TỰ ĐỘNG CẮT ẢNH CÂU HỎI TỪ PDF ---
-        async function handleAutoCropPDF(e) {
+        // --- THUẬT TOÁN TÁCH ĐỀ, BÓC TÁCH ĐÁP ÁN TOÁN HỌC A, B, C, D ---
+        async function handleAutoExtractPDF(e) {
             const file = e.target.files[0];
             if (!file) return;
 
@@ -402,111 +418,129 @@
             let formattedTitle = fileNameWithoutExt.replace(/[_]/g, ' ').toUpperCase();
 
             document.getElementById('pdf-extracted-title').value = formattedTitle;
-            document.getElementById('auto-crop-status').classList.add('hidden');
-            document.getElementById('auto-crop-loading').classList.remove('hidden');
+            document.getElementById('pdf-meta-box').classList.remove('hidden');
 
             const fileReader = new FileReader();
             fileReader.onload = async function() {
                 const typedarray = new Uint8Array(this.result);
                 const pdf = await pdfjsLib.getDocument(typedarray).promise;
-                autoExtractedQuestions = [];
+                let fullText = "";
 
-                for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
-                    document.getElementById('crop-progress-text').innerText = `Đang quét trang ${pageNum}/${pdf.numPages}...`;
-                    const page = await pdf.getPage(pageNum);
-                    const viewport = page.getViewport({ scale: 1.5 }); // Scale lớn để ảnh sắc nét
-
-                    const canvas = document.createElement('canvas');
-                    const context = canvas.getContext('2d');
-                    canvas.height = viewport.height;
-                    canvas.width = viewport.width;
-
-                    await page.render({ canvasContext: context, viewport: viewport }).promise;
+                for (let i = 1; i <= pdf.numPages; i++) {
+                    const page = await pdf.getPage(i);
                     const textContent = await page.getTextContent();
+                    const pageText = textContent.items.map(item => item.str).join(" ");
+                    fullText += pageText + "\n";
+                }
 
-                    // Tìm tất cả các tọa độ có chữ "Câu X"
-                    let qItems = [];
-                    textContent.items.forEach(item => {
-                        let match = item.str.match(/Câu\s+(\d+)/i);
-                        if (match) {
-                            let tx = item.transform[4] * 1.5;
-                            let ty = canvas.height - (item.transform[5] * 1.5);
-                            qItems.push({ num: parseInt(match[1]), y: ty, x: tx });
+                extractedQuestionsTemp = [];
+                let regex = /Câu\s+\d+[:\.]?/gi;
+                let matches = [...fullText.matchAll(regex)];
+
+                if (matches.length > 0) {
+                    for (let m = 0; m < matches.length; m++) {
+                        let startIndex = matches[m].index;
+                        let endIndex = (m < matches.length - 1) ? matches[m + 1].index : fullText.length;
+                        let rawBlock = fullText.substring(startIndex, endIndex).trim();
+
+                        // Bóc tách các đáp án A, B, C, D toán học ra khỏi nội dung câu hỏi
+                        let optA = "", optB = "", optC = "", optD = "";
+                        let cleanText = rawBlock;
+
+                        let idxA = cleanText.search(/\bA[\.\)]/i);
+                        let idxB = cleanText.search(/\bB[\.\)]/i);
+                        let idxC = cleanText.search(/\bC[\.\)]/i);
+                        let idxD = cleanText.search(/\bD[\.\)]/i);
+
+                        if (idxA !== -1) {
+                            let endIdx = idxB !== -1 ? idxB : cleanText.length;
+                            optA = cleanText.substring(idxA + 2, endIdx).trim();
                         }
-                    });
+                        if (idxB !== -1) {
+                            let endIdx = idxC !== -1 ? idxC : cleanText.length;
+                            optB = cleanText.substring(idxB + 2, endIdx).trim();
+                        }
+                        if (idxC !== -1) {
+                            let endIdx = idxD !== -1 ? idxD : cleanText.length;
+                            optC = cleanText.substring(idxC + 2, endIdx).trim();
+                        }
+                        if (idxD !== -1) {
+                            optD = cleanText.substring(idxD + 2).trim();
+                        }
 
-                    // Sắp xếp các câu theo thứ tự từ trên xuống dưới
-                    qItems.sort((a, b) => a.y - b.y);
+                        if (idxA !== -1) {
+                            cleanText = cleanText.substring(0, idxA).trim();
+                        }
 
-                    // Cắt tự động từng khoảng giữa các câu
-                    for (let i = 0; i < qItems.length; i++) {
-                        let startY = Math.max(0, qItems[i].y - 25);
-                        let endY = (i < qItems.length - 1) ? qItems[i + 1].y - 15 : canvas.height;
-                        let height = endY - startY;
+                        let optionsArr = [
+                            optA || "$\\dots$",
+                            optB || "$\\dots$",
+                            optC || "$\\dots$",
+                            optD || "$\\dots$"
+                        ];
 
-                        if (height < 30) continue; // Bỏ qua nếu quá ngắn
-
-                        let cropCanvas = document.createElement('canvas');
-                        cropCanvas.width = canvas.width - 40;
-                        cropCanvas.height = height;
-                        let cropCtx = cropCanvas.getContext('2d');
-
-                        cropCtx.drawImage(canvas, 20, startY, canvas.width - 40, height, 0, 0, cropCanvas.width, height);
-                        let imgDataUrl = cropCanvas.toDataURL('image/png');
-
-                        autoExtractedQuestions.push({
-                            id: autoExtractedQuestions.length + 1,
-                            text: "",
-                            isImage: true,
-                            imgUrl: imgDataUrl,
-                            options: ["A", "B", "C", "D"], // Tuỳ chỉnh mặc định
+                        extractedQuestionsTemp.push({
+                            id: extractedQuestionsTemp.length + 1,
+                            text: cleanText,
+                            options: optionsArr,
                             correct: 0
                         });
                     }
+                } else {
+                    extractedQuestionsTemp.push({
+                        id: 1,
+                        text: fullText.substring(0, 300),
+                        options: ["$\\dots$", "$\\dots$", "$\\dots$", "$\\dots$"],
+                        correct: 0
+                    });
                 }
 
-                document.getElementById('auto-crop-loading').classList.add('hidden');
-                document.getElementById('auto-crop-status').classList.remove('hidden');
-                document.getElementById('pdf-meta-box').classList.remove('hidden');
-                updateAutoExtractedListUI();
+                renderExtractedListUI();
             };
             fileReader.readAsArrayBuffer(file);
         }
 
-        function updateAutoExtractedListUI() {
-            document.getElementById('extracted-q-count').innerText = autoExtractedQuestions.length;
+        function renderExtractedListUI() {
+            document.getElementById('extracted-q-count').innerText = extractedQuestionsTemp.length;
             const listEl = document.getElementById('pdf-extracted-list');
             
-            if (autoExtractedQuestions.length === 0) {
-                listEl.innerHTML = `<p class="italic text-slate-400 text-center py-6">Không tìm thấy định dạng "Câu X" tự động.</p>`;
-                return;
-            }
-
-            listEl.innerHTML = autoExtractedQuestions.map((q, idx) => `
-                <div class="bg-white border p-2 rounded-lg flex items-center justify-between gap-2 shadow-sm">
-                    <div class="flex items-center gap-2 truncate">
-                        <img src="${q.imgUrl}" class="w-12 h-8 object-cover rounded border">
-                        <span class="font-medium text-slate-800 text-xs">Câu ${idx + 1} (Đã cắt ảnh)</span>
+            listEl.innerHTML = extractedQuestionsTemp.map((q, idx) => `
+                <div class="bg-white border p-3.5 rounded-xl space-y-2 shadow-sm">
+                    <div class="font-bold text-slate-900 text-xs bg-slate-100 px-2.5 py-1 rounded inline-block">
+                        Câu ${idx + 1}
+                    </div>
+                    <div class="text-slate-800 text-xs leading-relaxed whitespace-pre-wrap bg-slate-50 p-2.5 rounded border border-slate-100 max-h-28 overflow-y-auto custom-scrollbar">${q.text}</div>
+                    
+                    <div class="grid grid-cols-2 gap-1.5 pt-1 text-[11px] text-slate-700 font-medium">
+                        <div class="bg-slate-100 px-2 py-1 rounded truncate"><b>A:</b> ${q.options[0]}</div>
+                        <div class="bg-slate-100 px-2 py-1 rounded truncate"><b>B:</b> ${q.options[1]}</div>
+                        <div class="bg-slate-100 px-2 py-1 rounded truncate"><b>C:</b> ${q.options[2]}</div>
+                        <div class="bg-slate-100 px-2 py-1 rounded truncate"><b>D:</b> ${q.options[3]}</div>
                     </div>
                 </div>
             `).join('');
+
+            // Render lại toán học bằng cả MathJax và KaTeX
+            if (window.MathJax) {
+                MathJax.typesetPromise();
+            }
         }
 
-        function applyAutoCroppedExam() {
-            if (autoExtractedQuestions.length === 0) {
-                alert("Chưa có câu hỏi nào được cắt tự động!");
+        function applyAutoExtractedExam() {
+            if (extractedQuestionsTemp.length === 0) {
+                alert("Chưa có câu hỏi nào được trích xuất!");
                 return;
             }
             let customTitle = document.getElementById('pdf-extracted-title').value;
             currentExam.title = customTitle;
             currentExam.topic = customTitle;
-            currentExam.questions = [...autoExtractedQuestions];
+            currentExam.questions = [...extractedQuestionsTemp];
 
             document.getElementById('input-exam-title').value = customTitle;
             document.getElementById('input-exam-topic').value = customTitle;
             updateDashboardInfo();
             switchTab('dashboard');
-            alert(`Đã tự động cắt và nạp thành công ${currentExam.questions.length} câu vào đề thi!`);
+            alert(`Đã nạp thành công ${currentExam.questions.length} câu hỏi toán học từ PDF vào đề thi!`);
         }
 
         // --- BẮT ĐẦU LÀM BÀI ---
@@ -562,16 +596,15 @@
                         </div>
                     </div>
 
-                    <!-- Hiển thị ảnh câu hỏi do hệ thống tự cắt -->
-                    <div class="w-full bg-slate-50 p-3 rounded-xl border border-slate-100 flex justify-center">
-                        <img src="${q.imgUrl}" class="max-w-full rounded border shadow-sm">
-                    </div>
+                    <!-- Nội dung toán học đề thi -->
+                    <div class="leading-relaxed text-slate-800 text-sm whitespace-pre-wrap">${q.text}</div>
 
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    <div class="space-y-2.5">
                         ${q.options.map((opt, optIdx) => `
-                            <label id="label_q_${qIdx}_${optIdx}" onclick="selectOption(${qIdx}, ${optIdx})" class="flex items-center justify-center gap-2 p-3.5 rounded-xl border border-slate-200 hover:border-emerald-500 hover:bg-emerald-50/20 cursor-pointer transition select-none">
+                            <label id="label_q_${qIdx}_${optIdx}" onclick="selectOption(${qIdx}, ${optIdx})" class="flex items-center gap-3 p-3.5 rounded-xl border border-slate-200 hover:border-emerald-500 hover:bg-emerald-50/20 cursor-pointer transition select-none">
                                 <input type="radio" name="q_${qIdx}" value="${optIdx}" class="w-4 h-4 text-emerald-600 focus:ring-emerald-500 hidden">
                                 <span id="badge_q_${qIdx}_${optIdx}" class="font-bold text-slate-700 text-sm w-7 h-7 rounded-full bg-slate-100 flex items-center justify-center shrink-0 border border-slate-200">${String.fromCharCode(65 + optIdx)}</span>
+                                <span class="text-slate-800 text-sm font-medium">${opt}</span>
                             </label>
                         `).join('')}
                     </div>
@@ -579,6 +612,7 @@
             `).join('');
 
             switchTab('quiz');
+            triggerMathRender();
         }
 
         function selectOption(qIdx, optIdx) {
@@ -587,10 +621,10 @@
                 let lbl = document.getElementById(`label_q_${qIdx}_${i}`);
                 let badge = document.getElementById(`badge_q_${qIdx}_${i}`);
                 if (i === optIdx) {
-                    lbl.className = "flex items-center justify-center gap-2 p-3.5 rounded-xl border border-emerald-500 bg-emerald-50/40 cursor-pointer transition select-none shadow-sm";
+                    lbl.className = "flex items-center gap-3 p-3.5 rounded-xl border border-emerald-500 bg-emerald-50/40 cursor-pointer transition select-none shadow-sm";
                     badge.className = "font-bold text-white text-sm w-7 h-7 rounded-full bg-emerald-600 flex items-center justify-center shrink-0";
                 } else {
-                    lbl.className = "flex items-center justify-center gap-2 p-3.5 rounded-xl border border-slate-200 hover:border-emerald-500 hover:bg-emerald-50/20 cursor-pointer transition select-none";
+                    lbl.className = "flex items-center gap-3 p-3.5 rounded-xl border border-slate-200 hover:border-emerald-500 hover:bg-emerald-50/20 cursor-pointer transition select-none";
                     badge.className = "font-bold text-slate-700 text-sm w-7 h-7 rounded-full bg-slate-100 flex items-center justify-center shrink-0 border border-slate-200";
                 }
             }
@@ -664,8 +698,35 @@
                             <span class="text-xs font-semibold text-slate-500">${currentExam.title}</span>
                         </div>
 
-                        <div class="w-full bg-slate-50 p-3 rounded-xl border border-slate-100 flex justify-center">
-                            <img src="${q.imgUrl}" class="max-w-full rounded border shadow-sm">
+                        <div class="text-slate-800 text-sm leading-relaxed whitespace-pre-wrap">${q.text}</div>
+
+                        <div class="space-y-2.5">
+                            ${q.options.map((opt, optIdx) => {
+                                let isUserPick = (userChoice === optIdx);
+                                let isRightPick = (q.correct === optIdx);
+                                let styleClass = "border-slate-200 text-slate-700 bg-white";
+                                let badgeClass = "bg-slate-100 text-slate-700 border-slate-200";
+                                let statusBadge = "";
+
+                                if (isRightPick) {
+                                    styleClass = "border-emerald-500 bg-emerald-50/40 text-emerald-900 font-medium";
+                                    badgeClass = "bg-emerald-600 text-white";
+                                    statusBadge = `<span class="ml-auto text-xs font-bold text-emerald-600 bg-emerald-100 px-3 py-1 rounded-full"><i class="fa-solid fa-check mr-1"></i> Bạn chọn đúng</span>`;
+                                }
+                                if (isUserPick && !isRightPick) {
+                                    styleClass = "border-rose-500 bg-rose-50/40 text-rose-900 font-medium";
+                                    badgeClass = "bg-rose-600 text-white";
+                                    statusBadge = `<span class="ml-auto text-xs font-bold text-rose-600 bg-rose-100 px-3 py-1 rounded-full"><i class="fa-solid fa-xmark mr-1"></i> Bạn chọn sai</span>`;
+                                }
+
+                                return `
+                                    <div class="flex items-center gap-3 p-3.5 rounded-xl border ${styleClass} text-sm">
+                                        <span class="w-7 h-7 rounded-full ${badgeClass} flex items-center justify-center text-xs font-bold shrink-0 border">${String.fromCharCode(65 + optIdx)}</span>
+                                        <span>${opt}</span>
+                                        ${statusBadge}
+                                    </div>
+                                `;
+                            }).join('')}
                         </div>
 
                         <div class="text-xs font-medium text-slate-700 mt-3 pt-3 border-t border-slate-100">
@@ -689,10 +750,30 @@
 
             updateHistoryUI();
             switchTab('result');
+            triggerMathRender();
+        }
+
+        // Hàm kích hoạt render toàn bộ ký hiệu toán học qua KaTeX và MathJax
+        function triggerMathRender() {
+            if (window.renderMathInElement) {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false},
+                        {left: '\\(', right: '\\)', display: false},
+                        {left: '\\[', right: '\\]', display: true}
+                    ],
+                    throwOnError: false
+                });
+            }
+            if (window.MathJax) {
+                MathJax.typesetPromise();
+            }
         }
 
         window.onload = function() {
             updateDashboardInfo();
+            triggerMathRender();
         };
     </script>
 </body>
