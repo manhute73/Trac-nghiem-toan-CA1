@@ -130,7 +130,7 @@
                     <input type="text" id="input-exam-topic" value="BÀI TẬP BUỔI 6 HẠNG VÀ ĐLTT PTTT" class="flex-1 bg-slate-50 border border-slate-200 text-slate-700 px-3 py-1.5 rounded-lg font-medium focus:border-rose-600 focus:outline-none">
                 </div>
 
-                <!-- Thanh cảnh báo màu vàng (Mới thêm) -->
+                <!-- Thanh cảnh báo màu vàng -->
                 <div class="bg-amber-50 border border-amber-200 text-amber-800 p-4 rounded-xl flex items-start gap-3 text-sm">
                     <i class="fa-solid fa-triangle-exclamation text-amber-600 mt-0.5"></i>
                     <div>
@@ -208,16 +208,11 @@
 
         </div>
 
-        <!-- Khung lịch sử các lần làm trước (Mới thêm bên dưới) -->
+        <!-- Khung lịch sử các lần làm trước (Chỉ hiển thị khi đã có lịch sử làm bài) -->
         <div class="bg-white rounded-2xl shadow-xl p-6 md:p-8 space-y-4">
             <h3 class="font-bold text-slate-900 text-base">Các lần làm trước</h3>
-            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center py-3 border-b border-slate-100 gap-2">
-                <a href="#" onclick="alert('Xem chi tiết lần làm ngày 05/11/2026'); return false;" class="text-rose-600 hover:underline font-medium text-sm">
-                    21:40 05/11/2026
-                </a>
-                <div class="text-sm font-semibold text-slate-800">
-                    <span class="text-rose-600 font-bold">9,29/10</span> <span class="text-slate-500 font-normal">(13/14 câu đúng)</span>
-                </div>
+            <div id="history-container">
+                <p class="text-sm text-slate-400 italic">Chưa làm lần nào (Chưa có lịch sử làm bài)</p>
             </div>
         </div>
     </main>
@@ -251,6 +246,7 @@
         let examTimer = null;
         let secondsElapsed = 0;
         let countdownSeconds = 0;
+        let examHistory = []; // Mảng lưu lịch sử làm bài
 
         function toggleShuffle() {
             isShuffleEnabled = !isShuffleEnabled;
@@ -270,10 +266,29 @@
             document.getElementById('tab-quiz').classList.add('hidden');
             document.getElementById('tab-result').classList.add('hidden');
 
-            if(tabId === 'dashboard') document.getElementById('tab-dashboard').classList.remove('hidden');
+            if(tabId === 'dashboard') {
+                document.getElementById('tab-dashboard').classList.remove('hidden');
+                updateHistoryUI(); // Cập nhật lại lịch sử khi về trang chủ
+            }
             if(tabId === 'pdf-creator') document.getElementById('tab-pdf-creator').classList.remove('hidden');
             if(tabId === 'quiz') document.getElementById('tab-quiz').classList.remove('hidden');
             if(tabId === 'result') document.getElementById('tab-result').classList.remove('hidden');
+        }
+
+        function updateHistoryUI() {
+            const container = document.getElementById('history-container');
+            if (examHistory.length === 0) {
+                container.innerHTML = `<p class="text-sm text-slate-400 italic">Chưa làm lần nào (Chưa có lịch sử làm bài)</p>`;
+            } else {
+                container.innerHTML = examHistory.map(item => `
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center py-3 border-b border-slate-100 gap-2">
+                        <span class="text-rose-600 font-medium text-sm">${item.timeStr}</span>
+                        <div class="text-sm font-semibold text-slate-800">
+                            <span class="text-rose-600 font-bold">${item.score}/10</span> <span class="text-slate-500 font-normal">(${item.correct}/${item.total} câu đúng)</span>
+                        </div>
+                    </div>
+                `).join('');
+            }
         }
 
         function startExam() {
@@ -349,9 +364,21 @@
                 }
             });
 
-            let score = total > 0 ? ((correctCount / total) * 10).toFixed(2) : 0;
-            document.getElementById('res-score').innerText = score.replace('.', ',');
+            let score = total > 0 ? ((correctCount / total) * 10).toFixed(2).replace('.', ',') : '0';
+            document.getElementById('res-score').innerText = score;
             document.getElementById('res-msg-title').innerText = `Bạn trả lời đúng ${correctCount}/${total} câu.`;
+
+            // Lưu lịch sử ngay khi nộp bài
+            let now = new Date();
+            let timeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')} ${now.getDate().toString().padStart(2, '0')}/${(now.getMonth()+1).toString().padStart(2, '0')}/${now.getFullYear()}`;
+            
+            examHistory.unshift({
+                timeStr: timeStr,
+                score: score,
+                correct: correctCount,
+                total: total
+            });
+
             switchTab('result');
         }
 
