@@ -414,7 +414,6 @@ async function extractQuestions(pdf, onProgress){
       const targetY = Math.floor(T * SCALE);
       let bestY = targetY;
       let minInk = 999999;
-      // Quét tìm khoảng trống (ít mực nhất) trong phạm vi lân cận dòng bắt đầu câu để tránh cắt lẹm công thức
       const scanStart = Math.max(cT, targetY - Math.round(25 * SCALE));
       const scanEnd = Math.min(cB, targetY + Math.round(10 * SCALE));
       
@@ -440,8 +439,6 @@ async function extractQuestions(pdf, onProgress){
     };
 
     markers.forEach(m => { m.cut = findCut(m.line.topU); });
-
-    // Sắp xếp các mốc theo tọa độ Y từ trên xuống dưới trên trang
     markers.sort((a, b) => a.cut - b.cut);
 
     const firstCut = markers.length ? markers[0].cut : cB;
@@ -764,23 +761,52 @@ async function onStart(){
 }
 
 const qHead = (i, q) => `<div class="qh"><b>Câu ${i + 1}</b><span class="grow"></span><span class="muted small">Đề gốc ${q.n}</span></div>`;
-function quizCard(q, i){
+
+function renderQuizCard(q, i, container) {
+  const article = document.createElement('article');
+  article.className = 'qc';
+  article.id = `q${i}`;
+  article.dataset.n = q.n;
+  
   const tx = state.tx[q.n];
-  if (tx) return `<article class="qc" id="q${i}" data-n="${q.n}">${qHead(i, q)}
-    <div class="stem">${rich(tx.stem)}</div>
-    <div class="optlist" role="group" aria-label="Chọn đáp án câu ${i + 1}">
-      ${tx.options.map((o, k) => `<button class="optrow" data-v="${'ABCDE'[k]}" aria-pressed="false"><span class="ol">${'ABCDE'[k]}</span><span class="ot">${rich(o)}</span></button>`).join('')}
-    </div></article>`;
-  return `<article class="qc" id="q${i}" data-n="${q.n}">${qHead(i, q)}
-    <div class="paper"><img src="${q.img}" alt="Nội dung câu ${i + 1}"></div>
-    <div class="opts" role="group" aria-label="Chọn đáp án câu ${i + 1}">
-      ${['A', 'B', 'C', 'D'].map(v => `<button class="opt" data-v="${v}" aria-pressed="false" aria-label="Đáp án ${v}">${v}</button>`).join('')}
-    </div></article>`;
+  if (tx) {
+    article.innerHTML = `${qHead(i, q)}
+      <div class="stem">${rich(tx.stem)}</div>
+      <div class="optlist" role="group" aria-label="Chọn đáp án câu ${i + 1}">
+        ${tx.options.map((o, k) => `<button class="optrow" data-v="${'ABCDE'[k]}" aria-pressed="false"><span class="ol">${'ABCDE'[k]}</span><span class="ot">${rich(o)}</span></button>`).join('')}
+      </div>`;
+  } else {
+    const headHtml = qHead(i, q);
+    const paperDiv = document.createElement('div');
+    paperDiv.className = 'paper';
+    const imgEl = document.createElement('img');
+    imgEl.src = q.img;
+    imgEl.alt = `Nội dung câu ${i + 1}`;
+    paperDiv.appendChild(imgEl);
+
+    const optsDiv = document.createElement('div');
+    optsDiv.className = 'opts';
+    optsDiv.setAttribute('role', 'group');
+    optsDiv.setAttribute('aria-label', `Chọn đáp án câu ${i + 1}`);
+    optsDiv.innerHTML = ['A', 'B', 'C', 'D'].map(v => `<button class="opt" data-v="${v}" aria-pressed="false" aria-label="Đáp án ${v}">${v}</button>`).join('');
+
+    article.innerHTML = headHtml;
+    article.appendChild(paperDiv);
+    article.appendChild(optsDiv);
+  }
+  container.appendChild(article);
 }
 
 function startQuiz(items, mins){
   state.quiz = { items, answers: {}, start: Date.now(), limit: (mins || 0) * 60, mins: mins || 0, done: false };
-  $('#quizList').innerHTML = items.map(quizCard).join('');
+  
+  const quizListEl = $('#quizList');
+  quizListEl.innerHTML = '';
+  
+  items.forEach((q, i) => {
+    renderQuizCard(q, i, quizListEl);
+  });
+
   updateProg();
   clearInterval(state.timer);
   const tick = () => {
@@ -794,11 +820,13 @@ function startQuiz(items, mins){
   tick(); state.timer = setInterval(tick, 1000);
   show('#viewQuiz');
 }
+
 function updateProg(){
   const Q = state.quiz, done = Q.items.filter(q => Q.answers[q.n]).length;
   $('#qProg').max = Q.items.length; $('#qProg').value = done;
   $('#qProgText').textContent = `Đã làm ${done}/${Q.items.length} câu`;
 }
+
 $('#quizList').addEventListener('click', e => {
   const b = e.target.closest('[data-v]'); if (!b || state.quiz.done) return;
   const card = b.closest('.qc'), n = card.dataset.n, v = b.dataset.v;
@@ -806,6 +834,7 @@ $('#quizList').addEventListener('click', e => {
   card.querySelectorAll('[data-v]').forEach(o => o.setAttribute('aria-pressed', String(state.quiz.answers[n] === o.dataset.v)));
   updateProg();
 });
+
 function submit(force){
   const Q = state.quiz; if (!Q || Q.done) return;
   const left = Q.items.filter(q => !Q.answers[q.n]).length;
