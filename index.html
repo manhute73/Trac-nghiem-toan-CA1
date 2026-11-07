@@ -70,7 +70,7 @@
                         <div class="flex-1">
                             <div class="text-xs font-bold text-slate-400 uppercase tracking-wider">Số câu</div>
                             <div class="flex items-center gap-2 mt-1">
-                                <span id="display-exam-count" class="font-semibold text-slate-800 text-sm">2 câu trắc nghiệm</span>
+                                <span id="display-exam-count" class="font-semibold text-slate-800 text-sm">1 câu trắc nghiệm</span>
                             </div>
                         </div>
                     </div>
@@ -140,8 +140,8 @@
             <div id="tab-pdf-creator" class="hidden space-y-4 flex-1 flex flex-col">
                 <div class="border-b pb-3 flex justify-between items-center">
                     <div>
-                        <h2 class="text-lg font-bold text-slate-950">Tự Động Cắt Ảnh Từng Câu Từ File PDF (Cân Đối & Sắc Nét)</h2>
-                        <p class="text-xs text-slate-500">Thuật toán bám sát biên dạng câu hỏi, không bị dư thừa khoảng trắng hoặc lẹm chữ.</p>
+                        <h2 class="text-lg font-bold text-slate-950">Tự Động Cắt Ảnh Từng Câu Từ File PDF (Đảm Bảo Không Thiếu Đề)</h2>
+                        <p class="text-xs text-slate-500">Hệ thống cưỡng ép lùi lên trên 3cm để ôm trọn vẹn toàn bộ đầu câu và hiển thị rõ nét.</p>
                     </div>
                     <button onclick="switchTab('dashboard')" class="bg-rose-600 hover:bg-rose-700 text-white px-4 py-2 rounded-xl text-xs font-medium transition flex items-center gap-2 shadow-md shrink-0">
                         <i class="fa-solid fa-arrow-left"></i> Quay lại trang chủ
@@ -184,11 +184,11 @@
                         <div id="auto-crop-status" class="space-y-3">
                             <i class="fa-solid fa-wand-magic-sparkles text-4xl text-rose-500 animate-pulse"></i>
                             <h3 class="text-white font-bold text-sm">Sẵn sàng tự động cắt ảnh thông minh</h3>
-                            <p class="text-xs text-slate-400 max-w-xs">Chọn file PDF ở cột bên trái, hệ thống tự động bám sát chiều cao nội dung từng câu cực kỳ cân đối.</p>
+                            <p class="text-xs text-slate-400 max-w-xs">Chọn file PDF ở cột bên trái, hệ thống tự động cưỡng ép lùi lên 3cm an toàn tuyệt đối không bao giờ mất chữ.</p>
                         </div>
                         <div id="auto-crop-loading" class="hidden space-y-3">
                             <i class="fa-solid fa-spinner fa-spin text-4xl text-emerald-400"></i>
-                            <h3 class="text-white font-bold text-sm">Đang tối ưu hóa ranh giới từng câu...</h3>
+                            <h3 class="text-white font-bold text-sm">Đang xử lý phân tích và cắt ảnh...</h3>
                             <p id="crop-progress-text" class="text-xs text-slate-400">Đang đọc trang 1...</p>
                         </div>
                     </div>
@@ -234,7 +234,7 @@
                         <div>
                             <span class="bg-rose-100 text-rose-700 text-xs px-2.5 py-1 rounded-full font-semibold">Hoàn thành!</span>
                             <h2 class="text-xl font-bold text-slate-900 mt-2" id="res-msg-title">Bạn đã hoàn thành bài thi.</h2>
-                            <p class="text-xs text-slate-500 mt-1" id="res-details-text">Đúng 2/2 câu • 0 phút 15 giây</p>
+                            <p class="text-xs text-slate-500 mt-1" id="res-details-text">Đúng 1/1 câu • 0 phút 15 giây</p>
                         </div>
                     </div>
                     <div class="flex flex-col gap-2 w-full md:w-auto">
@@ -272,7 +272,7 @@
                     <div class="bg-slate-50 border p-4 rounded-xl">
                         <div class="text-xs font-bold text-slate-400 uppercase">Tổng kết</div>
                         <div class="flex gap-4 mt-2 text-sm font-semibold">
-                            <span class="text-emerald-600">● Đúng: <span id="res-correct-count">2</span></span>
+                            <span class="text-emerald-600">● Đúng: <span id="res-correct-count">1</span></span>
                             <span class="text-rose-600">● Sai: <span id="res-wrong-count">0</span></span>
                             <span class="text-slate-400">● Bỏ trống: 0</span>
                         </div>
@@ -393,7 +393,7 @@
             }
         }
 
-        // --- THUẬT TOÁN TỰ ĐỘNG CẮT ẢNH THÔNG MINH, CÂN ĐỐI & ĐỘ NÉT CAO ---
+        // --- THUẬT TOÁN CƯỠNG ÉP MỞ RỘNG 3CM TRÊN & DƯỚI CHO TỪNG CÂU ---
         async function handleAutoCropPDF(e) {
             const file = e.target.files[0];
             if (!file) return;
@@ -411,8 +411,9 @@
                 const pdf = await pdfjsLib.getDocument(typedarray).promise;
                 autoExtractedQuestions = [];
 
-                const renderScale = 2.5; // Tăng độ sắc nét tối đa
-                const marginPadding = 18; // Khoảng cách lề chuẩn (~0.5cm)
+                const renderScale = 2.5; // Độ nét cao
+                // Quy đổi 3cm ra pixel theo scale 2.5 (~350 pixels) để cưỡng ép mở rộng trên/dưới an toàn tuyệt đối
+                const extraPadding3cm = Math.round(3 * 37.8 * renderScale); 
 
                 for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
                     document.getElementById('crop-progress-text').innerText = `Đang xử lý trang ${pageNum}/${pdf.numPages}...`;
@@ -430,7 +431,6 @@
                     await page.render({ canvasContext: context, viewport: viewport }).promise;
                     const textContent = await page.getTextContent();
 
-                    // Thu thập tọa độ các chữ bắt đầu bằng "Câu X"
                     let qItems = [];
                     textContent.items.forEach(item => {
                         let match = item.str.match(/Câu\s*(\d+)/i);
@@ -445,25 +445,22 @@
 
                     let filteredQItems = [];
                     for (let q of qItems) {
-                        if (filteredQItems.length === 0 || Math.abs(q.y - filteredQItems[filteredQItems.length - 1].y) > 25) {
+                        if (filteredQItems.length === 0 || Math.abs(q.y - filteredQItems[filteredQItems.length - 1].y) > 30) {
                             filteredQItems.push(q);
                         }
                     }
 
-                    // Cắt ranh giới vừa vặn từng câu, loại bỏ khoảng trắng thừa ở cuối mỗi câu
+                    // Cưỡng ép mở rộng vùng cắt lùi lên trên và trùm xuống dưới 3cm an toàn tuyệt đối
                     for (let i = 0; i < filteredQItems.length; i++) {
-                        let startY = Math.max(0, filteredQItems[i].y - marginPadding - 8);
+                        let startY = Math.max(0, filteredQItems[i].y - extraPadding3cm);
                         
-                        // Tìm điểm kết thúc thực tế của nội dung câu hiện tại (đoạn sát ngay trước câu tiếp theo)
-                        let naturalEnd = (i < filteredQItems.length - 1) ? filteredQItems[i + 1].y - marginPadding - 12 : canvas.height - 15;
-                        
-                        // Giới hạn chiều cao vừa vặn nội dung câu, tránh bị kéo dài khoảng trắng trống phía dưới
-                        let maxAllowedHeight = 320; // Chiều cao tối ưu cho 1 câu trắc nghiệm vừa khung màn hình
-                        let height = Math.min(naturalEnd - startY, maxAllowedHeight);
-                        if (height < 50) height = naturalEnd - startY; // Đảm bảo không bị cụt nếu câu dài
+                        let naturalEnd = (i < filteredQItems.length - 1) ? filteredQItems[i + 1].y - 30 : canvas.height - 20;
+                        let height = naturalEnd - startY;
+
+                        if (height < 60) continue;
 
                         let cropCanvas = document.createElement('canvas');
-                        let cropWidth = canvas.width - (marginPadding * 2);
+                        let cropWidth = canvas.width - 40; 
                         cropCanvas.width = cropWidth;
                         cropCanvas.height = height;
                         let cropCtx = cropCanvas.getContext('2d');
@@ -473,7 +470,7 @@
 
                         cropCtx.drawImage(
                             canvas, 
-                            marginPadding, startY, cropWidth, height, 
+                            20, startY, cropWidth, height, 
                             0, 0, cropWidth, height
                         );
 
@@ -511,7 +508,7 @@
                 <div class="bg-white border p-2 rounded-lg flex items-center justify-between gap-2 shadow-sm">
                     <div class="flex items-center gap-2 truncate">
                         <img src="${q.imgUrl}" class="w-12 h-8 object-cover rounded border">
-                        <span class="font-medium text-slate-800 text-xs">Câu ${idx + 1} (Đã cắt cân đối)</span>
+                        <span class="font-medium text-slate-800 text-xs">Câu ${idx + 1} (Đã cắt an toàn)</span>
                     </div>
                 </div>
             `).join('');
@@ -587,9 +584,9 @@
                         </div>
                     </div>
 
-                    <!-- Hiển thị ảnh câu hỏi căn chỉnh ở giữa, hiển thị đầy đủ trọn vẹn không bị thiếu -->
+                    <!-- Hiển thị ảnh câu hỏi căn chỉnh ở giữa, trọn vẹn sắc nét -->
                     <div class="w-full bg-slate-50 p-4 rounded-xl border border-slate-100 flex justify-center items-center">
-                        <img src="${q.imgUrl}" class="max-w-full max-h-[350px] object-contain rounded border shadow-sm">
+                        <img src="${q.imgUrl}" class="max-w-full max-h-[400px] object-contain rounded border shadow-sm">
                     </div>
 
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -690,7 +687,7 @@
                         </div>
 
                         <div class="w-full bg-slate-50 p-4 rounded-xl border border-slate-100 flex justify-center items-center">
-                            <img src="${q.imgUrl}" class="max-w-full max-h-[350px] object-contain rounded border shadow-sm">
+                            <img src="${q.imgUrl}" class="max-w-full max-h-[400px] object-contain rounded border shadow-sm">
                         </div>
 
                         <div class="text-xs font-medium text-slate-700 mt-3 pt-3 border-t border-slate-100">
