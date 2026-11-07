@@ -127,7 +127,7 @@ summary{cursor:pointer;font-weight:600}
 .badge.nokey{background:var(--warn-bg);color:var(--amber)}
 .rc.nokey{border-left-color:var(--amber)}
 
-/* simple layout for fallback */
+/* fallback layout */
 .qc{background:var(--sheet);border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:16px}
 .qh{display:flex;gap:10px;align-items:center;margin-bottom:8px}
 .qh .grow{flex:1}
@@ -275,7 +275,7 @@ const $ = s => document.querySelector(s);
 const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const state = { file: null, qs: [], byN: new Map(), key: {}, quiz: null, timer: null };
 
-/* ---------- lưu đáp án theo từng file ---------- */
+/* ---------- lưu đáp án ---------- */
 const storeId = () => 'pdfquiz:' + state.file.name + '|' + state.file.size;
 function saveKey(){ try { localStorage.setItem(storeId(), JSON.stringify({ key: state.key })); } catch (e) {} }
 function loadKey(){
@@ -285,7 +285,7 @@ function loadKey(){
   } catch (e) {}
 }
 
-/* ---------- đọc PDF: tách câu và cắt ảnh từng câu ---------- */
+/* ---------- tách câu ---------- */
 const SCALE = 2;
 
 function buildLines(items, H){
@@ -370,14 +370,12 @@ async function extractQuestions(pdf, onProgress){
     const rows = inkRows(ctx, canvas.width, canvas.height);
     const CH = canvas.height;
 
-    // vùng nội dung: bỏ đầu trang và chân trang
     const junk = lines.filter(isJunk);
     const tJ = Math.max(0, ...junk.filter(l => l.topU < H / 2).map(l => l.botU));
     const bJ = Math.min(H, ...junk.filter(l => l.topU >= H / 2).map(l => l.topU));
     let cT = 0; for (let y = Math.floor(tJ * SCALE); y < CH; y++){ if (rows[y]) { cT = Math.max(0, y - 6); break; } }
     let cB = CH; for (let y = Math.min(CH - 1, Math.floor(bJ * SCALE) - 1); y >= 0; y--){ if (rows[y]) { cB = Math.min(CH, y + 7); break; } }
 
-    // tìm khoảng trắng ngay trên dòng "Câu N." để cắt, tránh mất công thức nằm hơi cao hơn chữ
     const findCut = T => {
       const lim = Math.max(cT, T - Math.round(30 * SCALE));
       let y0 = -1;
@@ -410,7 +408,7 @@ async function extractQuestions(pdf, onProgress){
   return { questions, pageTexts };
 }
 
-/* ---------- đáp án ---------- */
+/* ---------- parse đáp án ---------- */
 function parseKey(text){
   const out = {};
   const t = text.replace(/Câu/gi, ' ');
@@ -445,14 +443,12 @@ async function pdfToText(file){
   return s;
 }
 
-/* ---------- xác định đáp án đúng của từng câu ---------- */
 function verdict(q){
   const k = state.key[q.n];
   if (k) return { kind: 'key', ans: k };
   return { kind: 'nokey' };
 }
 
-/* ---------- màn hình ---------- */
 function show(id){
   for (const v of ['#viewSetup', '#viewQuiz', '#viewResult']) $(v).hidden = v !== id;
   window.scrollTo(0, 0);
@@ -473,13 +469,12 @@ async function handleFile(file){
       $('#dropSub').textContent = `Đang đọc trang ${p}/${n}…`;
     });
     if (!questions.length){
-      showParseErr('Không nhận ra câu hỏi nào. Đề cần có số câu dạng “Câu 1.” hoặc “1.”, và file phải có lớp chữ (không phải ảnh quét).');
+      showParseErr('Không nhận ra câu hỏi nào. Đề cần có số câu dạng “Câu 1.” hoặc “1.”');
       return;
     }
     state.qs = questions; state.byN = new Map(questions.map(q => [q.n, q]));
     loadKey(); 
     
-    // tự đọc đáp án ở cuối đề nếu có
     const all = pageTexts.join('\n'), idx = all.search(/đáp\s*án(?![\s\S]*đáp\s*án)/i);
     if (idx >= 0){
       const found = parseKey(all.slice(idx));
@@ -507,7 +502,6 @@ function showParseErr(msg){
   $('#dropSub').textContent = 'Thử chọn file khác.';
 }
 
-/* ---------- tạo đề & làm bài ---------- */
 const shuffle = a => { for (let i = a.length - 1; i > 0; i--){ const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
 const fmtTime = s => { s = Math.max(0, Math.round(s)); return String(Math.floor(s / 60)).padStart(2, '0') + ':' + String(s % 60).padStart(2, '0'); };
 
@@ -516,7 +510,7 @@ async function onStart(){
   let pool = state.qs.filter(q => q.n >= from && q.n <= to);
   
   if (!pool.length){ 
-    alert('Khoảng câu này không có câu hỏi nào! Vui lòng kiểm tra lại mục "Từ câu" và "Đến câu".');
+    alert('Khoảng câu này không có câu hỏi nào!');
     return; 
   }
   
@@ -527,44 +521,52 @@ async function onStart(){
   startQuiz(pool, mins);
 }
 
-// Hàm khởi tạo làm bài được viết lại CHẮC CHẮN hiển thị giao diện 
+// 🚀 VIẾT LẠI HOÀN TOÀN HÀM RENDER CÂU HỎI TRỰC TIẾP VÀO DOM (Tránh lỗi Cốc Cốc/Chrome crash vì string quá dài)
 function startQuiz(items, mins){
   state.quiz = { items: items, answers: {}, start: Date.now(), limit: (mins || 0) * 60, mins: mins || 0, done: false };
   
   const listDiv = $('#quizList');
-  listDiv.innerHTML = ''; 
+  listDiv.innerHTML = ''; // Làm sạch vùng chứa
   
-  let html = '';
-  // Dùng vòng lặp for đơn giản, loại bỏ map tránh rủi ro đứt gãy DOM
-  for (let i = 0; i < items.length; i++) {
-    const q = items[i];
-    if (!q) continue;
+  // Dùng createElement để tạo DOM từng phần thay vì innerHTML một chuỗi string khổng lồ
+  items.forEach((q, i) => {
+    if (!q) return;
     
-    const imgSrc = q.img || '';
-    const imgTag = imgSrc 
-      ? `<img src="${imgSrc}" alt="Nội dung câu ${i + 1}">` 
-      : `<div class="notice err">Không tìm thấy ảnh câu hỏi</div>`;
-      
-    html += `<article class="qc" id="q${i}" data-n="${q.n}">
-      <div class="qh">
-        <b>Câu ${i + 1}</b>
-        <span class="grow"></span>
-        <span class="muted small">Đề gốc ${q.n}</span>
-      </div>
-      <div class="paper">${imgTag}</div>
-      <div class="opts" role="group" aria-label="Chọn đáp án câu ${i + 1}">
-        ${['A', 'B', 'C', 'D'].map(v => `<button class="opt" data-v="${v}" aria-pressed="false" aria-label="Đáp án ${v}">${v}</button>`).join('')}
-      </div>
-    </article>`;
-  }
+    const article = document.createElement('article');
+    article.className = 'qc';
+    article.id = 'q' + i;
+    article.dataset.n = q.n;
+    
+    // Header
+    const header = document.createElement('div');
+    header.className = 'qh';
+    header.innerHTML = `<b>Câu ${i + 1}</b><span class="grow"></span><span class="muted small">Đề gốc ${q.n}</span>`;
+    article.appendChild(header);
+    
+    // Image / Paper
+    const paper = document.createElement('div');
+    paper.className = 'paper';
+    if (q.img) {
+      const img = document.createElement('img');
+      img.src = q.img;
+      img.alt = `Nội dung câu ${i + 1}`;
+      paper.appendChild(img);
+    } else {
+      paper.innerHTML = `<div class="notice err">Không tìm thấy ảnh câu hỏi</div>`;
+    }
+    article.appendChild(paper);
+    
+    // Nút đáp án
+    const opts = document.createElement('div');
+    opts.className = 'opts';
+    opts.setAttribute('role', 'group');
+    opts.innerHTML = ['A', 'B', 'C', 'D'].map(v => `<button class="opt" data-v="${v}" aria-pressed="false">${v}</button>`).join('');
+    article.appendChild(opts);
+    
+    // Chèn vào trang
+    listDiv.appendChild(article);
+  });
   
-  listDiv.innerHTML = html;
-  
-  // Báo lỗi nếu HTML vẫn không được gắn vào listDiv
-  if (listDiv.children.length === 0) {
-    listDiv.innerHTML = `<div class="notice err" style="margin-bottom:20px">Lỗi hệ thống: Không thể vẽ giao diện câu hỏi. (Đã tải ${items.length} câu).</div>`;
-  }
-
   updateProg();
   clearInterval(state.timer);
   const tick = () => {
@@ -603,7 +605,6 @@ function submit(force){
   showResult(true);
 }
 
-/* ---------- kết quả ---------- */
 const fmtLong = s => { s = Math.round(s); const m = Math.floor(s / 60); return (m ? m + ' phút ' : '') + (s % 60) + ' giây'; };
 const fmtScore = x => String(Number(x.toFixed(2))).replace('.', ',');
 const pad2 = n => String(n).padStart(2, '0');
@@ -646,8 +647,7 @@ function showResult(fresh){
 
   const C = 2 * Math.PI * 52, col = p >= 0.8 ? 'var(--ok)' : p >= 0.5 ? 'var(--amber)' : 'var(--bad)';
   $('#rRing').innerHTML = `<svg viewBox="0 0 120 120" aria-hidden="true"><circle class="track" cx="60" cy="60" r="52" fill="none" stroke-width="11"/><circle cx="60" cy="60" r="52" fill="none" stroke-width="11" stroke-linecap="round" stroke="${col}" stroke-dasharray="${(graded ? p : 0) * C} ${C}"/></svg><div class="val"><b>${graded ? fmtScore(score) : '—'}</b><span class="muted small">/10</span></div>`;
-  $('#rRing').setAttribute('aria-label', graded ? `Điểm ${fmtScore(score)} trên 10` : 'Chưa có điểm');
-
+  
   const [t, m] = graded ? messageFor(p) : ['Chưa có đáp án', 'Hãy nhập hoặc tải đáp án ở mục bên dưới để chấm điểm.'];
   $('#rSubject').textContent = state.qs.length ? ' ' + (Q.items[0].chapter ? 'TOÁN CAO CẤP' : 'TRẮC NGHIỆM') : '';
   $('#rTitle').textContent = t; $('#rMsg').textContent = m;
@@ -674,7 +674,7 @@ function showResult(fresh){
 
   const ranked = hist.map((h, i) => ({ ...h, i })).sort((a, b) => b.score - a.score || a.secs - b.secs);
   const rank = Q.histIdx != null ? ranked.findIndex(r => r.i === Q.histIdx) + 1 : 0;
-  $('#histInfo').textContent = hist.length ? (rank ? `Lần này xếp hạng ${rank}/${hist.length} trong các lần bạn đã làm đề này. Lịch sử chỉ lưu trên máy bạn.` : 'Lịch sử chỉ lưu trên máy bạn.') : 'Chưa có lần làm nào được chấm điểm.';
+  $('#histInfo').textContent = hist.length ? (rank ? `Lần này xếp hạng ${rank}/${hist.length}. Lịch sử lưu trên máy.` : 'Lịch sử lưu trên máy.') : 'Chưa có lần làm nào được chấm điểm.';
   $('#rHist').innerHTML = hist.length ? '<tr><th>Lần</th><th>Điểm</th><th>Đúng</th><th>Thời gian</th><th>Ngày</th></tr>' +
     hist.map((h, i) => ({ h, i })).slice(-8).reverse().map(({ h, i }) =>
       `<tr class="${i === Q.histIdx ? 'cur' : ''}"><td>${i + 1}${ranked[0].i === i ? ' (cao nhất)' : ''}</td><td>${fmtScore(h.score)}</td><td>${h.ok}/${h.graded}</td><td>${fmtLong(h.secs)}</td><td>${fmtDate(new Date(h.t))}</td></tr>`).join('') : '';
@@ -685,6 +685,7 @@ function showResult(fresh){
   show('#viewResult');
 }
 
+// 🚀 VIẾT LẠI HÀM KẾT QUẢ ĐỂ ĐỒNG BỘ CÁCH RENDER DOM
 function renderResultList(){
   const Q = state.quiz, marks = new Set(lsGet(markKey(), []));
   const cnt = { all: Q.items.length, bad: 0, skip: 0, ok: 0, nokey: 0, marked: 0 };
@@ -698,28 +699,55 @@ function renderResultList(){
   const list = Q.items.map((q, i) => ({ q, i })).filter(({ q }) =>
     resTab === 'all' ? true : resTab === 'marked' ? marks.has(q.n) : q.st === resTab);
   
-  $('#resList').innerHTML = list.map(({ q, i }) => {
+  const listDiv = $('#resList');
+  listDiv.innerHTML = '';
+  
+  if (list.length === 0) {
+    listDiv.innerHTML = '<p class="muted">Không có câu nào trong mục này.</p>';
+    return;
+  }
+  
+  list.forEach(({ q, i }) => {
     const v = q.v, k = v.kind === 'key' ? v.ans : '', a = Q.answers[q.n], on = marks.has(q.n);
-    const opts = ['A', 'B', 'C', 'D'].map(L => {
+    
+    const article = document.createElement('article');
+    article.className = `rc ${q.st}`;
+    
+    const header = document.createElement('header');
+    header.innerHTML = `
+      <b>Câu ${i + 1}</b><span class="badge ${q.st}">${LABEL[q.st]}</span><span class="grow"></span>
+      <span class="muted small">Đề gốc ${q.n}${q.chapter ? ' · ' + esc(q.chapter) : ''}</span>
+      <button class="mark" data-n="${q.n}" aria-pressed="${on}">${on ? 'Đã đánh dấu' : 'Đánh dấu để ôn'}</button>
+    `;
+    article.appendChild(header);
+    
+    const paper = document.createElement('div');
+    paper.className = 'paper';
+    if (q.img) {
+      const img = document.createElement('img');
+      img.src = q.img;
+      paper.appendChild(img);
+    }
+    article.appendChild(paper);
+    
+    const optsDiv = document.createElement('div');
+    optsDiv.className = 'ropts';
+    optsDiv.innerHTML = ['A', 'B', 'C', 'D'].map(L => {
       const cls = L === k ? 'right' : (L === a && a !== k && k ? 'wrong' : '');
       const tag = L === a ? 'Bạn chọn' : (L === k ? 'Đáp án' : '');
       return `<div class="ro ${cls}">${L}<small>${tag}</small></div>`;
     }).join('');
+    article.appendChild(optsDiv);
     
-    const body = `<div class="paper"><img src="${q.img}" alt="Câu ${i + 1}"></div><div class="ropts">${opts}</div>`;
     const mine = a ? `Bạn chọn <b>${a}</b>` : 'Bạn chưa chọn';
     let tail = v.kind === 'key' ? `. Đáp án đúng: <b>${v.ans}</b>.` : '. Chưa có đáp án.';
-
-    return `<article class="rc ${q.st}">
-      <header>
-        <b>Câu ${i + 1}</b><span class="badge ${q.st}">${LABEL[q.st]}</span><span class="grow"></span>
-        <span class="muted small">Đề gốc ${q.n}${q.chapter ? ' · ' + esc(q.chapter) : ''}</span>
-        <button class="mark" data-n="${q.n}" aria-pressed="${on}">${on ? 'Đã đánh dấu' : 'Đánh dấu để ôn'}</button>
-      </header>
-      ${body}
-      <div class="verdict">${mine}${tail}</div>
-    </article>`;
-  }).join('') || '<p class="muted">Không có câu nào trong mục này.</p>';
+    const verdict = document.createElement('div');
+    verdict.className = 'verdict';
+    verdict.innerHTML = `${mine}${tail}`;
+    article.appendChild(verdict);
+    
+    listDiv.appendChild(article);
+  });
 }
 
 function retryWrong(){
@@ -727,7 +755,7 @@ function retryWrong(){
   if (redo.length) startQuiz(shuffle(redo.map(q => state.byN.get(q.n))), 0);
 }
 
-/* ---------- sự kiện ---------- */
+/* ---------- event listeners ---------- */
 const drop = $('#drop');
 $('#fileInput').addEventListener('change', e => handleFile(e.target.files[0]));
 ['dragenter', 'dragover'].forEach(t => drop.addEventListener(t, e => { e.preventDefault(); drop.classList.add('over'); }));
