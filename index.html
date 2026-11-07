@@ -48,7 +48,7 @@
         </div>
         <div class="flex items-center space-x-4">
             <button onclick="switchTab('dashboard')" class="hover:text-white transition"><i class="fa-solid fa-house mr-1"></i> Trang chủ</button>
-            <button onclick="switchTab('manual-creator')" class="hover:text-white transition text-rose-400 font-semibold"><i class="fa-solid fa-scissors mr-1"></i> Thêm Ảnh Câu Cắt Thủ Công</button>
+            <button onclick="switchTab('manual-creator')" class="hover:text-white transition text-rose-400 font-semibold"><i class="fa-solid</i><i class="fa-solid fa-list-check mr-1"></i> Tạo Khung Đề Theo Số Lượng Câu</button>
         </div>
     </header>
 
@@ -61,7 +61,7 @@
                 <div class="flex justify-between items-center pb-4 mb-2 border-b border-slate-100">
                     <h2 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Bảng điều khiển luyện tập</h2>
                     <button onclick="switchTab('manual-creator')" class="bg-rose-50 hover:bg-rose-100 text-rose-700 px-4 py-2 rounded-xl font-medium text-sm transition flex items-center gap-2 border border-rose-200">
-                        <i class="fa-solid fa-scissors"></i> Thêm ảnh câu cắt thủ công
+                        <i class="fa-solid fa-list-check"></i> Tạo khung danh sách câu hỏi
                     </button>
                 </div>
 
@@ -84,7 +84,7 @@
                     <div class="bg-slate-50 border border-slate-100 p-4 rounded-xl flex items-start gap-3">
                         <div class="text-slate-400 mt-0.5"><i class="fa-solid fa-list-check text-lg"></i></div>
                         <div class="flex-1">
-                            <div class="text-xs font-bold text-slate-400 uppercase tracking-wider">Số câu đã thêm</div>
+                            <div class="text-xs font-bold text-slate-400 uppercase tracking-wider">Tổng số câu trong đề</div>
                             <div class="flex items-center gap-2 mt-1">
                                 <span id="display-exam-count" class="font-semibold text-slate-800 text-sm">0 câu trắc nghiệm</span>
                             </div>
@@ -152,47 +152,39 @@
                 </div>
             </div>
 
-            <!-- TAB 2: THÊM ẢNH CÂU CẮT THỦ CÔNG -->
+            <!-- TAB 2: TẠO KHUNG DANH SÁCH CÂU HỎI THEO SỐ LƯỢNG -->
             <div id="tab-manual-creator" class="hidden space-y-4 flex-1 flex flex-col">
                 <div class="border-b pb-3 flex justify-between items-center">
                     <div>
-                        <h2 class="text-lg font-bold text-slate-950">Thêm Ảnh Câu Cắt Thủ Công</h2>
-                        <p class="text-xs text-slate-500">Tải ảnh từng câu bạn đã tự cắt thủ công vào hệ thống.</p>
+                        <h2 class="text-lg font-bold text-slate-950">Tạo Khung Đề Thi Theo Số Lượng Câu</h2>
+                        <p class="text-xs text-slate-500">Nhập tổng số câu để hệ thống tạo danh sách, sau đó bạn chỉ việc dán ảnh và chọn đáp án đúng cho từng câu.</p>
                     </div>
                     <button onclick="switchTab('dashboard')" class="bg-rose-600 hover:bg-rose-700 text-white px-4 py-2 rounded-xl text-xs font-medium transition flex items-center gap-2 shadow-md shrink-0">
                         <i class="fa-solid fa-arrow-left"></i> Xong, về trang chủ
                     </button>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-start">
-                    <!-- Cột trái: Form tải ảnh thủ công -->
-                    <div class="md:col-span-1 space-y-3 bg-slate-50 p-4 rounded-xl border">
-                        <div>
-                            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Chọn ảnh câu cắt (PNG/JPG):</label>
-                            <input type="file" id="manual-img-input" accept="image/*" class="w-full text-xs text-slate-500 file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-rose-50 file:text-rose-700 hover:file:bg-rose-100 cursor-pointer border border-slate-300 rounded-lg bg-white p-1">
-                        </div>
-
-                        <div>
-                            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Chọn đáp án đúng:</label>
-                            <select id="manual-correct-select" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-1.5 text-xs font-bold text-slate-800 focus:border-rose-600 focus:outline-none">
-                                <option value="0">Đáp án A đúng</option>
-                                <option value="1">Đáp án B đúng</option>
-                                <option value="2">Đáp án C đúng</option>
-                                <option value="3">Đáp án D đúng</option>
-                            </select>
-                        </div>
-
-                        <button onclick="addManualQuestion()" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-semibold py-2 rounded-lg transition shadow text-xs">
-                            <i class="fa-solid fa-plus mr-1"></i> Thêm vào danh sách đề thi
+                <!-- Khung cấu hình số lượng câu -->
+                <div class="bg-slate-50 border border-slate-200 p-4 rounded-xl flex flex-col sm:flex-row items-center gap-3">
+                    <div class="flex-1 w-full">
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Nhập tổng số câu của đề thi:</label>
+                        <input type="number" id="input-total-questions" value="10" min="1" max="200" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-sm font-bold text-slate-800 focus:border-rose-600 focus:outline-none">
+                    </div>
+                    <div class="w-full sm:w-auto pt-4">
+                        <button onclick="generateQuestionSlots()" class="w-full sm:w-auto bg-slate-900 hover:bg-slate-800 text-white font-semibold px-6 py-2.5 rounded-lg transition shadow text-xs">
+                            <i class="fa-solid fa-wand-magic-sparkles mr-1.5"></i> Tạo danh sách các câu
                         </button>
                     </div>
+                </div>
 
-                    <!-- Cột phải: Danh sách các câu đã thêm -->
-                    <div class="md:col-span-2 space-y-2">
-                        <h3 class="font-bold text-slate-800 text-xs">Danh sách câu đã thêm (<span id="manual-q-count">0</span> câu)</h3>
-                        <div id="manual-question-list" class="space-y-2 max-h-[380px] overflow-y-auto custom-scrollbar pr-1 text-xs">
-                            <p class="italic text-slate-400 text-center py-12">Chưa có câu hỏi nào. Hãy tải ảnh câu cắt thủ công lên ở cột bên trái.</p>
-                        </div>
+                <!-- Danh sách các câu hiển thị dạng list -->
+                <div class="space-y-3">
+                    <h3 class="font-bold text-slate-800 text-xs flex justify-between items-center">
+                        <span>Danh sách khung câu hỏi (<span id="manual-q-count">0</span> câu)</span>
+                        <span class="text-slate-400 font-normal">Bấm chọn ảnh và đáp án đúng cho từng câu bên dưới</span>
+                    </h3>
+                    <div id="manual-question-list" class="space-y-3 max-h-[420px] overflow-y-auto custom-scrollbar pr-2">
+                        <p class="italic text-slate-400 text-center py-12">Chưa tạo khung. Hãy nhập tổng số câu ở phía trên và bấm "Tạo danh sách các câu".</p>
                     </div>
                 </div>
             </div>
@@ -317,65 +309,88 @@
         }
 
         function updateDashboardInfo() {
-            document.getElementById('display-exam-count').innerText = `${manualQuestions.length} câu trắc nghiệm`;
+            let filledCount = manualQuestions.filter(q => q && q.imgUrl).length;
+            document.getElementById('display-exam-count').innerText = `${filledCount}/${manualQuestions.length} câu đã có ảnh`;
         }
 
-        function addManualQuestion() {
-            const fileInput = document.getElementById('manual-img-input');
-            const correctSelect = document.getElementById('manual-correct-select');
+        // Tạo khung danh sách theo số lượng câu nhập vào
+        function generateQuestionSlots() {
+            let totalQ = parseInt(document.getElementById('input-total-questions').value) || 10;
+            
+            // Giữ lại các câu cũ nếu đã tải lên trước đó
+            let oldQuestions = [...manualQuestions];
+            manualQuestions = [];
 
-            if (fileInput.files.length === 0) {
-                alert("Vui lòng chọn file ảnh cắt của câu hỏi trước!");
-                return;
+            for (let i = 0; i < totalQ; i++) {
+                if (oldQuestions[i]) {
+                    manualQuestions.push(oldQuestions[i]);
+                } else {
+                    manualQuestions.push({
+                        id: i + 1,
+                        imgUrl: "",
+                        options: ["A", "B", "C", "D"],
+                        correct: 0
+                    });
+                }
             }
 
-            const file = fileInput.files[0];
+            updateManualListUI();
+            alert(`Đã tạo thành công khung cho ${totalQ} câu hỏi! Giờ bạn có thể tải ảnh và chọn đáp án cho từng câu.`);
+        }
+
+        function handleQuestionImageUpload(index, event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
             const reader = new FileReader();
-
             reader.onload = function(e) {
-                const imgUrl = e.target.result;
-                const correctIdx = parseInt(correctSelect.value);
-
-                manualQuestions.push({
-                    id: manualQuestions.length + 1,
-                    imgUrl: imgUrl,
-                    options: ["A", "B", "C", "D"],
-                    correct: correctIdx
-                });
-
-                fileInput.value = "";
+                manualQuestions[index].imgUrl = e.target.result;
                 updateManualListUI();
-                alert("Đã thêm câu hỏi thủ công thành công!");
             };
-
             reader.readAsDataURL(file);
         }
 
-        function removeManualQuestion(index) {
-            manualQuestions.splice(index, 1);
-            manualQuestions.forEach((q, idx) => { q.id = idx + 1; });
-            updateManualListUI();
+        function updateQuestionCorrect(index, value) {
+            manualQuestions[index].correct = parseInt(value);
         }
 
         function updateManualListUI() {
-            document.getElementById('manual-q-count').innerText = manualQuestions.length;
+            let filledCount = manualQuestions.filter(q => q && q.imgUrl).length;
+            document.getElementById('manual-q-count').innerText = `${filledCount}/${manualQuestions.length}`;
             const listEl = document.getElementById('manual-question-list');
 
             if (manualQuestions.length === 0) {
-                listEl.innerHTML = `<p class="italic text-slate-400 text-center py-12">Chưa có câu hỏi nào. Hãy tải ảnh câu cắt thủ công lên ở cột bên trái.</p>`;
+                listEl.innerHTML = `<p class="italic text-slate-400 text-center py-12">Chưa có khung câu hỏi nào.</p>`;
                 return;
             }
 
-            let correctLetters = ['A', 'B', 'C', 'D'];
             listEl.innerHTML = manualQuestions.map((q, idx) => `
-                <div class="bg-white border p-2 rounded-lg flex items-center justify-between gap-2 shadow-sm">
-                    <div class="flex items-center gap-2 truncate">
-                        <img src="${q.imgUrl}" class="w-12 h-8 object-cover rounded border">
-                        <span class="font-medium text-slate-800 text-xs">Câu ${idx + 1} (Đáp án: ${correctLetters[q.correct]})</span>
+                <div class="bg-white border ${q.imgUrl ? 'border-emerald-200 bg-emerald-50/10' : 'border-slate-200'} p-3 rounded-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-sm">
+                    <div class="flex items-center gap-3 w-full sm:w-auto">
+                        <span class="font-bold text-slate-900 text-xs bg-slate-100 px-2.5 py-1.5 rounded-lg shrink-0">Câu ${idx + 1}</span>
+                        
+                        <!-- Hiển thị ảnh nếu đã tải lên -->
+                        <div class="w-20 h-12 bg-slate-100 rounded border flex items-center justify-center overflow-hidden shrink-0">
+                            ${q.imgUrl ? `<img src="${q.imgUrl}" class="w-full h-full object-cover">` : `<span class="text-[10px] text-slate-400 italic">Chưa có ảnh</span>`}
+                        </div>
+
+                        <div class="flex-1">
+                            <input type="file" accept="image/*" id="file_q_${idx}" class="hidden" onchange="handleQuestionImageUpload(${idx}, event)">
+                            <label for="file_q_${idx}" class="cursor-pointer bg-white hover:bg-slate-100 border border-slate-300 text-slate-700 text-xs font-semibold px-3 py-1.5 rounded-lg transition inline-flex items-center gap-1.5 shadow-sm">
+                                <i class="fa-solid fa-cloud-arrow-up text-rose-600"></i> ${q.imgUrl ? 'Đổi ảnh câu hỏi' : 'Tải ảnh câu này lên'}
+                            </label>
+                        </div>
                     </div>
-                    <button onclick="removeManualQuestion(${idx})" class="text-rose-500 hover:text-rose-700 text-xs px-2 py-1 rounded border border-rose-100 hover:bg-rose-50 transition">
-                        <i class="fa-solid fa-trash"></i>
-                    </button>
+
+                    <div class="flex items-center gap-2 w-full sm:w-auto justify-end">
+                        <span class="text-xs font-bold text-slate-500">Đáp án:</span>
+                        <select onchange="updateQuestionCorrect(${idx}, this.value)" class="bg-white border border-slate-300 rounded-lg px-2.5 py-1.5 text-xs font-bold text-emerald-700 focus:border-rose-600 focus:outline-none shadow-sm">
+                            <option value="0" ${q.correct === 0 ? 'selected' : ''}>A đúng</option>
+                            <option value="1" ${q.correct === 1 ? 'selected' : ''}>B đúng</option>
+                            <option value="2" ${q.correct === 2 ? 'selected' : ''}>C đúng</option>
+                            <option value="3" ${q.correct === 3 ? 'selected' : ''}>D đúng</option>
+                        </select>
+                    </div>
                 </div>
             `).join('');
             updateDashboardInfo();
@@ -383,13 +398,14 @@
 
         // --- BẮT ĐẦU LÀM BÀI ---
         function startExam() {
-            if (manualQuestions.length === 0) {
-                alert("Vui lòng thêm ít nhất 1 câu hỏi thủ công trước khi bắt đầu làm đề!");
+            let validQuestions = manualQuestions.filter(q => q && q.imgUrl);
+            if (validQuestions.length === 0) {
+                alert("Vui lòng tải ít nhất 1 ảnh câu hỏi vào danh sách trước khi bắt đầu làm đề!");
                 switchTab('manual-creator');
                 return;
             }
 
-            let pool = [...manualQuestions];
+            let pool = [...validQuestions];
             if (isShuffleEnabled) {
                 pool.sort(() => Math.random() - 0.5);
             }
@@ -541,7 +557,7 @@
         }
 
         window.onload = function() {
-            updateDashboardInfo();
+            generateQuestionSlots(); // Mặc định tạo sẵn 10 câu đầu tiên khi mở web
         };
     </script>
 </body>
