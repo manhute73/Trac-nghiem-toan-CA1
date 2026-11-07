@@ -1,102 +1,101 @@
-<!doctype html>
-<html lang="vi">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Luyện trắc nghiệm từ PDF</title>
-<!-- Liên kết font chữ và thư viện KaTeX để hiển thị công thức toán học -->
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.11/katex.min.css">
-<!-- Liên kết file CSS tùy chỉnh giao diện -->
-<link rel="stylesheet" href="style.css">
-</head>
-<body>
-<main>
-
-<!-- ========================================== -->
-<!-- MÀN HÌNH 1: THIẾT LẬP & TẢI FILE PDF (viewSetup) -->
-<!-- ========================================== -->
+<!-- ===== SETUP (Giao diện cấu hình & thông tin bài thi giống mẫu) ===== -->
 <section id="viewSetup">
-  <h1>Luyện trắc nghiệm từ file PDF</h1>
-  <p class="lead">Thả file PDF đề vào đây. Web tự tách từng câu hỏi, cho bạn làm bài rồi chấm điểm ngay.</p>
-
-  <!-- Ô kéo thả hoặc chọn file PDF -->
-  <label class="drop" id="drop">
-    <strong id="dropTitle">Chọn hoặc kéo thả file PDF</strong>
-    <span class="muted small" id="dropSub">Đề cần có số câu dạng “Câu 1.” hoặc “1.”</span>
-    <input type="file" id="fileInput" accept="application/pdf,.pdf">
-  </label>
-  <progress id="parseProg" max="100" value="0" hidden></progress>
-  <div id="parseMsg" class="notice err" hidden></div>
-
-  <!-- Khung nhập / dán đáp án chuẩn -->
-  <div id="stepKey" class="panel" hidden style="margin-top:16px">
-    <h2>Đáp án</h2>
-    <p id="keyStatus"></p>
-    <textarea id="keyText" placeholder="Dán đáp án, ví dụ: 1A 2B 3C 4D…"></textarea>
-    <div class="row" style="margin-top:10px">
-      <button id="keyApply">Áp dụng đáp án</button>
+  <div class="test-card">
+    <!-- Nhãn thể loại -->
+    <div class="badge-group">
+      <span class="badge red">Thi thử</span>
+      <span class="badge gray">Trung bình</span>
     </div>
-    <div id="keyMsg" class="small muted" style="margin-top:8px"></div>
+
+    <!-- Tiêu đề đề thi -->
+    <h1 class="test-title">TEST LẦN 2</h1>
+    <div class="subject-tag">📚 TOÁN CAO CẤP</div>
+
+    <!-- Lưới thông tin chi tiết (2 cột) -->
+    <div class="info-grid">
+      <div class="info-box">
+        <div class="info-icon">🔢</div>
+        <div class="info-content">
+          <span class="info-label">SỐ CÂU</span>
+          <strong id="infoCount">14 câu trắc nghiệm</strong>
+        </div>
+      </div>
+
+      <div class="info-box">
+        <div class="info-icon">⏱️</div>
+        <div class="info-content">
+          <span class="info-label">THỜI GIAN</span>
+          <strong id="infoTime">25 phút</strong>
+        </div>
+      </div>
+
+      <div class="info-box">
+        <div class="info-icon">🧮</div>
+        <div class="info-content">
+          <span class="info-label">CÁCH TÍNH ĐIỂM</span>
+          <span>Mỗi câu bằng nhau, thang 10. Bỏ trống không có điểm, sai không bị trừ.</span>
+        </div>
+      </div>
+
+      <div class="info-box">
+        <div class="info-icon">🔀</div>
+        <div class="info-content">
+          <span class="info-label">THỨ TỰ</span>
+          <span>Trộn thứ tự câu hỏi và đáp án</span>
+        </div>
+      </div>
+
+      <div class="info-box full-width">
+        <div class="info-icon">💡</div>
+        <div class="info-content">
+          <span class="info-label">ĐÁP ÁN VÀ GIẢI THÍCH</span>
+          <span>Chỉ hiển thị sau khi nộp bài, kèm giải thích.</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Chủ đề -->
+    <div class="topic-row">
+      Chủ đề: <span class="topic-pill">BÀI TẬP TEST LẦN 2</span>
+    </div>
+
+    <!-- Khu vực ẩn để chọn file PDF và nhập đáp án (giữ logic cũ của bạn) -->
+    <div style="margin: 20px 0; padding-top: 15px; border-top: 1px dashed var(--line);">
+      <label class="drop" id="drop">
+        <strong id="dropTitle">Chọn hoặc kéo thả file PDF</strong>
+        <span class="muted small" id="dropSub">Đề cần có số câu dạng “Câu 1.” hoặc “1.”</span>
+        <input type="file" id="fileInput" accept="application/pdf,.pdf">
+      </label>
+      <progress id="parseProg" max="100" value="0" hidden></progress>
+      <div id="parseMsg" class="notice err" hidden></div>
+    </div>
+
+    <div id="stepKey" class="panel" hidden style="margin-top:16px">
+      <h2>Đáp án</h2>
+      <textarea id="keyText" placeholder="Dán đáp án, ví dụ: 1A 2B 3C 4D…"></textarea>
+      <div class="row" style="margin-top:10px">
+        <button id="keyApply">Áp dụng đáp án</button>
+      </div>
+      <div id="keyMsg" class="small muted" style="margin-top:8px"></div>
+    </div>
+
+    <!-- Thông báo lưu ý -->
+    <div class="warning-banner">
+      ⚠️ Đồng hồ bắt đầu chạy ngay khi bạn bấm bắt đầu, kể cả khi thoát ra ngoài. Hết giờ hệ thống tự nộp bài.
+    </div>
+
+    <!-- Nút bắt đầu -->
+    <button class="btn-start" id="btnStart">
+      ▶ Làm lại đề
+    </button>
   </div>
 
-  <!-- Khung cấu hình đề thi (khoảng câu, số câu làm, trộn câu hỏi) -->
-  <div id="stepConfig" class="panel" hidden>
-    <h2>Tạo đề</h2>
-    <p id="parseInfo" class="muted"></p>
-    <div class="row">
-      <label class="field">Từ câu<input type="number" id="cFrom" min="1"></label>
-      <label class="field">Đến câu<input type="number" id="cTo" min="1"></label>
-      <label class="field">Số câu làm<input type="number" id="cCount" min="1" value="20"></label>
-      <label class="field">Giới hạn phút (0 = không)<input type="number" id="cMin" min="0" value="0"></label>
-    </div>
-    <label class="check"><input type="checkbox" id="cShuffle" checked> Trộn ngẫu nhiên thứ tự câu</label>
-    
-    <div class="row" style="margin-top:16px">
-      <button class="primary" id="btnStart">Bắt đầu làm bài</button>
-      <span id="startMsg" class="small muted" role="status"></span>
+  <!-- Phần lịch sử làm bài trước -->
+  <div class="history-card">
+    <h3>Các lần làm trước</h3>
+    <div class="history-item">
+      <a href="#" class="history-date">21:40 05/11/2026</a>
+      <span class="history-score"><strong>9,29/10</strong> (13/14 câu đúng)</span>
     </div>
   </div>
 </section>
-
-<!-- ========================================== -->
-<!-- MÀN HÌNH 2: GIAO DIỆN LÀM BÀI THI (viewQuiz) -->
-<!-- ========================================== -->
-<section id="viewQuiz" hidden>
-  <!-- Thanh điều hướng cố định phía trên (tiến trình làm bài, thời gian, nút nộp) -->
-  <div class="bar">
-    <div class="grow">
-      <div class="small" id="qProgText" aria-live="polite"></div>
-      <progress id="qProg" max="1" value="0"></progress>
-    </div>
-    <div class="timer" id="qTimer">00:00</div>
-    <button class="primary" id="btnSubmit">Nộp bài</button>
-  </div>
-  <!-- Nơi danh sách câu hỏi được tạo động bằng JavaScript -->
-  <div id="quizList"></div>
-  <div class="row" style="justify-content:center; margin-top: 20px;"><button class="primary" id="btnSubmit2">Nộp bài</button></div>
-</section>
-
-<!-- ========================================== -->
-<!-- MÀN HÌNH 3: KẾT QUẢ VÀ TỔNG KẾT (viewResult) -->
-<!-- ========================================== -->
-<section id="viewResult" hidden>
-  <div class="panel">
-    <h2 id="rTitle">Kết quả bài làm</h2>
-    <p id="rMsg" class="muted"></p>
-    <div class="row" style="margin-top:14px">
-      <button class="primary" id="btnNew">Làm đề mới</button>
-    </div>
-  </div>
-</section>
-
-</main>
-
-<!-- Thư viện hỗ trợ đọc PDF từ Mozilla -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-<!-- Tệp chứa logic xử lý chính -->
-<script src="app.js"></script>
-</body>
-</html>
