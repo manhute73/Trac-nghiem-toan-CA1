@@ -160,7 +160,7 @@ details.orig .paper{margin-top:8px}
 <!-- ===== SETUP ===== -->
 <section id="viewSetup">
   <h1>Luyện trắc nghiệm từ file PDF</h1>
-  <p class="lead">Thả file PDF đề vào đây. Web tự tách từng câu hỏi, cho bạn làm bài rồi chấm điểm ngay.</p>
+  <p class="lead">Thả file PDF đề vào đây. Web tự tách từng câu hỏi, cho bạn làm bài rồi chấm điểm ngay. File chỉ được xử lý trong trình duyệt của bạn.</p>
 
   <label class="drop" id="drop">
     <strong id="dropTitle">Chọn hoặc kéo thả file PDF</strong>
@@ -173,8 +173,8 @@ details.orig .paper{margin-top:8px}
   <div id="stepKey" class="panel" hidden style="margin-top:16px">
     <h2>Đáp án</h2>
     <p id="keyStatus"></p>
-    <p class="muted small">Dán đáp án để chấm điểm tự động:</p>
-    <textarea id="keyText" placeholder="Ví dụ:&#10;1A 2B 3C 4D … hoặc 1-A, 2-B, …"></textarea>
+    <p class="muted small">File PDF này thường không kèm đáp án, nên cần một trong các cách sau để chấm điểm.</p>
+    <textarea id="keyText" placeholder="Dán đáp án, ví dụ:&#10;1A 2B 3C 4D … hoặc 1-A, 2-B, … hoặc chuỗi liền ABCDDA…"></textarea>
     <div class="row" style="margin-top:10px">
       <button id="keyApply">Áp dụng đáp án</button>
       <label class="btn small" style="display:inline-block">Tải file đáp án (.pdf, .txt)
@@ -194,12 +194,13 @@ details.orig .paper{margin-top:8px}
       <label class="field">Giới hạn phút (0 = không)<input type="number" id="cMin" min="0" value="0"></label>
     </div>
     <label class="check"><input type="checkbox" id="cShuffle" checked> Trộn ngẫu nhiên thứ tự câu</label>
-    <label class="check"><input type="checkbox" id="cAI"> Dùng AI dựng lại đề dạng chữ với công thức toán chuẩn</label>
-    <label class="check"><input type="checkbox" id="cCross" checked> Kiểm tra chéo độc lập</label>
+    <label class="check"><input type="checkbox" id="cAI"> Dùng AI dựng lại đề dạng chữ với công thức toán chuẩn, tự tính đáp án để chấm điểm, và báo câu sai đề hoặc không có kết quả</label>
+    <label class="check"><input type="checkbox" id="cCross" checked> Kiểm tra chéo: AI giải thêm lần 2 độc lập, hai lần khác nhau thì không tính điểm câu đó (tốn thêm chi phí, nên bật khi chấm thật)</label>
     <div class="small muted" id="aiStatus" style="margin-top:6px"></div>
     <details id="aiBox">
       <summary>Cài đặt AI (API key Anthropic)</summary>
-      <div class="row" style="margin-top:8px">
+      <p class="small muted" style="margin-top:8px">File PDF này dùng công thức dạng MathType nên không trích thẳng thành chữ được. AI sẽ đọc ảnh từng câu rồi chuyển thành chữ và công thức. Chỉ các câu nằm trong đề đang tạo mới được chuyển, và kết quả được lưu lại trên máy bạn. Key chỉ lưu trong trình duyệt này và được gửi thẳng tới Anthropic. Nên dùng key có đặt hạn mức chi tiêu. Không bật AI thì câu hỏi hiện bằng ảnh.</p>
+      <div class="row">
         <label class="field" style="flex:1;min-width:220px">API key<input type="password" id="aiKey" autocomplete="off" placeholder="sk-ant-..."></label>
         <label class="field" style="min-width:180px">Model<input type="text" id="aiModel" placeholder="claude-sonnet-5-5"></label>
         <button id="aiSave">Lưu</button>
@@ -210,6 +211,13 @@ details.orig .paper{margin-top:8px}
       <button class="primary" id="btnStart">Bắt đầu làm bài</button>
       <span id="startMsg" class="small muted" role="status"></span>
     </div>
+    <details>
+      <summary>Kiểm tra cách tách câu</summary>
+      <div class="row" style="margin:10px 0">
+        <label class="field">Xem câu số<input type="number" id="pvN" min="1" value="1"></label>
+      </div>
+      <div class="paper"><img id="pvImg" alt="Xem thử câu hỏi"></div>
+    </details>
   </div>
 </section>
 
@@ -246,11 +254,36 @@ details.orig .paper{margin-top:8px}
     </div>
   </div>
   <div id="rNote" class="notice" hidden style="margin:0 0 16px"></div>
-  <div class="panel">
-    <h2>Tổng kết</h2>
-    <div class="stack" id="rStack"></div>
-    <div class="nums" id="rNums"></div>
+
+  <div class="panel row" style="align-items:center">
+    <button id="btnShare">Chia sẻ kết quả</button>
+    <span id="shareMsg" class="small muted" role="status"></span>
   </div>
+
+  <div class="panel">
+    <h2>Lịch sử làm bài của bạn</h2>
+    <p class="small muted" id="histInfo"></p>
+    <div style="overflow-x:auto"><table class="hist" id="rHist"></table></div>
+  </div>
+
+  <div class="grid2">
+    <div class="panel">
+      <h2>Tổng kết</h2>
+      <div class="stack" id="rStack"></div>
+      <div class="nums" id="rNums"></div>
+    </div>
+    <div class="panel">
+      <h2>Điểm theo chương</h2>
+      <div id="rChap"></div>
+    </div>
+  </div>
+
+  <details class="panel">
+    <summary>Thêm hoặc sửa đáp án rồi chấm lại</summary>
+    <textarea id="reKey" placeholder="Dán đáp án, ví dụ: 1A 2B 3C …" style="margin-top:10px"></textarea>
+    <div class="row" style="margin-top:10px"><button id="btnRegrade">Chấm lại</button></div>
+  </details>
+
   <div class="reviewhead" id="reviewTop">
     <h2>Xem lại từng câu</h2>
     <div class="tabs" id="rTabs" role="group" aria-label="Lọc câu"></div>
@@ -275,8 +308,9 @@ const $ = s => document.querySelector(s);
 const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const state = { file: null, qs: [], byN: new Map(), key: {}, ai: {}, quiz: null, timer: null, tx: {} };
 
-const storeId = () => 'pdfquiz:' + (state.file ? state.file.name + '|' + state.file.size : '');
-function saveKey(){ try { if (state.file) localStorage.setItem(storeId(), JSON.stringify({ key: state.key, ai: state.ai })); } catch (e) {} }
+/* ---------- lưu đáp án theo từng file ---------- */
+const storeId = () => 'pdfquiz:' + state.file.name + '|' + state.file.size;
+function saveKey(){ try { localStorage.setItem(storeId(), JSON.stringify({ key: state.key, ai: state.ai })); } catch (e) {} }
 function loadKey(){
   try {
     const v = JSON.parse(localStorage.getItem(storeId()) || 'null');
@@ -284,6 +318,7 @@ function loadKey(){
   } catch (e) {}
 }
 
+/* ---------- đọc PDF: tách câu và cắt ảnh từng câu ---------- */
 const SCALE = 2;
 
 function buildLines(items, H){
@@ -295,7 +330,7 @@ function buildLines(items, H){
   const groups = [];
   for (const it of its){
     const g = groups[groups.length - 1];
-    if (g && Math.abs(g.y - it.y) <= 3.5) g.items.push(it); else groups.push({ y: it.y, items: [it] });
+    if (g && Math.abs(g.y - it.y) <= 2.5) g.items.push(it); else groups.push({ y: it.y, items: [it] });
   }
   return groups.map(g => {
     g.items.sort((a, b) => a.x - b.x);
@@ -348,14 +383,18 @@ async function extractQuestions(pdf, onProgress){
     const lines = buildLines(tc.items, H);
     pageTexts.push(lines.map(l => l.text).join('\n'));
 
+    const isJunk = l => /Downloaded by|lOMoARcPSD|studocu/i.test(l.text) || (/^\d{1,3}$/.test(l.text) && l.topU > H * 0.93);
     const markers = [];
     for (const l of lines){
-      let m = l.text.match(/^(?:Câu|CÂU)\s*(\d+)\s*[.:]/);
-      if (!m && l.x <= W * 0.25) m = l.text.match(/^(\d+)\s*[.:](?!\d)/);
-      if (!m) continue;
+      if (isJunk(l)) continue;
+      if (/^(CHƯƠNG\s*\d+|♦|PHẦN\s+(?:TRẮC|TỰ)|[-–—\s]*HẾT\b)/i.test(l.text)){ markers.push({ type: 'h', line: l }); continue; }
+      let m = l.text.match(/^(?:Câu|CÂU)\s*(\d+)\s*(?:\[[^\]]*\])?\s*[.:]/), cau = !!m;
+      if (!m && l.x <= W * 0.2) m = l.text.match(/^(\d+)\s*[.:](?!\d)/);
+      if (!m || l.x > W * 0.25) continue;
       const num = +m[1];
-      if (num >= last) { last = num; markers.push({ type: 'q', num, line: l }); }
+      if ((cau && num > last) || num === last + 1){ last = num; markers.push({ type: 'q', num, line: l }); }
     }
+    if (!markers.length && !open) { page.cleanup(); continue; }
 
     const vp = page.getViewport({ scale: SCALE });
     canvas.width = Math.round(vp.width); canvas.height = Math.round(vp.height);
@@ -364,22 +403,39 @@ async function extractQuestions(pdf, onProgress){
     const rows = inkRows(ctx, canvas.width, canvas.height);
     const CH = canvas.height;
 
-    const findCut = T => Math.max(0, Math.floor(T * SCALE) - 10);
+    // vùng nội dung: bỏ đầu trang và chân trang
+    const junk = lines.filter(isJunk);
+    const tJ = Math.max(0, ...junk.filter(l => l.topU < H / 2).map(l => l.botU));
+    const bJ = Math.min(H, ...junk.filter(l => l.topU >= H / 2).map(l => l.topU));
+    let cT = 0; for (let y = Math.floor(tJ * SCALE); y < CH; y++){ if (rows[y]) { cT = Math.max(0, y - 6); break; } }
+    let cB = CH; for (let y = Math.min(CH - 1, Math.floor(bJ * SCALE) - 1); y >= 0; y--){ if (rows[y]) { cB = Math.min(CH, y + 7); break; } }
+
+    // tìm khoảng trắng ngay trên dòng "Câu N." để cắt, tránh mất công thức nằm hơi cao hơn chữ
+    const findCut = T => {
+      const lim = Math.max(cT, T - Math.round(30 * SCALE));
+      let y0 = -1;
+      for (let y = T - 1; y >= lim; y--){ if (!rows[y]) { y0 = y; break; } }
+      if (y0 < 0) return Math.max(cT, T - 6);
+      let y1 = y0;
+      while (y1 - 1 >= cT && !rows[y1 - 1] && y0 - y1 < 24) y1--;
+      return (y0 + y1) >> 1;
+    };
     const crop = (y0, y1) => {
-      const x0 = 0, x1 = canvas.width;
-      const c = document.createElement('canvas'); c.width = x1 - x0; c.height = Math.max(10, y1 - y0);
+      const x0 = Math.round(canvas.width * 0.04), x1 = Math.round(canvas.width * 0.96);
+      const c = document.createElement('canvas'); c.width = x1 - x0; c.height = y1 - y0;
       c.getContext('2d').drawImage(canvas, x0, y0, c.width, c.height, 0, 0, c.width, c.height);
       return c;
     };
 
-    markers.forEach(m => { m.cut = findCut(m.line.topU); });
-    const firstCut = markers.length ? markers[0].cut : CH;
-    if (open && firstCut > 0) open.pieces.push(crop(0, firstCut));
+    markers.forEach(m => { m.cut = Math.max(cT, findCut(Math.floor(m.line.topU * SCALE))); });
+    const firstCut = markers.length ? markers[0].cut : cB;
+    if (open && firstCut - cT > 8) open.pieces.push(crop(cT, firstCut));
     markers.forEach((m, i) => {
-      const end = i + 1 < markers.length ? markers[i + 1].cut : CH;
+      const end = i + 1 < markers.length ? markers[i + 1].cut : cB;
       closeQ();
+      if (m.type === 'h'){ if (!/^[-–—\s]*HẾT\b/i.test(m.line.text)) chapter = m.line.text.replace(/^♦\s*/, ''); return; }
       open = { n: m.num, chapter, pieces: [] };
-      if (end - m.cut > 0) open.pieces.push(crop(m.cut, end));
+      if (end - m.cut > 8) open.pieces.push(crop(m.cut, end));
     });
     page.cleanup();
   }
@@ -387,13 +443,18 @@ async function extractQuestions(pdf, onProgress){
   return { questions, pageTexts };
 }
 
+/* ---------- đáp án ---------- */
 function parseKey(text){
   const out = {};
   const t = text.replace(/Câu/gi, ' ');
+  if (!/\d/.test(t)){
+    const letters = t.match(/[A-Ea-e]/g) || [];
+    if (letters.length >= 3) letters.forEach((c, i) => { out[i + 1] = c.toUpperCase(); });
+    return out;
+  }
   for (const m of t.matchAll(/(\d{1,4})\s*[.\-:)\]=]?\s*([A-Ea-e])(?![A-Za-zÀ-ỹ])/g)) out[+m[1]] = m[2].toUpperCase();
   return out;
 }
-
 function mergeKey(map){
   let n = 0;
   for (const k of Object.keys(map)){
@@ -403,12 +464,204 @@ function mergeKey(map){
   saveKey(); refreshKeyStatus();
   return n;
 }
-
 function refreshKeyStatus(){
   const have = state.qs.filter(q => state.key[q.n]).length;
   $('#keyStatus').textContent = `Đã có đáp án cho ${have}/${state.qs.length} câu.`;
 }
+async function pdfToText(file){
+  const pdf = await pdfjsLib.getDocument({ data: await file.arrayBuffer(), ...PDF_OPTS }).promise;
+  let s = '';
+  for (let p = 1; p <= pdf.numPages; p++){
+    const tc = await (await pdf.getPage(p)).getTextContent();
+    s += tc.items.map(i => i.str).join(' ') + '\n';
+  }
+  return s;
+}
 
+/* ---------- AI: đọc ảnh câu hỏi -> chữ + LaTeX + đáp án ---------- */
+const getKey = () => { try { return localStorage.getItem('pdfquiz-apikey') || ''; } catch (e) { return ''; } };
+const getModel = () => { try { return localStorage.getItem('pdfquiz-model') || 'claude-sonnet-5-5'; } catch (e) { return 'claude-sonnet-5-5'; } };
+const txKey = () => 'pdfquiz-tx:' + state.file.name + '|' + state.file.size;
+const saveTx = () => lsSet(txKey(), state.tx);
+
+const AI_RULES = `Quy tắc giải và kết luận:
+- Tự giải: tính từng bước trong [WORK] (tối đa 10 dòng), rồi thử lại từng phương án A–D.
+- [ANS] chỉ ghi MỘT trong: A, B, C, D, SAIDE hoặc KHONG.
+  • SAIDE: chính câu hỏi bị lỗi (thiếu dữ kiện, dữ kiện mâu thuẫn, đề không xác định, có nhiều hơn một phương án đúng, hoặc kích thước ma trận không khớp mà đề lại coi là hợp lệ). Nếu "không tồn tại / không thực hiện được" là một phương án và nó đúng thì chọn phương án đó, không phải SAIDE.
+  • KHONG: câu hỏi hợp lệ nhưng kết quả đúng bạn tính được không trùng phương án nào trong A, B, C, D, và cũng không có phương án kiểu "Các kết quả trên đều sai" phù hợp.
+- [NOTE]: một câu ngắn tiếng Việt nêu lý do khi SAIDE hoặc KHONG (kèm kết quả bạn tính được nếu có). Câu bình thường thì để trống.`;
+
+const AI_SYSTEM = `Bạn chuyển câu trắc nghiệm Toán cao cấp (đại số tuyến tính) từ ảnh thành văn bản có công thức LaTeX, rồi giải.
+Quy tắc chép:
+- Chép đúng nguyên văn tiếng Việt và đúng số liệu trong ảnh. Không tự sửa đề. Bỏ phần mã đề kiểu [AMC-2027VB2] ở đầu câu.
+- Mọi công thức đặt trong $...$ (một dòng). Ma trận dùng \\begin{pmatrix}...\\end{pmatrix}, định thức dùng \\begin{vmatrix}...\\end{vmatrix}, hệ phương trình dùng \\begin{cases}...\\end{cases}. Không dùng \\( \\) và không dùng markdown.
+- Phần câu hỏi ghi sau [Q]. Mỗi phương án ghi trên một dòng riêng, bỏ nhãn a) b) c) d) hoặc A. B. C. D. trong ảnh, đặt nhãn theo thứ tự xuất hiện: [A], [B], [C], [D]. Đề đôi khi gõ sai nhãn (ví dụ hai chữ b)), cứ theo thứ tự.
+- Nếu có hình không chép được thì ghi [hình] trong câu hỏi.
+` + AI_RULES + `
+Định dạng đầu ra cho mỗi câu, không thêm chữ nào ngoài định dạng:
+### <số câu>
+[Q] ...
+[A] ...
+[B] ...
+[C] ...
+[D] ...
+[WORK] ...
+[ANS] B
+[NOTE] `;
+
+const SOLVE_SYSTEM = `Bạn là giảng viên Toán cao cấp (đại số tuyến tính). Mỗi câu trắc nghiệm được cho dưới dạng văn bản có công thức LaTeX ($...$), sau [Q] là đề, [A] [B] [C] [D] là các phương án. Hãy giải độc lập, cẩn thận.
+` + AI_RULES + `
+Định dạng đầu ra cho mỗi câu, không thêm chữ nào ngoài định dạng:
+### <số câu>
+[WORK] ...
+[ANS] B
+[NOTE] `;
+
+function parseBlocks(text, solveOnly){
+  const out = {};
+  const parts = text.split(/^###\s*(\d+)\s*$/m);
+  for (let i = 1; i < parts.length; i += 2){
+    const n = +parts[i], f = {}; let tag = null;
+    for (const line of parts[i + 1].split('\n')){
+      const m = line.match(/^\[(Q|A|B|C|D|E|WORK|ANS|NOTE)\]\s?(.*)$/);
+      if (m){ tag = m[1]; f[tag] = m[2]; } else if (tag) f[tag] += '\n' + line;
+    }
+    const options = ['A', 'B', 'C', 'D', 'E'].filter(k => f[k] != null).map(k => f[k].trim());
+    const stem = (f.Q || '').trim();
+    const raw = (f.ANS || '').trim().toUpperCase();
+    let st = '', ans = '';
+    if (/^SAI\s*ĐỀ|^SAIDE|^SAI\s*DE/.test(raw)) st = 'saide';
+    else if (/^KHONG|^KHÔNG/.test(raw)) st = 'none';
+    else {
+      const m = raw.match(/\b([A-E])\b/);
+      if (m && 'ABCDE'.indexOf(m[1]) < (solveOnly ? 5 : options.length)){ st = 'ans'; ans = m[1]; }
+    }
+    if (solveOnly || (stem && options.length >= 2)) out[n] = { stem, options, st, ans, note: (f.NOTE || '').trim() };
+  }
+  return out;
+}
+
+let serverAI = false;
+const aiAvailable = () => serverAI || !!getKey();
+async function askAI(kind, items, retry = true){
+  if (getKey()){
+    let system, content;
+    if (kind === 'convert'){
+      system = AI_SYSTEM; content = [];
+      items.forEach(it => {
+        content.push({ type: 'text', text: `Câu ${it.n}:` });
+        content.push({ type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: it.image.split(',')[1] } });
+      });
+      content.push({ type: 'text', text: `Chuyển và giải ${items.length} câu trên (số câu: ${items.map(i => i.n).join(', ')}) theo đúng định dạng.` });
+    } else {
+      system = SOLVE_SYSTEM;
+      content = [{ type: 'text', text: items.map(it => `### ${it.n}\n${it.text}`).join('\n\n') + `\n\nGiải độc lập ${items.length} câu trên theo đúng định dạng.` }];
+    }
+    const r = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', 'x-api-key': getKey(), 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
+      body: JSON.stringify({ model: getModel(), max_tokens: 8000, system, messages: [{ role: 'user', content }] })
+    });
+    const d = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error((d.error && d.error.message) || ('Lỗi ' + r.status));
+    return (d.content || []).filter(b => b.type === 'text').map(b => b.text).join('\n');
+  }
+  const headers = { 'content-type': 'application/json' };
+  let pc = null; try { pc = sessionStorage.getItem('passcode'); } catch (e) {}
+  if (pc) headers['x-passcode'] = pc;
+  const r = await fetch('/api/convert', { method: 'POST', headers, body: JSON.stringify({ mode: kind, items }) });
+  const d = await r.json().catch(() => ({}));
+  if (r.status === 401 && retry){
+    const p = prompt('Nhập mật khẩu để dùng AI:');
+    if (p){ try { sessionStorage.setItem('passcode', p); } catch (e) {} return askAI(kind, items, false); }
+    throw new Error('Cần mật khẩu (401).');
+  }
+  if (!r.ok) throw new Error(d.message || ('Lỗi ' + r.status));
+  return d.text || '';
+}
+const callConvert = async batch => parseBlocks(await askAI('convert', batch.map(q => ({ n: q.n, image: q.img }))));
+const callSolve = async list => parseBlocks(await askAI('solve', list), true);
+const qToText = t => `[Q] ${t.stem}\n` + t.options.map((o, i) => `[${'ABCDE'[i]}] ${o}`).join('\n');
+
+function updateAiUi(setDefault){
+  if (setDefault) $('#cAI').checked = aiAvailable();
+  $('#aiStatus').textContent = getKey() ? 'AI: đang dùng key của bạn.'
+    : serverAI ? 'AI: dùng máy chủ của trang này, không cần nhập key.'
+    : 'Chưa có AI. Câu hỏi sẽ hiện bằng ảnh nguyên bản từ PDF (công thức vẫn đúng) và cần bạn nhập đáp án. Nhập key ở “Cài đặt AI” để AI dựng lại đề và tự tính đáp án.';
+}
+const needAI = (q, cross) => { const t = state.tx[q.n]; return !t || (cross ? !t.checked : t.st === undefined); };
+
+async function aiConvert(list, say){
+  const cross = $('#cCross').checked;
+  const batches = [];
+  for (let i = 0; i < list.length; i += 3) batches.push(list.slice(i, i + 3));
+  let done = 0, fails = 0, fatal = null, idx = 0;
+  const isFatal = e => /401|auth|api[- ]?key/i.test(e.message);
+  const worker = async () => {
+    while (idx < batches.length && !fatal){
+      const b = batches[idx++];
+      for (let t = 0; t < 2 && !fatal && !b.every(q => state.tx[q.n]); t++){
+        try {
+          const res = await callConvert(b.filter(q => !state.tx[q.n]));
+          for (const q of b){
+            const r = res[q.n]; if (!r || state.tx[q.n]) continue;
+            state.tx[q.n] = { stem: r.stem, options: r.options, st: r.st, ans: r.ans, note: r.note, checked: !cross };
+          }
+        } catch (e){ if (isFatal(e)) fatal = e; }
+      }
+      // giải lần 2 độc lập (hoặc giải bù cho câu đã lưu từ phiên bản cũ) rồi đối chiếu
+      const fresh = b.filter(q => { const t = state.tx[q.n]; return t && (cross ? !t.checked : t.st === undefined); });
+      if (fresh.length && !fatal){
+        try {
+          const res2 = await callSolve(fresh.map(q => ({ n: q.n, text: qToText(state.tx[q.n]) })));
+          for (const q of fresh){
+            const t = state.tx[q.n], r2 = res2[q.n];
+            t.checked = true;
+            if (!r2 || !r2.st) continue;
+            if (!t.st){ Object.assign(t, { st: r2.st, ans: r2.ans, note: r2.note }); continue; }
+            const same = r2.st === t.st && (t.st !== 'ans' || r2.ans === t.ans);
+            if (!same){ t.alt = { st: r2.st, ans: r2.ans }; t.st = 'unsure'; }
+          }
+        } catch (e){ if (isFatal(e)) fatal = e; }
+      }
+      fails += b.filter(q => !state.tx[q.n]).length; done += b.length;
+      say(`AI đang đọc và giải đề… ${done}/${list.length} câu`);
+      saveTx();
+    }
+  };
+  await Promise.all([worker(), worker()]);
+  if (fatal) throw fatal;
+  return fails;
+}
+
+/* ---------- xác định đáp án đúng của từng câu ---------- */
+// Đáp án nhập tay luôn được ưu tiên. Nếu không có thì dùng kết luận của AI.
+function verdict(q){
+  const k = state.key[q.n], t = state.tx[q.n];
+  if (k && !state.ai[q.n]) return { kind: 'key', ans: k };
+  if (t && t.st === 'saide') return { kind: 'saide', note: t.note };
+  if (t && t.st === 'none') return { kind: 'none', note: t.note };
+  if (t && t.st === 'unsure') return { kind: 'unsure', note: t.note, alt: t.alt };
+  if (t && t.st === 'ans') return { kind: 'key', ans: t.ans, ai: true };
+  if (k) return { kind: 'key', ans: k, ai: true };
+  return { kind: 'nokey' };
+}
+
+/* ---------- hiển thị chữ + công thức ---------- */
+const escNl = t => esc(t).replace(/\n/g, '<br>');
+function rich(s){
+  if (!window.katex) return escNl(s);
+  let out = '', last = 0, m; const re = /\$\$([\s\S]+?)\$\$|\$([^$\n]+?)\$/g;
+  while ((m = re.exec(s))){
+    out += escNl(s.slice(last, m.index));
+    try { out += katex.renderToString(m[1] !== undefined ? m[1] : m[2], { displayMode: m[1] !== undefined, throwOnError: false, strict: false }); }
+    catch (e) { out += esc(m[0]); }
+    last = re.lastIndex;
+  }
+  return out + escNl(s.slice(last));
+}
+
+/* ---------- màn hình ---------- */
 function show(id){
   for (const v of ['#viewSetup', '#viewQuiz', '#viewResult']) $(v).hidden = v !== id;
   window.scrollTo(0, 0);
@@ -416,6 +669,7 @@ function show(id){
 
 async function handleFile(file){
   if (!file) return;
+  if (!/\.pdf$/i.test(file.name) && file.type !== 'application/pdf'){ showParseErr('Vui lòng chọn file PDF.'); return; }
   state.file = file; state.qs = []; state.byN = new Map(); state.key = {}; state.ai = {}; state.tx = {};
   $('#parseMsg').hidden = true; $('#stepKey').hidden = true; $('#stepConfig').hidden = true;
   const prog = $('#parseProg'); prog.hidden = false; prog.value = 0;
@@ -426,48 +680,76 @@ async function handleFile(file){
       prog.value = Math.round(p / n * 100);
       $('#dropSub').textContent = `Đang đọc trang ${p}/${n}…`;
     });
-    
     if (!questions.length){
-      // Fallback nếu không tách theo định dạng câu tiêu chuẩn: Tạo danh sách trang hoặc câu giả lập đơn giản
-      $('#parseMsg').textContent = 'Không tìm thấy câu hỏi tự động. Vui lòng kiểm tra lại cấu trúc file PDF.';
-      prog.hidden = true;
+      showParseErr('Không nhận ra câu hỏi nào. Đề cần có số câu dạng “Câu 1.” hoặc “1.”, và file phải có lớp chữ (không phải ảnh quét).');
       return;
     }
-
     state.qs = questions; state.byN = new Map(questions.map(q => [q.n, q]));
-    loadKey();
+    loadKey(); state.tx = lsGet(txKey(), {});
+    // nếu cuối file có phần "Đáp án" thì tự đọc
+    const all = pageTexts.join('\n'), idx = all.search(/đáp\s*án(?![\s\S]*đáp\s*án)/i);
+    if (idx >= 0){
+      const found = parseKey(all.slice(idx));
+      if (Object.keys(found).length >= 10 && Object.keys(found).length >= questions.length * 0.3) mergeKey(found);
+    }
     prog.hidden = true;
-    $('#dropSub').textContent = `Đã tách ${questions.length} câu.`;
+    $('#dropSub').textContent = `Đã tách ${questions.length} câu. Thả file khác để đổi đề.`;
     const first = questions[0].n, lastN = questions[questions.length - 1].n;
     $('#parseInfo').textContent = `Tìm thấy ${questions.length} câu (từ câu ${first} đến câu ${lastN}).`;
     $('#cFrom').value = first; $('#cTo').value = lastN;
     $('#cCount').value = Math.min(20, questions.length);
+    $('#pvN').value = first; $('#pvN').min = first; $('#pvN').max = lastN;
+    $('#pvImg').src = questions[0].img;
     refreshKeyStatus();
     $('#stepKey').hidden = false; $('#stepConfig').hidden = false;
   } catch (e){
     console.error(e);
-    $('#parseMsg').textContent = 'Không đọc được file: ' + (e && e.message ? e.message : e);
-    prog.hidden = true;
+    showParseErr('Không đọc được file: ' + (e && e.message ? e.message : e));
   }
 }
+function showParseErr(msg){
+  $('#parseProg').hidden = true;
+  const m = $('#parseMsg'); m.textContent = msg; m.hidden = false;
+  $('#dropSub').textContent = 'Thử chọn file khác.';
+}
 
+/* ---------- tạo đề & làm bài ---------- */
 const shuffle = a => { for (let i = a.length - 1; i > 0; i--){ const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
 const fmtTime = s => { s = Math.max(0, Math.round(s)); return String(Math.floor(s / 60)).padStart(2, '0') + ':' + String(s % 60).padStart(2, '0'); };
 
-function onStart(){
+async function onStart(){
   const from = +$('#cFrom').value || 0, to = +$('#cTo').value || 1e9;
   let pool = state.qs.filter(q => q.n >= from && q.n <= to);
-  if (!pool.length) pool = state.qs.slice(0, 20); // Fallback lấy toàn bộ nếu lọc lỗi
-  if (!pool.length){ alert('Không có câu hỏi nào trong khoảng này!'); return; }
-  
+  if (!pool.length){ $('#startMsg').textContent = 'Khoảng câu này không có câu hỏi nào.'; return; }
   const count = Math.max(1, Math.min(+$('#cCount').value || pool.length, pool.length));
   pool = $('#cShuffle').checked ? shuffle(pool.slice()).slice(0, count) : pool.slice(0, count);
-  startQuiz(pool, +$('#cMin').value || 0);
+  const mins = Math.max(0, +$('#cMin').value || 0);
+
+  if ($('#cAI').checked){
+    if (!aiAvailable()){ alert('Chưa có AI. Hãy mở “Cài đặt AI”, nhập API key rồi bấm Lưu, hoặc bỏ chọn ô AI để xem câu hỏi bằng ảnh.'); $('#aiBox').open = true; return; }
+    const need = pool.filter(q => needAI(q, $('#cCross').checked));
+    if (need.length){
+      $('#btnStart').disabled = true;
+      try {
+        const fails = await aiConvert(need, t => { $('#startMsg').textContent = t; });
+        if (fails) alert(`${fails} câu AI chưa chuyển được, các câu này sẽ hiện bằng ảnh.`);
+      } catch (e){ alert('AI gặp lỗi: ' + e.message + '\nCác câu chưa chuyển sẽ hiện bằng ảnh.'); }
+      $('#btnStart').disabled = false;
+    }
+  }
+  $('#startMsg').textContent = '';
+  startQuiz(pool, mins);
 }
 
+const qHead = (i, q) => `<div class="qh"><b>Câu ${i + 1}</b><span class="grow"></span><span class="muted small">Đề gốc ${q.n}</span></div>`;
 function quizCard(q, i){
-  return `<article class="qc" id="q${i}" data-n="${q.n}">
-    <div class="qh"><b>Câu ${i + 1}</b><span class="grow"></span><span class="muted small">Đề gốc ${q.n}</span></div>
+  const tx = state.tx[q.n];
+  if (tx) return `<article class="qc" id="q${i}" data-n="${q.n}">${qHead(i, q)}
+    <div class="stem">${rich(tx.stem)}</div>
+    <div class="optlist" role="group" aria-label="Chọn đáp án câu ${i + 1}">
+      ${tx.options.map((o, k) => `<button class="optrow" data-v="${'ABCDE'[k]}" aria-pressed="false"><span class="ol">${'ABCDE'[k]}</span><span class="ot">${rich(o)}</span></button>`).join('')}
+    </div></article>`;
+  return `<article class="qc" id="q${i}" data-n="${q.n}">${qHead(i, q)}
     <div class="paper"><img src="${q.img}" alt="Nội dung câu ${i + 1}"></div>
     <div class="opts" role="group" aria-label="Chọn đáp án câu ${i + 1}">
       ${['A', 'B', 'C', 'D'].map(v => `<button class="opt" data-v="${v}" aria-pressed="false" aria-label="Đáp án ${v}">${v}</button>`).join('')}
@@ -490,13 +772,11 @@ function startQuiz(items, mins){
   tick(); state.timer = setInterval(tick, 1000);
   show('#viewQuiz');
 }
-
 function updateProg(){
   const Q = state.quiz, done = Q.items.filter(q => Q.answers[q.n]).length;
   $('#qProg').max = Q.items.length; $('#qProg').value = done;
   $('#qProgText').textContent = `Đã làm ${done}/${Q.items.length} câu`;
 }
-
 $('#quizList').addEventListener('click', e => {
   const b = e.target.closest('[data-v]'); if (!b || state.quiz.done) return;
   const card = b.closest('.qc'), n = card.dataset.n, v = b.dataset.v;
@@ -504,62 +784,223 @@ $('#quizList').addEventListener('click', e => {
   card.querySelectorAll('[data-v]').forEach(o => o.setAttribute('aria-pressed', String(state.quiz.answers[n] === o.dataset.v)));
   updateProg();
 });
-
 function submit(force){
   const Q = state.quiz; if (!Q || Q.done) return;
+  const left = Q.items.filter(q => !Q.answers[q.n]).length;
+  if (!force && left && !confirm(`Còn ${left} câu chưa làm. Nộp bài luôn?`)) return;
   Q.done = true; Q.elapsed = (Date.now() - Q.start) / 1000;
   clearInterval(state.timer);
-  showResult();
+  showResult(true);
 }
 
-function verdict(q){
-  const k = state.key[q.n], a = state.quiz.answers[q.n];
-  if (!k) return { kind: 'nokey' };
-  return { kind: 'key', ans: k };
+/* ---------- kết quả ---------- */
+const fmtLong = s => { s = Math.round(s); const m = Math.floor(s / 60); return (m ? m + ' phút ' : '') + (s % 60) + ' giây'; };
+const fmtScore = x => String(Number(x.toFixed(2))).replace('.', ',');
+const pad2 = n => String(n).padStart(2, '0');
+const fmtDate = d => `${pad2(d.getHours())}:${pad2(d.getMinutes())} ${pad2(d.getDate())}/${pad2(d.getMonth() + 1)}/${d.getFullYear()}`;
+const fmtPct = x => (Math.round(x * 1000) / 10).toString().replace('.', ',') + '%';
+const LABEL = { ok: 'Đúng', bad: 'Sai', skip: 'Bỏ trống', nokey: 'Chưa có đáp án', saide: 'Sai đề', none: 'Không có kết quả', unsure: 'AI chưa chắc' };
+const FLAGS = ['saide', 'none', 'unsure'];
+let resTab = 'all';
+
+function lsGet(k, d){ try { const v = JSON.parse(localStorage.getItem(k)); return v == null ? d : v; } catch (e) { return d; } }
+function lsSet(k, v){ try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
+const histKey = () => 'pdfquiz-hist:' + state.file.name + '|' + state.file.size;
+const markKey = () => 'pdfquiz-marks:' + state.file.name + '|' + state.file.size;
+
+function messageFor(p){
+  if (p >= 0.9) return ['Xuất sắc!', 'Bạn nắm rất chắc nội dung này. Hãy thử bộ đề khó hơn.'];
+  if (p >= 0.8) return ['Giỏi!', 'Kết quả tốt. Xem lại vài câu sai là bạn gần như hoàn hảo.'];
+  if (p >= 0.65) return ['Khá tốt', 'Bạn nắm được phần lớn. Ôn lại các câu sai để chắc hơn.'];
+  if (p >= 0.5) return ['Đạt', 'Bạn qua mức trung bình. Nên ôn thêm các câu sai và làm lại đề.'];
+  return ['Cần cố gắng thêm', 'Đừng nản. Xem kỹ phần giải rồi làm lại đề, điểm sẽ lên nhanh.'];
 }
 
-function showResult(){
-  const Q = state.quiz; let ok = 0, bad = 0, skip = 0, nokey = 0;
+function showResult(fresh){
+  const Q = state.quiz; let ok = 0, bad = 0, skip = 0, nokey = 0, flag = 0, ai = 0;
   Q.items.forEach(q => {
     const v = verdict(q), a = Q.answers[q.n]; q.v = v;
-    q.st = v.kind === 'nokey' ? 'nokey' : !a ? 'skip' : a === v.ans ? 'ok' : 'bad';
-    if (q.st === 'ok') ok++; else if (q.st === 'bad') bad++; else if (q.st === 'skip') skip++; else nokey++;
+    q.st = FLAGS.includes(v.kind) ? v.kind : v.kind === 'nokey' ? 'nokey' : !a ? 'skip' : a === v.ans ? 'ok' : 'bad';
+    if (q.st === 'ok') ok++; else if (q.st === 'bad') bad++; else if (q.st === 'skip') skip++; else if (q.st === 'nokey') nokey++; else flag++;
+    if (v.kind === 'key' && v.ai) ai++;
   });
-  const graded = ok + bad + skip, p = graded ? ok / graded : 0, score = p * 10;
-  
-  $('#rRing').innerHTML = `<svg viewBox="0 0 120 120"><circle class="track" cx="60" cy="60" r="52" fill="none" stroke-width="11"/><circle cx="60" cy="60" r="52" fill="none" stroke-width="11" stroke-dasharray="${p * 326.7} 326.7" stroke="var(--ok)"/></svg><div class="val"><b>${score.toFixed(1)}</b><span class="muted small">/10</span></div>`;
-  $('#rTitle').textContent = score >= 5 ? 'Đạt kết quả tốt!' : 'Cần cố gắng thêm';
-  $('#rMsg').textContent = `Đúng ${ok}/${graded} câu được chấm điểm.`;
-  $('#rStat1').textContent = `Thời gian làm bài: ${fmtTime(Q.elapsed)}`;
+  const graded = ok + bad + skip, p = graded ? ok / graded : 0, score = p * 10, unscored = nokey + flag;
+  const finished = new Date(Q.start + Q.elapsed * 1000);
+  const name = state.file.name.replace(/\.pdf$/i, '');
 
-  $('#rStack').innerHTML = `<i style="width:${ok/Q.items.length*100}%;background:var(--ok)"></i><i style="width:${bad/Q.items.length*100}%;background:var(--bad)"></i><i style="width:${skip/Q.items.length*100}%;background:var(--muted)"></i>`;
-  $('#rNums').innerHTML = `<div><span class="small muted">Đúng</span><b>${ok}</b></div><div><span class="small muted">Sai</span><b>${bad}</b></div><div><span class="small muted">Bỏ trống</span><b>${skip}</b></div><div><span class="small muted">Tổng</span><b>${Q.items.length}</b></div>`;
+  let hist = lsGet(histKey(), []);
+  if (fresh && graded){
+    hist.push({ t: finished.getTime(), score, ok, graded, secs: Q.elapsed });
+    hist = hist.slice(-30); lsSet(histKey(), hist);
+    Q.histIdx = hist.length - 1;
+  }
+  const attempt = fresh && graded ? hist.length : null;
 
-  $('#resList').innerHTML = Q.items.map((q, i) => {
-    const v = q.v, k = v.ans || 'Chưa có', a = Q.answers[q.n] || 'Chưa chọn';
-    return `<article class="rc ${q.st}"><header><b>Câu ${i + 1}</b><span class="badge ${q.st}">${q.st.toUpperCase()}</span></header><div class="paper"><img src="${q.img}"></div><div class="verdict">Bạn chọn: <b>${a}</b> | Đáp án đúng: <b>${k}</b></div></article>`;
-  }).join('');
+  const C = 2 * Math.PI * 52, col = p >= 0.8 ? 'var(--ok)' : p >= 0.5 ? 'var(--amber)' : 'var(--bad)';
+  $('#rRing').innerHTML = `<svg viewBox="0 0 120 120" aria-hidden="true"><circle class="track" cx="60" cy="60" r="52" fill="none" stroke-width="11"/><circle cx="60" cy="60" r="52" fill="none" stroke-width="11" stroke-linecap="round" stroke="${col}" stroke-dasharray="${(graded ? p : 0) * C} ${C}"/></svg><div class="val"><b>${graded ? fmtScore(score) : '—'}</b><span class="muted small">/10</span></div>`;
+  $('#rRing').setAttribute('aria-label', graded ? `Điểm ${fmtScore(score)} trên 10` : 'Chưa có điểm');
+
+  const [t, m] = graded ? messageFor(p) : ['Chưa có đáp án', 'Hãy bật AI hoặc thêm đáp án ở mục bên dưới để chấm điểm.'];
+  $('#rSubject').textContent = state.qs.length ? ' ' + (Q.items[0].chapter ? 'TOÁN CAO CẤP' : 'TRẮC NGHIỆM') : '';
+  $('#rTitle').textContent = t; $('#rMsg').textContent = m;
+  $('#rName').textContent = name.toUpperCase() + (attempt ? ' · LẦN ' + attempt : '');
+  $('#rStat1').textContent = graded ? `Đúng ${ok}/${graded} câu được chấm (${fmtPct(p)})` : `${Q.items.length} câu`;
+  $('#rStat2').textContent = `${fmtLong(Q.elapsed)} · nộp lúc ${fmtDate(finished)}`;
+
+  const cnt = s => Q.items.filter(q => q.st === s).length;
+  const notes = [];
+  if (flag) notes.push(`${flag} câu không được tính điểm: ${[['saide', 'sai đề'], ['none', 'không có kết quả trong A, B, C, D'], ['unsure', 'AI giải hai lần cho hai kết quả khác nhau']].filter(([s]) => cnt(s)).map(([s, l]) => `${cnt(s)} câu ${l}`).join(', ')}.`);
+  if (nokey) notes.push(`${nokey} câu chưa có đáp án nên không được tính điểm.`);
+  if (ai) notes.push(`${ai} câu dùng đáp án do AI tự tính, có thể chưa chính xác. Đáp án nhập tay luôn được ưu tiên.`);
+  const nt = $('#rNote'); nt.hidden = !notes.length; nt.textContent = notes.join(' ');
+
+  const tot = Q.items.length || 1, seg = (n, c) => `<i style="width:${n / tot * 100}%;background:${c}"></i>`;
+  $('#rStack').innerHTML = seg(ok, 'var(--ok)') + seg(bad, 'var(--bad)') + seg(skip, 'var(--muted)') + seg(unscored, 'var(--amber)');
+  $('#rNums').innerHTML = [['Đúng', ok, 'var(--ok)'], ['Sai', bad, 'var(--bad)'], ['Bỏ trống', skip, 'var(--muted)'], ...(unscored ? [['Không tính điểm', unscored, 'var(--amber)']] : []), ['Tổng số câu', Q.items.length, 'transparent']]
+    .map(([l, n, c]) => `<div><span class="small muted"><span class="dot" style="background:${c}"></span>${l}</span><b>${n}</b></div>`).join('');
+
+  const by = new Map();
+  Q.items.forEach(q => {
+    if (!['ok', 'bad', 'skip'].includes(q.st)) return;
+    const k = q.chapter || 'Khác', o = by.get(k) || { ok: 0, n: 0 };
+    o.n++; if (q.st === 'ok') o.ok++; by.set(k, o);
+  });
+  $('#rChap').innerHTML = [...by].map(([k, o]) => `<div class="crow"><div class="l"><span>${esc(k)} (${o.ok}/${o.n})</span><b>${fmtPct(o.ok / o.n)}</b></div><div class="bar2"><i style="width:${o.ok / o.n * 100}%"></i></div></div>`).join('') || '<p class="muted small">Chưa có dữ liệu.</p>';
+
+  const ranked = hist.map((h, i) => ({ ...h, i })).sort((a, b) => b.score - a.score || a.secs - b.secs);
+  const rank = Q.histIdx != null ? ranked.findIndex(r => r.i === Q.histIdx) + 1 : 0;
+  $('#histInfo').textContent = hist.length ? (rank ? `Lần này xếp hạng ${rank}/${hist.length} trong các lần bạn đã làm đề này. Lịch sử chỉ lưu trên máy bạn.` : 'Lịch sử chỉ lưu trên máy bạn.') : 'Chưa có lần làm nào được chấm điểm.';
+  $('#rHist').innerHTML = hist.length ? '<tr><th>Lần</th><th>Điểm</th><th>Đúng</th><th>Thời gian</th><th>Ngày</th></tr>' +
+    hist.map((h, i) => ({ h, i })).slice(-8).reverse().map(({ h, i }) =>
+      `<tr class="${i === Q.histIdx ? 'cur' : ''}"><td>${i + 1}${ranked[0].i === i ? ' (cao nhất)' : ''}</td><td>${fmtScore(h.score)}</td><td>${h.ok}/${h.graded}</td><td>${fmtLong(h.secs)}</td><td>${fmtDate(new Date(h.t))}</td></tr>`).join('') : '';
+
+  Q.summary = { name, score, ok, graded, p };
+  resTab = 'all';
+  renderResultList();
   show('#viewResult');
 }
 
-// Gắn sự kiện
+function renderResultList(){
+  const Q = state.quiz, marks = new Set(lsGet(markKey(), []));
+  const cnt = { all: Q.items.length, bad: 0, skip: 0, ok: 0, nokey: 0, flag: 0, marked: 0 };
+  Q.items.forEach(q => { if (FLAGS.includes(q.st)) cnt.flag++; else cnt[q.st]++; if (marks.has(q.n)) cnt.marked++; });
+  const tabs = [['all', 'Tất cả'], ['bad', 'Sai'], ['skip', 'Bỏ trống'], ['ok', 'Đúng']];
+  if (cnt.flag) tabs.push(['flag', 'Sai đề / Không có KQ']);
+  if (cnt.nokey) tabs.push(['nokey', 'Thiếu ĐA']);
+  tabs.push(['marked', 'Đã đánh dấu']);
+  $('#rTabs').innerHTML = tabs.map(([k, l]) => `<button data-tab="${k}" aria-pressed="${resTab === k}">${l} (${cnt[k]})</button>`).join('') +
+    ((cnt.bad + cnt.skip) ? '<button data-act="retry">Làm lại câu sai</button>' : '');
+
+  const list = Q.items.map((q, i) => ({ q, i })).filter(({ q }) =>
+    resTab === 'all' ? true : resTab === 'marked' ? marks.has(q.n) : resTab === 'flag' ? FLAGS.includes(q.st) : q.st === resTab);
+  $('#resList').innerHTML = list.map(({ q, i }) => {
+    const tx = state.tx[q.n], v = q.v, k = v.kind === 'key' ? v.ans : '', a = Q.answers[q.n], on = marks.has(q.n);
+    let body;
+    if (tx){
+      const rows = tx.options.map((o, j) => {
+        const L = 'ABCDE'[j], right = L === k, sel = L === a;
+        const cls = right ? 'right' : sel ? (k ? 'wrong' : 'sel') : '';
+        const pill = sel && right ? '✓ Bạn chọn đúng' : sel ? 'Bạn chọn' : right ? 'Đáp án đúng' : '';
+        return `<div class="optrow ${cls}"><span class="ol">${L}</span><span class="ot">${rich(o)}</span>${pill ? `<span class="pill">${pill}</span>` : ''}</div>`;
+      }).join('');
+      body = `<div class="stem">${rich(tx.stem)}</div><div class="optlist">${rows}</div>
+        <details class="orig"><summary>Xem ảnh gốc để đối chiếu</summary><div class="paper"><img src="${q.img}" alt="Ảnh gốc câu ${i + 1}"></div></details>`;
+    } else {
+      const opts = ['A', 'B', 'C', 'D'].map(L => {
+        const cls = L === k ? 'right' : (L === a && a !== k && k ? 'wrong' : '');
+        const tag = L === a ? 'Bạn chọn' : (L === k ? 'Đáp án' : '');
+        return `<div class="ro ${cls}">${L}<small>${tag}</small></div>`;
+      }).join('');
+      body = `<div class="paper"><img src="${q.img}" alt="Câu ${i + 1}"></div><div class="ropts">${opts}</div>`;
+    }
+    const mine = a ? `Bạn chọn <b>${a}</b>` : 'Bạn chưa chọn';
+    const note = v.note ? ' ' + rich(v.note) : '';
+    let tail;
+    if (v.kind === 'key') tail = `. Đáp án đúng: <b>${v.ans}</b>${v.ai ? ' (AI tự tính)' : ''}.`;
+    else if (v.kind === 'saide') tail = `. <b>Sai đề.</b>${note} Câu này không tính điểm.`;
+    else if (v.kind === 'none') tail = `. <b>Không có kết quả</b> trong bốn đáp án A, B, C, D.${note} Câu này không tính điểm.`;
+    else if (v.kind === 'unsure'){
+      const d = x => x ? (x.st === 'ans' ? x.ans : x.st === 'saide' ? 'sai đề' : 'không có kết quả') : '?';
+      tail = `. <b>AI chưa chắc đáp án</b> (lần 1: ${d(tx)}, lần 2: ${d(v.alt)}). Câu này không tính điểm, hãy nhập đáp án tay nếu cần.`;
+    } else tail = '. Chưa có đáp án.';
+    return `<article class="rc ${q.st}">
+      <header>
+        <b>Câu ${i + 1}</b><span class="badge ${q.st}">${LABEL[q.st]}</span><span class="grow"></span>
+        <span class="muted small">Đề gốc ${q.n}${q.chapter ? ' · ' + esc(q.chapter) : ''}</span>
+        <button class="mark" data-n="${q.n}" aria-pressed="${on}">${on ? 'Đã đánh dấu' : 'Đánh dấu để ôn'}</button>
+      </header>
+      ${body}
+      <div class="verdict">${mine}${tail}</div>
+    </article>`;
+  }).join('') || '<p class="muted">Không có câu nào trong mục này.</p>';
+}
+
+function retryWrong(){
+  const redo = state.quiz.items.filter(q => q.st === 'bad' || q.st === 'skip');
+  if (redo.length) startQuiz(shuffle(redo.map(q => state.byN.get(q.n))), 0);
+}
+
+/* ---------- sự kiện ---------- */
+const drop = $('#drop');
 $('#fileInput').addEventListener('change', e => handleFile(e.target.files[0]));
+['dragenter', 'dragover'].forEach(t => drop.addEventListener(t, e => { e.preventDefault(); drop.classList.add('over'); }));
+['dragleave', 'drop'].forEach(t => drop.addEventListener(t, e => { e.preventDefault(); drop.classList.remove('over'); }));
+drop.addEventListener('drop', e => handleFile(e.dataTransfer.files[0]));
+
 $('#keyApply').addEventListener('click', () => {
   const n = mergeKey(parseKey($('#keyText').value));
-  $('#keyMsg').textContent = `Đã nhận ${n} đáp án.`;
+  $('#keyMsg').textContent = n ? `Đã nhận ${n} đáp án.` : 'Không đọc được đáp án nào. Hãy dùng dạng “1A 2B 3C” hoặc “1-A, 2-B”.';
 });
 $('#keyFile').addEventListener('change', async e => {
   const f = e.target.files[0]; if (!f) return;
-  const text = await f.text();
-  const n = mergeKey(parseKey(text));
-  $('#keyMsg').textContent = `Đã nhận ${n} đáp án từ file.`;
+  try {
+    const text = /\.pdf$/i.test(f.name) ? await pdfToText(f) : await f.text();
+    let map = {};
+    try { const j = JSON.parse(text); if (j && typeof j === 'object') for (const k in j) map[k] = String(j[k]).toUpperCase(); } catch (_) { map = parseKey(text); }
+    const n = mergeKey(map);
+    $('#keyMsg').textContent = n ? `Đã nhận ${n} đáp án từ ${f.name}.` : 'Không đọc được đáp án nào trong file này.';
+  } catch (err){ $('#keyMsg').textContent = 'Không đọc được file: ' + err.message; }
+  e.target.value = '';
+});
+$('#pvN').addEventListener('input', () => { const q = state.byN.get(+$('#pvN').value); if (q) $('#pvImg').src = q.img; });
+$('#aiKey').value = getKey(); $('#aiModel').value = getModel(); updateAiUi(true);
+fetch('/api/convert').then(r => r.ok ? r.json() : null).then(j => { serverAI = !!(j && j.available); updateAiUi(true); }).catch(() => {});
+$('#aiSave').addEventListener('click', () => {
+  try { localStorage.setItem('pdfquiz-apikey', $('#aiKey').value.trim()); localStorage.setItem('pdfquiz-model', $('#aiModel').value.trim() || 'claude-sonnet-5-5'); } catch (e) {}
+  updateAiUi(true);
+  $('#aiMsg').textContent = getKey() ? 'Đã lưu. Bật ô “Dùng AI…” rồi bấm Bắt đầu làm bài.' : 'Đã xoá key.';
 });
 $('#btnStart').addEventListener('click', onStart);
-$('#btnSubmit').addEventListener('click', () => submit(true));
-$('#btnSubmit2').addEventListener('click', () => submit(true));
-$('#btnNew').addEventListener('click', () => show('#viewSetup'));
-$('#btnAgain').addEventListener('click', () => startQuiz(shuffle(state.quiz.items), state.quiz.mins));
+$('#btnSubmit').addEventListener('click', () => submit(false));
+$('#btnSubmit2').addEventListener('click', () => submit(false));
+$('#btnNew').addEventListener('click', () => { state.quiz = null; show('#viewSetup'); });
 $('#btnReview').addEventListener('click', () => $('#reviewTop').scrollIntoView({ behavior: 'smooth' }));
+$('#btnAgain').addEventListener('click', () => startQuiz(shuffle(state.quiz.items.map(q => state.byN.get(q.n))), state.quiz.mins));
+$('#rTabs').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  if (b.dataset.act === 'retry') return retryWrong();
+  resTab = b.dataset.tab; renderResultList();
+});
+$('#resList').addEventListener('click', e => {
+  const b = e.target.closest('.mark'); if (!b) return;
+  const n = +b.dataset.n, s = new Set(lsGet(markKey(), []));
+  if (s.has(n)) s.delete(n); else s.add(n);
+  lsSet(markKey(), [...s]); renderResultList();
+});
+$('#btnShare').addEventListener('click', async () => {
+  const s = state.quiz.summary;
+  const text = `Mình vừa làm đề “${s.name}”: ${fmtScore(s.score)}/10 (đúng ${s.ok}/${s.graded} câu).`;
+  try {
+    if (navigator.share) await navigator.share({ text });
+    else { await navigator.clipboard.writeText(text); $('#shareMsg').textContent = 'Đã chép kết quả vào clipboard.'; }
+  } catch (e) { $('#shareMsg').textContent = 'Không chia sẻ được: ' + text; }
+});
+$('#btnRegrade').addEventListener('click', () => {
+  const n = mergeKey(parseKey($('#reKey').value));
+  if (!n){ alert('Không đọc được đáp án nào. Hãy dùng dạng “1A 2B 3C”.'); return; }
+  showResult(false);
+});
+window.addEventListener('beforeunload', e => { if (state.quiz && !state.quiz.done){ e.preventDefault(); e.returnValue = ''; } });
 </script>
 </body>
 </html>
