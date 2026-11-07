@@ -22,21 +22,25 @@
         /* Khung chứa màu xám cố định đồng nhất cho tất cả các câu */
         .question-frame-box {
             width: 100%;
-            height: 240px;
+            height: 260px;
             background-color: #f8fafc;
             border: 1px solid #e2e8f0;
             border-radius: 1rem;
             display: flex;
             align-items: center;
-            justify-content: center;
+            /* Căn lề trái chuẩn xác theo đường thẳng màu xanh (1cm tương đương padding-left) */
+            justify-content: flex-start; 
             overflow: hidden;
-            padding: 12px;
+            padding-left: 28px; /* Khoảng cách lề trái 1cm chuẩn */
         }
+
+        /* Đồng bộ cỡ chữ & tỷ lệ hiển thị lấy Câu 3 làm chuẩn tuyệt đối */
         .question-frame-box img {
-            max-width: 100%;
-            max-height: 100%;
+            height: 100%;
+            width: auto;
+            max-width: none;
             object-fit: contain;
-            padding-left: 1rem; /* Cách lề trái 1cm */
+            transform-origin: left center;
         }
     </style>
 </head>
@@ -160,8 +164,8 @@
             <div id="tab-pdf-creator" class="hidden space-y-4 flex-1 flex flex-col">
                 <div class="border-b pb-3 flex justify-between items-center">
                     <div>
-                        <h2 class="text-lg font-bold text-slate-950">Tự Động Cắt Ảnh Đề Thi (Loại bỏ nền trắng)</h2>
-                        <p class="text-xs text-slate-500">Tự động khử nền trắng và đồng bộ kích thước hiển thị cho toàn bộ câu hỏi.</p>
+                        <h2 class="text-lg font-bold text-slate-950">Tự Động Cắt Ảnh Đề Thi (Căn Lề 1cm & Đồng Bộ Cỡ Chữ)</h2>
+                        <p class="text-xs text-slate-500">Khử nền trắng, đồng bộ cỡ chữ theo mẫu chuẩn của Câu 3.</p>
                     </div>
                     <button onclick="switchTab('dashboard')" class="bg-rose-600 hover:bg-rose-700 text-white px-4 py-2 rounded-xl text-xs font-medium transition flex items-center gap-2 shadow-md shrink-0">
                         <i class="fa-solid fa-arrow-left"></i> Quay lại trang chủ
@@ -203,8 +207,8 @@
                     <div class="md:col-span-2 bg-slate-900 rounded-xl p-6 flex flex-col items-center justify-center text-center relative overflow-hidden h-[460px]">
                         <div id="auto-crop-status" class="space-y-3">
                             <i class="fa-solid fa-wand-magic-sparkles text-4xl text-rose-500 animate-pulse"></i>
-                            <h3 class="text-white font-bold text-sm">Sẵn sàng tự động cắt ảnh khử nền trắng</h3>
-                            <p class="text-xs text-slate-400 max-w-xs">Chọn file PDF ở cột bên trái, hệ thống tự động bám sát từng câu, khử nền trắng thành xám đồng bộ.</p>
+                            <h3 class="text-white font-bold text-sm">Sẵn sàng tự động cắt ảnh chuẩn lề</h3>
+                            <p class="text-xs text-slate-400 max-w-xs">Chọn file PDF ở cột bên trái, hệ thống tự động căn lề chuẩn 1cm và đồng bộ cỡ chữ.</p>
                         </div>
                         <div id="auto-crop-loading" class="hidden space-y-3">
                             <i class="fa-solid fa-spinner fa-spin text-4xl text-emerald-400"></i>
@@ -404,7 +408,7 @@
             }
         }
 
-        // --- THUẬT TOÁN CẮT ẢNH KHỬ NỀN TRẮNG, CỐ ĐỊNH LỀ TRÁI 1CM ---
+        // --- THUẬT TOÁN CẮT ẢNH CỐ ĐỊNH LỀ TRÁI 1CM VÀ KHỬ NỀN TRẮNG ---
         async function handleAutoCropPDF(e) {
             const file = e.target.files[0];
             if (!file) return;
@@ -424,7 +428,7 @@
 
                 const renderScale = 2.5; // Độ nét cao
                 
-                // Lề trái cố định 1cm (~37.8 pixels ở 1x nhân 2.5 scale = ~95 pixels)
+                // Lề trái cố định 1cm chính xác theo vạch màu xanh (~37.8 pixels ở 1x nhân 2.5 = ~95 pixels)
                 const marginLeft1cm = Math.round(1 * 37.8 * renderScale); 
                 const marginTopBuffer = Math.round(0.6 * 37.8 * renderScale); 
                 const marginBottomBuffer = Math.round(0.6 * 37.8 * renderScale); 
@@ -464,7 +468,7 @@
                         }
                     }
 
-                    // Cắt ảnh và khử nền trắng
+                    // Cắt ảnh bám sát nội dung từ lề trái 1cm
                     for (let i = 0; i < filteredQItems.length; i++) {
                         let startY = Math.max(0, filteredQItems[i].y - marginTopBuffer);
                         
@@ -474,7 +478,7 @@
                         if (height < 60) continue;
 
                         let cropCanvas = document.createElement('canvas');
-                        let cropWidth = canvas.width - marginLeft1cm - 40; 
+                        let cropWidth = canvas.width - marginLeft1cm - 30; 
                         cropCanvas.width = cropWidth;
                         cropCanvas.height = height;
                         let cropCtx = cropCanvas.getContext('2d');
@@ -488,16 +492,15 @@
                             0, 0, cropWidth, height
                         );
 
-                        // Xử lý tự động biến đổi pixel nền trắng thành nền xám nhạt (#f8fafc)
+                        // Tự động khử nền trắng thành màu xám đồng bộ (#f8fafc)
                         let imgData = cropCtx.getImageData(0, 0, cropWidth, height);
                         let data = imgData.data;
                         for (let p = 0; p < data.length; p += 4) {
                             let r = data[p], g = data[p+1], b = data[p+2];
-                            // Nếu pixel có màu trắng hoặc gần trắng (RGB > 245)
                             if (r > 245 && g > 245 && b > 245) {
-                                data[p] = 248;     // R của #f8fafc
-                                data[p+1] = 250;   // G của #f8fafc
-                                data[p+2] = 252;   // B của #f8fafc
+                                data[p] = 248;     
+                                data[p+1] = 250;   
+                                data[p+2] = 252;   
                             }
                         }
                         cropCtx.putImageData(imgData, 0, 0);
@@ -536,7 +539,7 @@
                 <div class="bg-white border p-2 rounded-lg flex items-center justify-between gap-2 shadow-sm">
                     <div class="flex items-center gap-2 truncate">
                         <img src="${q.imgUrl}" class="w-12 h-8 object-cover rounded border">
-                        <span class="font-medium text-slate-800 text-xs">Câu ${idx + 1} (Khử nền trắng)</span>
+                        <span class="font-medium text-slate-800 text-xs">Câu ${idx + 1} (Chuẩn lề & Cỡ chữ)</span>
                     </div>
                 </div>
             `).join('');
@@ -618,7 +621,7 @@
                         </div>
                     </div>
 
-                    <!-- Khung xám cố định kích thước, đề nằm chính giữa, không có nền trắng thô -->
+                    <!-- Khung xám đồng bộ, căn lề trái chuẩn 1cm và đồng đều cỡ chữ -->
                     <div class="question-frame-box">
                         <img src="${q.imgUrl}" alt="Câu hỏi">
                     </div>
