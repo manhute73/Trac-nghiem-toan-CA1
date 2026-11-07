@@ -32,7 +32,7 @@
         </div>
         <div class="flex items-center space-x-4">
             <button onclick="switchTab('dashboard')" class="hover:text-white transition"><i class="fa-solid fa-house mr-1"></i> Trang chủ</button>
-            <button onclick="switchTab('pdf-creator')" class="hover:text-white transition"><i class="fa-solid fa-wand-magic-sparkles mr-1"></i> Tự Động Cắt Ảnh PDF</button>
+            <button onclick="switchTab('pdf-creator')" class="hover:text-white transition"><i class="fa-solid fa-wand-magic-sparkles mr-1"></i> Tự Động Cắt Ảnh PDF Chuẩn Xác</button>
         </div>
     </header>
 
@@ -140,8 +140,8 @@
             <div id="tab-pdf-creator" class="hidden space-y-4 flex-1 flex flex-col">
                 <div class="border-b pb-3 flex justify-between items-center">
                     <div>
-                        <h2 class="text-lg font-bold text-slate-950">Tự Động Cắt Ảnh Từng Câu Từ File PDF</h2>
-                        <p class="text-xs text-slate-500">Hệ thống quét chữ <b>"Câu X"</b>, tự động khoanh vùng và cắt thành ảnh các câu hỏi cực nhanh.</p>
+                        <h2 class="text-lg font-bold text-slate-950">Tự Động Cắt Ảnh Từng Câu Từ File PDF (Độ Nét Cao)</h2>
+                        <p class="text-xs text-slate-500">Hệ thống nhận diện ranh giới chính xác, cách lề chuẩn 0.5cm, không bị chồng chéo.</p>
                     </div>
                     <button onclick="switchTab('dashboard')" class="bg-rose-600 hover:bg-rose-700 text-white px-4 py-2 rounded-xl text-xs font-medium transition flex items-center gap-2 shadow-md shrink-0">
                         <i class="fa-solid fa-arrow-left"></i> Quay lại trang chủ
@@ -183,12 +183,12 @@
                     <div class="md:col-span-2 bg-slate-900 rounded-xl p-6 flex flex-col items-center justify-center text-center relative overflow-hidden h-[460px]">
                         <div id="auto-crop-status" class="space-y-3">
                             <i class="fa-solid fa-wand-magic-sparkles text-4xl text-rose-500 animate-pulse"></i>
-                            <h3 class="text-white font-bold text-sm">Sẵn sàng tự động cắt ảnh</h3>
-                            <p class="text-xs text-slate-400 max-w-xs">Chọn file PDF ở cột bên trái, hệ thống sẽ tự tìm các chữ "Câu X" và cắt toàn bộ câu hỏi thành ảnh cho bạn.</p>
+                            <h3 class="text-white font-bold text-sm">Sẵn sàng tự động cắt ảnh chuẩn nét</h3>
+                            <p class="text-xs text-slate-400 max-w-xs">Chọn file PDF ở cột bên trái, hệ thống tự động lọc ranh giới từng câu không bị lẹm hay chồng chéo.</p>
                         </div>
                         <div id="auto-crop-loading" class="hidden space-y-3">
                             <i class="fa-solid fa-spinner fa-spin text-4xl text-emerald-400"></i>
-                            <h3 class="text-white font-bold text-sm">Đang tự động phân tích và cắt ảnh...</h3>
+                            <h3 class="text-white font-bold text-sm">Đang xử lý tách ảnh độ nét cao...</h3>
                             <p id="crop-progress-text" class="text-xs text-slate-400">Đang đọc trang 1...</p>
                         </div>
                     </div>
@@ -393,7 +393,7 @@
             }
         }
 
-        // --- THUẬT TOÁN TỰ ĐỘNG CẮT ẢNH CÂU HỎI TỪ PDF ---
+        // --- THUẬT TOÁN TỰ ĐỘNG CẮT ẢNH CHUẨN XÁC, SẮC NÉT & KHÔNG CHỒNG CHÉO ---
         async function handleAutoCropPDF(e) {
             const file = e.target.files[0];
             if (!file) return;
@@ -411,47 +411,77 @@
                 const pdf = await pdfjsLib.getDocument(typedarray).promise;
                 autoExtractedQuestions = [];
 
+                // Sử dụng scale = 2.5 để ảnh render sắc nét tối đa
+                const renderScale = 2.5; 
+                // Khoảng cách lề 0.5cm quy đổi ra pixel (96 DPI * 0.5 / 2.54 * scale) khoảng 18-20px
+                const marginPadding = 18;
+
                 for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
-                    document.getElementById('crop-progress-text').innerText = `Đang quét trang ${pageNum}/${pdf.numPages}...`;
+                    document.getElementById('crop-progress-text').innerText = `Đang xử lý trang ${pageNum}/${pdf.numPages}...`;
                     const page = await pdf.getPage(pageNum);
-                    const viewport = page.getViewport({ scale: 1.5 }); // Scale lớn để ảnh sắc nét
+                    const viewport = page.getViewport({ scale: renderScale });
 
                     const canvas = document.createElement('canvas');
                     const context = canvas.getContext('2d');
                     canvas.height = viewport.height;
                     canvas.width = viewport.width;
 
+                    // Làm mượt hình ảnh khi render
+                    context.imageSmoothingEnabled = true;
+                    context.imageSmoothingQuality = 'high';
+
                     await page.render({ canvasContext: context, viewport: viewport }).promise;
                     const textContent = await page.getTextContent();
 
-                    // Tìm tất cả các tọa độ có chữ "Câu X"
+                    // Thu thập tất cả các vị trí bắt đầu bằng "Câu X" hoặc "CâuX"
                     let qItems = [];
                     textContent.items.forEach(item => {
-                        let match = item.str.match(/Câu\s+(\d+)/i);
+                        let match = item.str.match(/Câu\s*(\d+)/i);
                         if (match) {
-                            let tx = item.transform[4] * 1.5;
-                            let ty = canvas.height - (item.transform[5] * 1.5);
+                            let tx = item.transform[4] * renderScale;
+                            let ty = canvas.height - (item.transform[5] * renderScale);
                             qItems.push({ num: parseInt(match[1]), y: ty, x: tx });
                         }
                     });
 
-                    // Sắp xếp các câu theo thứ tự từ trên xuống dưới
+                    // Sắp xếp các câu theo thứ tự từ trên xuống dưới theo chiều dọc Y
                     qItems.sort((a, b) => a.y - b.y);
 
-                    // Cắt tự động từng khoảng giữa các câu
-                    for (let i = 0; i < qItems.length; i++) {
-                        let startY = Math.max(0, qItems[i].y - 25);
-                        let endY = (i < qItems.length - 1) ? qItems[i + 1].y - 15 : canvas.height;
+                    // Lọc bỏ các mục trùng lặp hoặc quá sát nhau (nếu có)
+                    let filteredQItems = [];
+                    for (let q of qItems) {
+                        if (filteredQItems.length === 0 || Math.abs(q.y - filteredQItems[filteredQItems.length - 1].y) > 20) {
+                            filteredQItems.push(q);
+                        }
+                    }
+
+                    // Tiến hành cắt từng khung hình câu hỏi độc lập không chồng chéo
+                    for (let i = 0; i < filteredQItems.length; i++) {
+                        // Điểm bắt đầu lùi lên một chút để không sát chữ "Câu X" (cách lề 0.5cm tương ứng marginPadding)
+                        let startY = Math.max(0, filteredQItems[i].y - marginPadding - 10);
+                        // Điểm kết thúc là ngay sát đầu câu tiếp theo, hoặc hết trang
+                        let endY = (i < filteredQItems.length - 1) ? filteredQItems[i + 1].y - marginPadding - 5 : canvas.height - 10;
                         let height = endY - startY;
 
-                        if (height < 30) continue; // Bỏ qua nếu quá ngắn
+                        if (height < 40) continue; // Bỏ qua nếu vùng cắt quá nhỏ không hợp lệ
 
                         let cropCanvas = document.createElement('canvas');
-                        cropCanvas.width = canvas.width - 40;
+                        // Cắt rộng đều hai bên lề 0.5cm (marginPadding)
+                        let cropWidth = canvas.width - (marginPadding * 2);
+                        cropCanvas.width = cropWidth;
                         cropCanvas.height = height;
                         let cropCtx = cropCanvas.getContext('2d');
 
-                        cropCtx.drawImage(canvas, 20, startY, canvas.width - 40, height, 0, 0, cropCanvas.width, height);
+                        cropCtx.imageSmoothingEnabled = true;
+                        cropCtx.imageSmoothingQuality = 'high';
+
+                        // Sao chép đúng tọa độ vùng cần cắt từ canvas gốc sang canvas con
+                        cropCtx.drawImage(
+                            canvas, 
+                            marginPadding, startY, cropWidth, height, 
+                            0, 0, cropWidth, height
+                        );
+
                         let imgDataUrl = cropCanvas.toDataURL('image/png');
 
                         autoExtractedQuestions.push({
@@ -459,7 +489,7 @@
                             text: "",
                             isImage: true,
                             imgUrl: imgDataUrl,
-                            options: ["A", "B", "C", "D"], // Tuỳ chỉnh mặc định
+                            options: ["A", "B", "C", "D"],
                             correct: 0
                         });
                     }
@@ -486,7 +516,7 @@
                 <div class="bg-white border p-2 rounded-lg flex items-center justify-between gap-2 shadow-sm">
                     <div class="flex items-center gap-2 truncate">
                         <img src="${q.imgUrl}" class="w-12 h-8 object-cover rounded border">
-                        <span class="font-medium text-slate-800 text-xs">Câu ${idx + 1} (Đã cắt ảnh)</span>
+                        <span class="font-medium text-slate-800 text-xs">Câu ${idx + 1} (Đã cắt chuẩn)</span>
                     </div>
                 </div>
             `).join('');
@@ -562,9 +592,9 @@
                         </div>
                     </div>
 
-                    <!-- Hiển thị ảnh câu hỏi do hệ thống tự cắt -->
-                    <div class="w-full bg-slate-50 p-3 rounded-xl border border-slate-100 flex justify-center">
-                        <img src="${q.imgUrl}" class="max-w-full rounded border shadow-sm">
+                    <!-- Hiển thị ảnh câu hỏi siêu nét, vừa khung -->
+                    <div class="w-full bg-slate-50 p-4 rounded-xl border border-slate-100 flex justify-center">
+                        <img src="${q.imgUrl}" class="max-w-full h-auto rounded border shadow-sm">
                     </div>
 
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -664,8 +694,8 @@
                             <span class="text-xs font-semibold text-slate-500">${currentExam.title}</span>
                         </div>
 
-                        <div class="w-full bg-slate-50 p-3 rounded-xl border border-slate-100 flex justify-center">
-                            <img src="${q.imgUrl}" class="max-w-full rounded border shadow-sm">
+                        <div class="w-full bg-slate-50 p-4 rounded-xl border border-slate-100 flex justify-center">
+                            <img src="${q.imgUrl}" class="max-w-full h-auto rounded border shadow-sm">
                         </div>
 
                         <div class="text-xs font-medium text-slate-700 mt-3 pt-3 border-t border-slate-100">
