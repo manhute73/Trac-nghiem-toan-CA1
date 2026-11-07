@@ -19,11 +19,11 @@
         .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
         
-        /* Cố định khung chứa đề thi màu xám với kích thước chiều cao rộng đồng nhất */
+        /* Khung chứa màu xám cố định đồng nhất cho tất cả các câu */
         .question-frame-box {
             width: 100%;
-            height: 240px; /* Cố định chiều cao cho tất cả các câu */
-            background-color: #f8fafc; /* Nền xám nhạt hiện đại */
+            height: 240px;
+            background-color: #f8fafc;
             border: 1px solid #e2e8f0;
             border-radius: 1rem;
             display: flex;
@@ -35,9 +35,8 @@
         .question-frame-box img {
             max-width: 100%;
             max-height: 100%;
-            object-fit: contain; /* Giữ tỷ lệ đề, hiển thị trọn vẹn ở trung tâm */
-            /* Đảm bảo lề trái cách 1cm ảo thông qua padding hoặc căn chỉnh */
-            padding-left: 1rem; 
+            object-fit: contain;
+            padding-left: 1rem; /* Cách lề trái 1cm */
         }
     </style>
 </head>
@@ -161,8 +160,8 @@
             <div id="tab-pdf-creator" class="hidden space-y-4 flex-1 flex flex-col">
                 <div class="border-b pb-3 flex justify-between items-center">
                     <div>
-                        <h2 class="text-lg font-bold text-slate-950">Tự Động Cắt Ảnh Đề Thi (Lề trái 1cm)</h2>
-                        <p class="text-xs text-slate-500">Cắt ảnh sạch sẽ không viền trắng, nạp trực tiếp vào khung đồng bộ cố định.</p>
+                        <h2 class="text-lg font-bold text-slate-950">Tự Động Cắt Ảnh Đề Thi (Loại bỏ nền trắng)</h2>
+                        <p class="text-xs text-slate-500">Tự động khử nền trắng và đồng bộ kích thước hiển thị cho toàn bộ câu hỏi.</p>
                     </div>
                     <button onclick="switchTab('dashboard')" class="bg-rose-600 hover:bg-rose-700 text-white px-4 py-2 rounded-xl text-xs font-medium transition flex items-center gap-2 shadow-md shrink-0">
                         <i class="fa-solid fa-arrow-left"></i> Quay lại trang chủ
@@ -204,12 +203,12 @@
                     <div class="md:col-span-2 bg-slate-900 rounded-xl p-6 flex flex-col items-center justify-center text-center relative overflow-hidden h-[460px]">
                         <div id="auto-crop-status" class="space-y-3">
                             <i class="fa-solid fa-wand-magic-sparkles text-4xl text-rose-500 animate-pulse"></i>
-                            <h3 class="text-white font-bold text-sm">Sẵn sàng tự động cắt ảnh chuẩn lề</h3>
-                            <p class="text-xs text-slate-400 max-w-xs">Chọn file PDF ở cột bên trái, hệ thống tự động bám sát từng câu lề trái 1cm và không chứa nền trắng thừa.</p>
+                            <h3 class="text-white font-bold text-sm">Sẵn sàng tự động cắt ảnh khử nền trắng</h3>
+                            <p class="text-xs text-slate-400 max-w-xs">Chọn file PDF ở cột bên trái, hệ thống tự động bám sát từng câu, khử nền trắng thành xám đồng bộ.</p>
                         </div>
                         <div id="auto-crop-loading" class="hidden space-y-3">
                             <i class="fa-solid fa-spinner fa-spin text-4xl text-emerald-400"></i>
-                            <h3 class="text-white font-bold text-sm">Đang xử lý phân tích và cắt ảnh...</h3>
+                            <h3 class="text-white font-bold text-sm">Đang xử lý phân tích và khử nền...</h3>
                             <p id="crop-progress-text" class="text-xs text-slate-400">Đang đọc trang 1...</p>
                         </div>
                     </div>
@@ -405,7 +404,7 @@
             }
         }
 
-        // --- THUẬT TOÁN CẮT ẢNH BỎ NỀN TRẮNG, CỐ ĐỊNH LỀ TRÁI 1CM ---
+        // --- THUẬT TOÁN CẮT ẢNH KHỬ NỀN TRẮNG, CỐ ĐỊNH LỀ TRÁI 1CM ---
         async function handleAutoCropPDF(e) {
             const file = e.target.files[0];
             if (!file) return;
@@ -465,7 +464,7 @@
                         }
                     }
 
-                    // Cắt ảnh bám sát nội dung, loại bỏ viền trắng thừa
+                    // Cắt ảnh và khử nền trắng
                     for (let i = 0; i < filteredQItems.length; i++) {
                         let startY = Math.max(0, filteredQItems[i].y - marginTopBuffer);
                         
@@ -475,7 +474,7 @@
                         if (height < 60) continue;
 
                         let cropCanvas = document.createElement('canvas');
-                        let cropWidth = canvas.width - marginLeft1cm - 40; // Trừ lề trái 1cm và lề phải an toàn
+                        let cropWidth = canvas.width - marginLeft1cm - 40; 
                         cropCanvas.width = cropWidth;
                         cropCanvas.height = height;
                         let cropCtx = cropCanvas.getContext('2d');
@@ -488,6 +487,20 @@
                             marginLeft1cm, startY, cropWidth, height, 
                             0, 0, cropWidth, height
                         );
+
+                        // Xử lý tự động biến đổi pixel nền trắng thành nền xám nhạt (#f8fafc)
+                        let imgData = cropCtx.getImageData(0, 0, cropWidth, height);
+                        let data = imgData.data;
+                        for (let p = 0; p < data.length; p += 4) {
+                            let r = data[p], g = data[p+1], b = data[p+2];
+                            // Nếu pixel có màu trắng hoặc gần trắng (RGB > 245)
+                            if (r > 245 && g > 245 && b > 245) {
+                                data[p] = 248;     // R của #f8fafc
+                                data[p+1] = 250;   // G của #f8fafc
+                                data[p+2] = 252;   // B của #f8fafc
+                            }
+                        }
+                        cropCtx.putImageData(imgData, 0, 0);
 
                         let imgDataUrl = cropCanvas.toDataURL('image/png');
 
@@ -523,7 +536,7 @@
                 <div class="bg-white border p-2 rounded-lg flex items-center justify-between gap-2 shadow-sm">
                     <div class="flex items-center gap-2 truncate">
                         <img src="${q.imgUrl}" class="w-12 h-8 object-cover rounded border">
-                        <span class="font-medium text-slate-800 text-xs">Câu ${idx + 1} (Chuẩn lề 1cm)</span>
+                        <span class="font-medium text-slate-800 text-xs">Câu ${idx + 1} (Khử nền trắng)</span>
                     </div>
                 </div>
             `).join('');
@@ -605,7 +618,7 @@
                         </div>
                     </div>
 
-                    <!-- Khung xám cố định kích thước, đề nằm chính giữa và cách lề trái 1cm -->
+                    <!-- Khung xám cố định kích thước, đề nằm chính giữa, không có nền trắng thô -->
                     <div class="question-frame-box">
                         <img src="${q.imgUrl}" alt="Câu hỏi">
                     </div>
