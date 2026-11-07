@@ -34,6 +34,10 @@
             max-height: 90%;
             object-fit: none;
         }
+        .paste-zone:focus {
+            outline: 2px solid #e11d48;
+            background-color: #fff1f2 !important;
+        }
     </style>
 </head>
 <body class="min-h-screen text-slate-800 flex flex-col">
@@ -48,7 +52,7 @@
         </div>
         <div class="flex items-center space-x-4">
             <button onclick="switchTab('dashboard')" class="hover:text-white transition"><i class="fa-solid fa-house mr-1"></i> Trang chủ</button>
-            <button onclick="switchTab('manual-creator')" class="hover:text-white transition text-rose-400 font-semibold"><i class="fa-solid</i><i class="fa-solid fa-list-check mr-1"></i> Tạo Khung Đề Theo Số Lượng Câu</button>
+            <button onclick="switchTab('manual-creator')" class="hover:text-white transition text-rose-400 font-semibold"><i class="fa-solid fa-clipboard mr-1"></i> Dán Ảnh Cắt Thủ Công</button>
         </div>
     </header>
 
@@ -61,7 +65,7 @@
                 <div class="flex justify-between items-center pb-4 mb-2 border-b border-slate-100">
                     <h2 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Bảng điều khiển luyện tập</h2>
                     <button onclick="switchTab('manual-creator')" class="bg-rose-50 hover:bg-rose-100 text-rose-700 px-4 py-2 rounded-xl font-medium text-sm transition flex items-center gap-2 border border-rose-200">
-                        <i class="fa-solid fa-list-check"></i> Tạo khung danh sách câu hỏi
+                        <i class="fa-solid fa-clipboard"></i> Dán ảnh câu hỏi trực tiếp
                     </button>
                 </div>
 
@@ -152,12 +156,12 @@
                 </div>
             </div>
 
-            <!-- TAB 2: TẠO KHUNG DANH SÁCH CÂU HỎI THEO SỐ LƯỢNG -->
+            <!-- TAB 2: TẠO KHUNG DANH SÁCH & DÁN TRỰC TIẾP -->
             <div id="tab-manual-creator" class="hidden space-y-4 flex-1 flex flex-col">
                 <div class="border-b pb-3 flex justify-between items-center">
                     <div>
-                        <h2 class="text-lg font-bold text-slate-950">Tạo Khung Đề Thi Theo Số Lượng Câu</h2>
-                        <p class="text-xs text-slate-500">Nhập tổng số câu để hệ thống tạo danh sách, sau đó bạn chỉ việc dán ảnh và chọn đáp án đúng cho từng câu.</p>
+                        <h2 class="text-lg font-bold text-slate-950">Dán Ảnh Trực Tiếp Cho Từng Câu Hỏi</h2>
+                        <p class="text-xs text-slate-500">Nhập số lượng câu, sau đó chỉ cần click vào ô mỗi câu rồi nhấn <b>Ctrl + V</b> để dán ảnh trực tiếp từ clipboard!</p>
                     </div>
                     <button onclick="switchTab('dashboard')" class="bg-rose-600 hover:bg-rose-700 text-white px-4 py-2 rounded-xl text-xs font-medium transition flex items-center gap-2 shadow-md shrink-0">
                         <i class="fa-solid fa-arrow-left"></i> Xong, về trang chủ
@@ -181,7 +185,7 @@
                 <div class="space-y-3">
                     <h3 class="font-bold text-slate-800 text-xs flex justify-between items-center">
                         <span>Danh sách khung câu hỏi (<span id="manual-q-count">0</span> câu)</span>
-                        <span class="text-slate-400 font-normal">Bấm chọn ảnh và đáp án đúng cho từng câu bên dưới</span>
+                        <span class="text-rose-600 font-semibold">💡 Mẹo: Click vào ô ảnh rồi bấm Ctrl + V để dán nhanh</span>
                     </h3>
                     <div id="manual-question-list" class="space-y-3 max-h-[420px] overflow-y-auto custom-scrollbar pr-2">
                         <p class="italic text-slate-400 text-center py-12">Chưa tạo khung. Hãy nhập tổng số câu ở phía trên và bấm "Tạo danh sách các câu".</p>
@@ -313,11 +317,8 @@
             document.getElementById('display-exam-count').innerText = `${filledCount}/${manualQuestions.length} câu đã có ảnh`;
         }
 
-        // Tạo khung danh sách theo số lượng câu nhập vào
         function generateQuestionSlots() {
             let totalQ = parseInt(document.getElementById('input-total-questions').value) || 10;
-            
-            // Giữ lại các câu cũ nếu đã tải lên trước đó
             let oldQuestions = [...manualQuestions];
             manualQuestions = [];
 
@@ -335,7 +336,24 @@
             }
 
             updateManualListUI();
-            alert(`Đã tạo thành công khung cho ${totalQ} câu hỏi! Giờ bạn có thể tải ảnh và chọn đáp án cho từng câu.`);
+            alert(`Đã tạo khung cho ${totalQ} câu hỏi! Giờ bạn có thể click vào ô mỗi câu và nhấn Ctrl + V để dán ảnh trực tiếp.`);
+        }
+
+        function handlePasteImage(index, event) {
+            const items = (event.clipboardData || event.originalEvent.clipboardData).items;
+            for (let i = 0; i < items.length; i++) {
+                if (items[i].type.indexOf("image") !== -1) {
+                    const blob = items[i].getAsFile();
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        manualQuestions[index].imgUrl = e.target.result;
+                        updateManualListUI();
+                    };
+                    reader.readAsDataURL(blob);
+                    event.preventDefault();
+                    break;
+                }
+            }
         }
 
         function handleQuestionImageUpload(index, event) {
@@ -369,15 +387,19 @@
                     <div class="flex items-center gap-3 w-full sm:w-auto">
                         <span class="font-bold text-slate-900 text-xs bg-slate-100 px-2.5 py-1.5 rounded-lg shrink-0">Câu ${idx + 1}</span>
                         
-                        <!-- Hiển thị ảnh nếu đã tải lên -->
-                        <div class="w-20 h-12 bg-slate-100 rounded border flex items-center justify-center overflow-hidden shrink-0">
-                            ${q.imgUrl ? `<img src="${q.imgUrl}" class="w-full h-full object-cover">` : `<span class="text-[10px] text-slate-400 italic">Chưa có ảnh</span>`}
+                        <!-- Ô nhận dán ảnh trực tiếp bằng Ctrl + V hoặc click chọn file -->
+                        <div tabindex="0" onpaste="handlePasteImage(${idx}, event)" title="Click vào đây rồi bấm Ctrl + V để dán ảnh" class="paste-zone w-28 h-12 bg-slate-50 hover:bg-slate-100 rounded border border-dashed border-slate-300 flex items-center justify-center overflow-hidden shrink-0 cursor-pointer relative group">
+                            ${q.imgUrl ? `
+                                <img src="${q.imgUrl}" class="w-full h-full object-cover">
+                            ` : `
+                                <span class="text-[10px] text-slate-400 text-center px-1">Ctrl + V hoặc chọn ảnh</span>
+                            `}
                         </div>
 
                         <div class="flex-1">
                             <input type="file" accept="image/*" id="file_q_${idx}" class="hidden" onchange="handleQuestionImageUpload(${idx}, event)">
                             <label for="file_q_${idx}" class="cursor-pointer bg-white hover:bg-slate-100 border border-slate-300 text-slate-700 text-xs font-semibold px-3 py-1.5 rounded-lg transition inline-flex items-center gap-1.5 shadow-sm">
-                                <i class="fa-solid fa-cloud-arrow-up text-rose-600"></i> ${q.imgUrl ? 'Đổi ảnh câu hỏi' : 'Tải ảnh câu này lên'}
+                                <i class="fa-solid fa-folder-open text-rose-600"></i> ${q.imgUrl ? 'Đổi ảnh' : 'Chọn file ảnh'}
                             </label>
                         </div>
                     </div>
@@ -400,7 +422,7 @@
         function startExam() {
             let validQuestions = manualQuestions.filter(q => q && q.imgUrl);
             if (validQuestions.length === 0) {
-                alert("Vui lòng tải ít nhất 1 ảnh câu hỏi vào danh sách trước khi bắt đầu làm đề!");
+                alert("Vui lòng dán/tải ít nhất 1 ảnh câu hỏi trước khi bắt đầu làm đề!");
                 switchTab('manual-creator');
                 return;
             }
@@ -557,7 +579,7 @@
         }
 
         window.onload = function() {
-            generateQuestionSlots(); // Mặc định tạo sẵn 10 câu đầu tiên khi mở web
+            generateQuestionSlots();
         };
     </script>
 </body>
