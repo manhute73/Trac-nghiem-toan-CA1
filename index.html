@@ -17,20 +17,20 @@
         .question-frame-box {
             width: 100%;
             min-height: 140px;
-            background-color: transparent; /* Đồng bộ nền với khung câu hỏi chính */
-            border: none;
-            border-radius: 0;
+            background-color: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 0.75rem;
             display: flex;
             align-items: center;
-            justify-content: flex-start; 
+            justify-content: center; 
             overflow: hidden;
-            padding: 4px 0;
+            padding: 12px;
         }
         .question-frame-box img {
             max-width: 100%;
             height: auto;
             object-fit: contain;
-            background-color: transparent;
+            background-color: #f8fafc;
         }
 
         .paste-zone:focus {
@@ -651,17 +651,7 @@
     <script>
         // Danh sách tài khoản thành viên được phép đăng nhập trên mọi thiết bị
         let memberUsers = JSON.parse(localStorage.getItem('amc_members')) || ['hocvien01', 'hocvien02'];
-        
-        let sharedDefaultExams = [];
-
         let allExams = JSON.parse(localStorage.getItem('amc_all_exams')) || [];
-        
-        sharedDefaultExams.forEach(defExam => {
-            if(!allExams.some(e => e.id === defExam.id)) {
-                allExams.push(defExam);
-            }
-        });
-
         let globalHistory = JSON.parse(localStorage.getItem('amc_global_history')) || {};
         let userBookmarks = JSON.parse(localStorage.getItem('amc_bookmarks')) || {};
         let userSavedAnswers = JSON.parse(localStorage.getItem('amc_saved_answers')) || {};
@@ -1054,12 +1044,6 @@
             updateManualListUI();
         }
 
-        function deleteManualQuestion(index) {
-            manualQuestions.splice(index, 1);
-            document.getElementById('input-total-questions').value = manualQuestions.length;
-            updateManualListUI();
-        }
-
         function handlePasteImage(index, event) {
             const items = (event.clipboardData || event.originalEvent.clipboardData).items;
             for (let i = 0; i < items.length; i++) {
@@ -1123,19 +1107,14 @@
                             </label>
                         </div>
                     </div>
-                    <div class="flex items-center gap-3 w-full sm:w-auto justify-end">
-                        <div class="flex items-center gap-2">
-                            <span class="text-xs font-bold text-slate-500">Đáp án:</span>
-                            <select onchange="updateQuestionCorrect(${idx}, this.value)" class="bg-white border border-slate-300 rounded-lg px-2.5 py-1.5 text-xs font-bold text-emerald-700 focus:border-sky-600 focus:outline-none shadow-sm">
-                                <option value="0" ${q.correct === 0 ? 'selected' : ''}>A đúng</option>
-                                <option value="1" ${q.correct === 1 ? 'selected' : ''}>B đúng</option>
-                                <option value="2" ${q.correct === 2 ? 'selected' : ''}>C đúng</option>
-                                <option value="3" ${q.correct === 3 ? 'selected' : ''}>D đúng</option>
-                            </select>
-                        </div>
-                        <button onclick="deleteManualQuestion(${idx})" title="Xóa câu này" class="bg-rose-50 hover:bg-rose-600 hover:text-white text-rose-600 px-3 py-1.5 rounded-lg text-xs font-bold transition border border-rose-200 cursor-pointer">
-                            <i class="fa-solid fa-trash"></i>
-                        </button>
+                    <div class="flex items-center gap-2 w-full sm:w-auto justify-end">
+                        <span class="text-xs font-bold text-slate-500">Đáp án:</span>
+                        <select onchange="updateQuestionCorrect(${idx}, this.value)" class="bg-white border border-slate-300 rounded-lg px-2.5 py-1.5 text-xs font-bold text-emerald-700 focus:border-sky-600 focus:outline-none shadow-sm">
+                            <option value="0" ${q.correct === 0 ? 'selected' : ''}>A đúng</option>
+                            <option value="1" ${q.correct === 1 ? 'selected' : ''}>B đúng</option>
+                            <option value="2" ${q.correct === 2 ? 'selected' : ''}>C đúng</option>
+                            <option value="3" ${q.correct === 3 ? 'selected' : ''}>D đúng</option>
+                        </select>
                     </div>
                 </div>
             `).join('');
