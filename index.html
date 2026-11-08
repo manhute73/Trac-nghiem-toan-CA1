@@ -12,12 +12,12 @@
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
     <script type="text/javascript">
        (function(){
-          emailjs.init("NB9xq1TAR60kJFMDs"); // Public Key EmailJS của bạn[cite: 12]
+          emailjs.init("NB9xq1TAR60kJFMDs"); // Public Key EmailJS của bạn
        })();
     </script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-        body { font-family: 'Inter', sans-serif; background-color: #0f172a; }
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
         .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
         
@@ -46,7 +46,7 @@
 
         @media print {
             body { background-color: #ffffff !important; color: #000000 !important; }
-            header, button, .no-print { display: none !important; }
+            header, aside, button, .no-print { display: none !important; }
             #tab-result { display: block !important; }
             .shadow-xl, .shadow-2xl { box-shadow: none !important; }
         }
@@ -64,9 +64,6 @@
         </div>
         <div class="flex items-center space-x-4">
             <button onclick="switchTab('dashboard')" class="hover:text-white transition"><i class="fa-solid fa-house mr-1"></i> Trang chủ</button>
-            <!-- Nút Tạo đề kiểm tra: CHỈ ADMIN MỚI THẤY -->
-            <button id="nav-creator-btn" onclick="switchTab('manual-creator')" class="hover:text-white transition text-rose-400 font-semibold hidden"><i class="fa-solid fa-folder-plus mr-1"></i> Quản lý bộ đề</button>
-            <!-- Nút Quản lý Admin: CHỈ ADMIN MỚI THẤY -->
             <button id="nav-admin-btn" onclick="openAdminModal()" class="hover:text-amber-400 transition text-amber-300 font-medium hidden"><i class="fa-solid fa-shield-halved mr-1"></i> Quản lý Admin</button>
             <button onclick="logout()" class="hover:text-rose-400 transition text-slate-400"><i class="fa-solid fa-right-from-bracket mr-1"></i> Đăng xuất</button>
         </div>
@@ -91,7 +88,7 @@
                         <i class="fa-solid fa-circle-check text-rose-600"></i> Hai chế độ: luyện tập có giải thích ngay và thi thử tính giờ
                     </div>
                     <div class="flex items-center gap-2">
-                        <i class="fa-solid fa-circle-check text-rose-600"></i> Xem lại từng câu, biết chủ đề nào còn yếu để ôn tiếp
+                        <i class="fa-solid fa-circle-check text-rose-600"></i> Quản lý bộ đề, lịch sử làm bài và thành tích cá nhân
                     </div>
                     <div class="flex items-center gap-2">
                         <i class="fa-solid fa-circle-check text-rose-600"></i> Đăng ký tài khoản và chờ Admin duyệt để vào web làm bài
@@ -186,336 +183,397 @@
         </div>
     </div>
 
-    <!-- Main Container Card -->
-    <main id="app-container" class="flex-1 max-w-5xl w-full mx-auto p-4 md:p-6 space-y-4 hidden">
-        <div class="bg-white rounded-2xl shadow-2xl p-6 md:p-8 flex flex-col">
-            
-            <!-- TAB 1: DASHBOARD / EXAM PREVIEW -->
-            <div id="tab-dashboard" class="space-y-6 flex-1 flex flex-col">
-                <div class="flex justify-between items-center pb-4 mb-2 border-b border-slate-100">
-                    <h2 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Bảng điều khiển luyện tập</h2>
-                    <!-- Nút Tạo đề kiểm tra: CHỈ ADMIN MỚI HIỂN THỊ -->
-                    <button id="dashboard-creator-btn" onclick="switchTab('manual-creator')" class="bg-rose-50 hover:bg-rose-100 text-rose-700 px-4 py-2 rounded-xl font-medium text-sm transition flex items-center gap-2 border border-rose-200 hidden">
-                        <i class="fa-solid fa-folder-plus"></i> Tạo đề kiểm tra
+    <!-- Main Container Layout with Sidebar & Content -->
+    <div id="app-container" class="flex-1 flex w-full max-w-7xl mx-auto hidden">
+        
+        <!-- SIDEBAR TRÁI ĐÚNG CHUẨN MẪU YÊU CẦU -->
+        <aside id="sidebar-container" class="w-64 bg-white border-r border-slate-200 hidden md:flex flex-col justify-between p-4 space-y-4 no-print shrink-0 transition-all duration-300">
+            <div class="space-y-6">
+                <!-- Logo & Title -->
+                <div class="flex flex-col items-center text-center px-2 pt-2 border-b border-slate-100 pb-4">
+                    <div class="w-12 h-12 bg-amber-50 rounded-2xl flex items-center justify-center text-amber-600 font-bold shadow-sm mb-2 border border-amber-100">
+                        <i class="fa-solid fa-graduation-cap text-xl"></i>
+                    </div>
+                    <div class="text-xs font-extrabold text-slate-900 leading-snug">AMC - Luyện thi VB2 CAND 2027 TOÁN CAO CẤP CA1</div>
+                </div>
+
+                <!-- 8 Menu Items chuẩn mẫu -->
+                <nav class="space-y-1 text-sm font-medium">
+                    <button onclick="switchTab('dashboard')" id="menu-dashboard" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-600 hover:bg-slate-50 transition">
+                        <i class="fa-solid fa-house w-5 text-center"></i> <span class="menu-text">Tổng quan</span>
                     </button>
-                </div>
-
-                <!-- Ô LỰA CHỌN BỘ ĐỀ CHO NGƯỜI DÙNG & ADMIN -->
-                <div class="bg-slate-50 border border-slate-200 p-4 rounded-xl space-y-2">
-                    <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">Chọn bộ đề kiểm tra:</label>
-                    <select id="exam-selector" onchange="selectExamFromDropdown(this.value)" class="w-full bg-white border border-slate-300 rounded-xl px-4 py-3 text-sm font-bold text-slate-900 focus:border-rose-600 focus:outline-none shadow-sm">
-                        <option value="">-- Chưa có bộ đề nào được kích hoạt --</option>
-                    </select>
-                </div>
-
-                <div class="flex items-center gap-2">
-                    <span class="bg-slate-100 text-slate-600 text-xs px-2.5 py-1 rounded-full font-medium">Luyện tập</span>
-                    <span class="bg-amber-100 text-amber-700 text-xs px-2.5 py-1 rounded-full font-medium">Trung bình</span>
-                </div>
-
-                <div>
-                    <label class="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1">Tên bài tập:</label>
-                    <input type="text" id="input-exam-title" value="ĐỀ THI TRẮC NGHIỆM CHUYÊN SÂU - TOÁN CAO CẤP" class="w-full text-2xl font-bold text-slate-900 tracking-tight border-b-2 border-dashed border-slate-300 focus:border-rose-600 focus:outline-none py-1 bg-transparent" readonly>
-                    <p class="text-rose-600 font-semibold text-sm mt-3 flex items-center gap-1.5">
-                        <span class="w-1.5 h-1.5 rounded-full bg-rose-600 inline-block"></span> TOÁN CAO CẤP
-                    </p>
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div class="bg-slate-50 border border-slate-100 p-4 rounded-xl flex items-start gap-3">
-                        <div class="text-slate-400 mt-0.5"><i class="fa-solid fa-list-check text-lg"></i></div>
-                        <div class="flex-1">
-                            <div class="text-xs font-bold text-slate-400 uppercase tracking-wider">Số câu</div>
-                            <div class="flex items-center gap-2 mt-1">
-                                <span id="display-exam-count" class="font-semibold text-slate-800 text-sm">0 câu trắc nghiệm</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="bg-slate-50 border border-slate-100 p-4 rounded-xl flex items-start gap-3">
-                        <div class="text-slate-400 mt-0.5"><i class="fa-solid fa-clock text-lg"></i></div>
-                        <div class="flex-1">
-                            <div class="text-xs font-bold text-slate-400 uppercase tracking-wider">Thời gian (phút)</div>
-                            <div class="flex items-center gap-2 mt-1">
-                                <input type="number" id="input-exam-time" value="0" min="0" max="180" class="w-20 bg-white border border-slate-300 rounded-lg px-2 py-1 font-semibold text-slate-800 text-sm focus:border-rose-600 focus:outline-none" readonly>
-                                <span class="text-sm font-medium text-slate-600">(0 = Không giới hạn)</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="bg-slate-50 border border-slate-100 p-4 rounded-xl flex items-start gap-3">
-                        <div class="text-slate-400 mt-0.5"><i class="fa-solid fa-calculator text-lg"></i></div>
-                        <div>
-                            <div class="text-xs font-bold text-slate-400 uppercase tracking-wider">Cách tính điểm</div>
-                            <div class="font-semibold text-slate-800 text-sm mt-0.5">Mỗi câu bằng nhau, thang 10. Bỏ trống không có điểm, sai không bị trừ.</div>
-                        </div>
-                    </div>
-
-                    <div class="bg-slate-50 border border-slate-100 p-4 rounded-xl flex items-start gap-3 cursor-pointer hover:bg-slate-100 transition select-none" onclick="toggleShuffle()">
-                        <div class="text-rose-500 mt-0.5"><i class="fa-solid fa-shuffle text-lg"></i></div>
-                        <div class="flex-1">
-                            <div class="text-xs font-bold text-slate-400 uppercase tracking-wider">Thứ tự</div>
-                            <div class="font-semibold text-slate-800 text-sm mt-0.5 flex items-center justify-between">
-                                <span id="shuffle-status-text">Trộn thứ tự câu hỏi và đáp án</span>
-                                <span id="shuffle-badge" class="bg-rose-100 text-rose-700 text-xs px-2 py-0.5 rounded font-bold">Bật</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="bg-slate-50 border border-slate-100 p-4 rounded-xl flex items-start gap-3">
-                    <div class="text-rose-500 mt-0.5"><i class="fa-solid fa-circle-question text-lg"></i></div>
-                    <div>
-                        <div class="text-xs font-bold text-slate-400 uppercase tracking-wider">Đáp án và giải thích</div>
-                        <div class="font-semibold text-slate-800 text-sm mt-0.5">Bấm nộp bài để xem kết quả đúng/sai từng câu chi tiết.</div>
-                    </div>
-                </div>
-
-                <div class="flex items-center gap-2 text-xs text-slate-500 mt-2">
-                    <span class="font-bold">Chủ đề:</span>
-                    <input type="text" id="input-exam-topic" value="Toán Cao Cấp - Ôn Thi VB2 CAND" class="flex-1 bg-slate-50 border border-slate-200 text-slate-700 px-3 py-1.5 rounded-lg font-medium focus:border-rose-600 focus:outline-none" readonly>
-                </div>
-
-                <div class="bg-amber-50 border border-amber-200 text-amber-800 p-4 rounded-xl flex items-start gap-3 text-sm">
-                    <i class="fa-solid fa-triangle-exclamation text-amber-600 mt-0.5"></i>
-                    <div>
-                        Đồng hồ bắt đầu chạy ngay khi bạn bấm bắt đầu, kể cả khi thoát ra ngoài. Hết giờ hệ thống tự nộp bài.
-                    </div>
-                </div>
-
-                <div class="pt-2">
-                    <button onclick="startExam()" class="w-full bg-[#dc2626] hover:bg-[#b91c1c] text-white font-semibold py-4 rounded-xl shadow-lg shadow-rose-600/30 transition flex items-center justify-center gap-2 text-base cursor-pointer">
-                        <i class="fa-solid fa-circle-play text-lg"></i> Bắt đầu làm đề
+                    <button onclick="switchTab('dashboard')" id="menu-subject" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-600 hover:bg-slate-50 transition">
+                        <i class="fa-solid fa-book w-5 text-center"></i> <span class="menu-text">Môn học</span>
                     </button>
-                </div>
+                    <button onclick="handleMenuBode()" id="menu-bode" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-600 hover:bg-slate-50 transition">
+                        <i class="fa-solid fa-folder-open w-5 text-center"></i> <span class="menu-text" id="menu-bode-text">Bộ đề</span>
+                    </button>
+                    <button onclick="switchTab('history')" id="menu-history" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-600 hover:bg-slate-50 transition">
+                        <i class="fa-solid fa-clock-rotate-left w-5 text-center"></i> <span class="menu-text">Lịch sử</span>
+                    </button>
+                    <button onclick="alert('Tính năng Tiến độ đang được cập nhật!')" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-600 hover:bg-slate-50 transition">
+                        <i class="fa-solid fa-chart-line w-5 text-center"></i> <span class="menu-text">Tiến độ</span>
+                    </button>
+                    <button onclick="switchTab('history')" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-600 hover:bg-slate-50 transition">
+                        <i class="fa-solid fa-trophy w-5 text-center"></i> <span class="menu-text">Thành tích</span>
+                    </button>
+                    <button onclick="alert('Tính năng Câu đã đánh dấu đang được cập nhật!')" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-600 hover:bg-slate-50 transition">
+                        <i class="fa-solid fa-bookmark w-5 text-center"></i> <span class="menu-text">Câu đã đánh dấu</span>
+                    </button>
+                    <button onclick="alert('Tính năng Đổi mật khẩu đang được cập nhật!')" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-600 hover:bg-slate-50 transition">
+                        <i class="fa-solid fa-key w-5 text-center"></i> <span class="menu-text">Đổi mật khẩu</span>
+                    </button>
+                </nav>
             </div>
 
-            <!-- TAB 2: TẠO & QUẢN LÝ BỘ ĐỀ (CHỈ ADMIN MỚI THẤY) -->
-            <div id="tab-manual-creator" class="hidden space-y-6 flex-1 flex flex-col">
-                <div class="border-b pb-3 flex justify-between items-center">
-                    <div>
-                        <h2 class="text-lg font-bold text-slate-950">Quản Lý & Tạo Đề Kiểm Tra</h2>
-                        <p class="text-xs text-slate-500">Tạo nhiều bộ đề, thêm câu hỏi bằng cách dán ảnh (Ctrl + V) và kích hoạt bộ đề cho học viên làm.</p>
-                    </div>
-                    <button onclick="switchTab('dashboard')" class="bg-rose-600 hover:bg-rose-700 text-white px-4 py-2 rounded-xl text-xs font-medium transition flex items-center gap-2 shadow-md shrink-0">
-                        <i class="fa-solid fa-arrow-left"></i> Về trang chủ
-                    </button>
-                </div>
-
-                <!-- FORM TẠO BỘ ĐỀ MỚI -->
-                <div class="bg-slate-50 border border-slate-200 p-5 rounded-xl space-y-4">
-                    <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2">
-                        <i class="fa-solid fa-plus-circle text-rose-600"></i> Tạo bộ đề mới
-                    </h3>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-                        <div>
-                            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Tên bài tập / Bộ đề:</label>
-                            <input type="text" id="new-exam-title" placeholder="VD: Đề số 1 - Giới hạn hàm số" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs font-semibold text-slate-800 focus:border-rose-600 focus:outline-none">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Chủ đề:</label>
-                            <input type="text" id="new-exam-topic" value="Toán Cao Cấp - Ôn Thi VB2 CAND" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs font-semibold text-slate-800 focus:border-rose-600 focus:outline-none">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Thời gian (phút, 0 = không giới hạn):</label>
-                            <input type="number" id="new-exam-time" value="0" min="0" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs font-semibold text-slate-800 focus:border-rose-600 focus:outline-none">
-                        </div>
-                    </div>
-
-                    <div class="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2 border-t">
-                        <div class="w-full sm:w-1/3">
-                            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Tổng số câu hỏi:</label>
-                            <input type="number" id="input-total-questions" value="10" min="1" max="200" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs font-bold text-slate-800 focus:border-rose-600 focus:outline-none">
-                        </div>
-                        <button onclick="generateQuestionSlots()" class="w-full sm:w-auto bg-slate-900 hover:bg-slate-800 text-white font-semibold px-6 py-2.5 rounded-lg transition shadow text-xs">
-                            <i class="fa-solid fa-wand-magic-sparkles mr-1.5"></i> Tạo khung câu hỏi
-                        </button>
-                    </div>
-                </div>
-
-                <!-- DANH SÁCH CÁC BỘ ĐỀ ĐÃ TẠO -->
-                <div class="space-y-3">
-                    <h3 class="font-bold text-slate-900 text-sm flex justify-between items-center">
-                        <span>Danh sách các bộ đề đã tạo trong hệ thống</span>
-                    </h3>
-                    <div id="admin-exams-list" class="space-y-3 max-h-[300px] overflow-y-auto custom-scrollbar pr-2">
-                        <p class="italic text-slate-400 text-center py-6">Chưa có bộ đề nào được tạo.</p>
-                    </div>
-                </div>
-
-                <!-- KHUNG DẢN ẢNH CÂU HỎI CHO BỘ ĐỀ ĐANG TẠO -->
-                <div class="space-y-3 border-t pt-4">
-                    <h3 class="font-bold text-slate-800 text-xs flex justify-between items-center">
-                        <span>Soạn câu hỏi cho bộ đề hiện tại (<span id="manual-q-count">0</span> câu)</span>
-                        <span class="text-rose-600 font-semibold">💡 Mẹo: Click vào ô ảnh rồi bấm Ctrl + V để dán nhanh</span>
-                    </h3>
-                    <div id="manual-question-list" class="space-y-3 max-h-[380px] overflow-y-auto custom-scrollbar pr-2">
-                        <p class="italic text-slate-400 text-center py-8">Chưa có khung câu hỏi. Hãy nhập thông tin và bấm "Tạo khung câu hỏi" ở trên.</p>
-                    </div>
-
-                    <div class="pt-3 flex justify-end">
-                        <button onclick="saveCurrentExam()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-6 py-3 rounded-xl text-xs transition shadow-lg cursor-pointer flex items-center gap-2">
-                            <i class="fa-solid fa-floppy-disk text-sm"></i> Lưu bộ đề này vào hệ thống
-                        </button>
-                    </div>
-                </div>
+            <!-- Nút Thu gọn ở dưới cùng -->
+            <div class="border-t border-slate-100 pt-2">
+                <button onclick="toggleSidebarCollapse()" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-500 hover:bg-slate-100 hover:text-slate-900 transition text-sm font-medium">
+                    <i class="fa-solid fa-angles-left w-5 text-center" id="collapse-icon"></i> <span class="menu-text">Thu gọn</span>
+                </button>
             </div>
+        </aside>
 
-            <!-- TAB 3: QUIZ SOLVING INTERFACE (Làm bài) -->
-            <div id="tab-quiz" class="hidden space-y-4 flex-1 flex flex-col">
-                <div class="flex justify-between items-center bg-slate-50 p-4 rounded-xl border">
-                    <div>
-                        <h3 id="quiz-active-title" class="font-bold text-slate-900 text-lg">BÀI TẬP</h3>
-                        <p class="text-xs text-slate-500" id="quiz-active-subtitle">Đang làm bài trắc nghiệm</p>
-                    </div>
-                    <div class="flex items-center gap-4">
-                        <div class="text-sm font-semibold text-rose-600 bg-rose-50 px-3 py-1.5 rounded-lg border border-rose-100">
-                            <i class="fa-solid fa-clock mr-1.5"></i> <span id="timer-display">00:00</span>
-                        </div>
-                        <button onclick="validateAndSubmitExam()" class="bg-rose-600 hover:bg-rose-700 text-white font-medium px-5 py-2 rounded-xl text-sm transition shadow-md cursor-pointer">
-                            Nộp bài
-                        </button>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 items-start">
-                    
-                    <div id="quiz-questions-container" class="lg:col-span-3 space-y-4">
-                        <!-- Dynamic Questions -->
-                    </div>
-
-                    <div class="lg:col-span-1 bg-slate-50 border border-slate-200 p-4 rounded-xl sticky top-4 space-y-4 shadow-sm">
-                        <div class="text-xs font-bold text-slate-500 uppercase tracking-wider border-b pb-2">Danh sách câu hỏi</div>
-                        
-                        <div id="palette-grid" class="grid grid-cols-5 gap-2 max-h-[350px] overflow-y-auto custom-scrollbar p-1">
-                            <!-- Dynamic Palette Items -->
-                        </div>
-
-                        <div class="border-t pt-3 space-y-1.5 text-[11px] text-slate-600 font-medium">
-                            <div class="flex items-center gap-2">
-                                <span class="w-3 h-3 rounded bg-emerald-600 inline-block"></span> Đã làm (Xanh đậm, tô đậm)
-                            </div>
-                            <div class="flex items-center gap-2">
-                                <span class="w-3 h-3 rounded bg-rose-500 inline-block"></span> Chưa làm (Đỏ, chưa tô đậm)
-                            </div>
-                        </div>
-
-                        <button onclick="validateAndSubmitExam()" class="w-full bg-rose-600 hover:bg-rose-700 text-white font-semibold py-2.5 rounded-lg text-xs transition shadow">
-                            Nộp bài ngay
-                        </button>
-                    </div>
-
-                </div>
-            </div>
-
-            <!-- TAB 4: RESULT SCORE REPORT -->
-            <div id="tab-result" class="hidden space-y-6 flex-1 flex flex-col">
+        <!-- CONTENT CHÍNH BÊN PHẢI -->
+        <main class="flex-1 p-4 md:p-8 space-y-6 overflow-y-auto">
+            <div class="bg-white rounded-2xl shadow-xl p-6 md:p-8 flex flex-col">
                 
-                <div id="pdf-export-content" class="space-y-6 bg-white p-2">
-                    
-                    <div class="bg-white border rounded-2xl p-6 shadow-sm flex flex-col md:flex-row items-center justify-between gap-6">
-                        <div class="flex items-center gap-6">
-                            <div class="relative w-28 h-28 flex items-center justify-center rounded-full border-8 border-rose-600 bg-rose-50 shadow-inner shrink-0">
-                                <div class="text-center">
-                                    <span id="res-score" class="text-2xl font-black text-slate-900">9,29</span>
-                                    <span class="text-xs text-slate-500 block font-bold">/10</span>
-                                </div>
-                            </div>
-                            <div>
-                                <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Thi thử • TOÁN CAO CẤP</span>
-                                <h2 class="text-2xl font-black text-slate-900 mt-1" id="res-msg-title">Xuất sắc!</h2>
-                                <p class="text-xs text-slate-600 mt-1" id="res-msg-desc">Bạn nắm rất chắc nội dung này. Hãy thử bộ đề khó hơn.</p>
-                                <p class="text-xs font-semibold text-slate-800 mt-2" id="res-details-text">Đúng 13/14 câu (92,9%) • Nộp lúc 21:40 05/11/2026</p>
-                            </div>
-                        </div>
-                        <div class="flex flex-col gap-2 w-full md:w-auto no-print">
-                            <button onclick="startExam()" class="bg-rose-600 hover:bg-rose-700 text-white font-medium px-5 py-2.5 rounded-xl text-sm transition text-center shadow-md">
-                                <i class="fa-solid fa-rotate-right mr-1"></i> Làm lại đề
-                            </button>
-                            <button onclick="switchTab('dashboard')" class="bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 font-medium px-5 py-2.5 rounded-xl text-sm transition text-center">
-                                <i class="fa-solid fa-house mr-1"></i> Về trang môn học
-                            </button>
-                        </div>
+                <!-- TAB 1: DASHBOARD / EXAM PREVIEW -->
+                <div id="tab-dashboard" class="space-y-6 flex-1 flex flex-col">
+                    <div class="flex justify-between items-center pb-4 mb-2 border-b border-slate-100">
+                        <h2 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Bảng điều khiển luyện tập</h2>
+                        <button id="dashboard-creator-btn" onclick="switchTab('manual-creator')" class="bg-rose-50 hover:bg-rose-100 text-rose-700 px-4 py-2 rounded-xl font-medium text-sm transition flex items-center gap-2 border border-rose-200 hidden">
+                            <i class="fa-solid fa-folder-plus"></i> Tạo đề kiểm tra
+                        </button>
                     </div>
 
-                    <div class="bg-slate-50 border border-slate-200 rounded-2xl p-5 space-y-3">
-                        <div class="flex items-center justify-between border-b pb-2">
-                            <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2">
-                                <i class="fa-solid fa-clock-rotate-left text-rose-600"></i> Lịch sử các lần làm (Số lần đã làm)
-                            </h3>
-                            <span id="history-count-badge" class="bg-rose-100 text-rose-700 text-xs px-2.5 py-1 rounded-full font-bold">0 lần</span>
-                        </div>
-                        <div id="result-history-list" class="space-y-2">
-                            <p class="text-xs text-slate-500 italic">Chưa có lịch sử làm bài.</p>
-                        </div>
+                    <!-- Ô LỰA CHỌN BỘ ĐỀ CHO HỌC VIÊN & ADMIN -->
+                    <div class="bg-slate-50 border border-slate-200 p-4 rounded-xl space-y-2">
+                        <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">Chọn bộ đề kiểm tra:</label>
+                        <select id="exam-selector" onchange="selectExamFromDropdown(this.value)" class="w-full bg-white border border-slate-300 rounded-xl px-4 py-3 text-sm font-bold text-slate-900 focus:border-rose-600 focus:outline-none shadow-sm">
+                            <option value="">-- Chưa có bộ đề nào được kích hoạt --</option>
+                        </select>
+                    </div>
+
+                    <div class="flex items-center gap-2">
+                        <span class="bg-slate-100 text-slate-600 text-xs px-2.5 py-1 rounded-full font-medium">Luyện tập</span>
+                        <span class="bg-amber-100 text-amber-700 text-xs px-2.5 py-1 rounded-full font-medium">Trung bình</span>
+                    </div>
+
+                    <div>
+                        <label class="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1">Tên bài tập:</label>
+                        <input type="text" id="input-exam-title" value="ĐỀ THI TRẮC NGHIỆM CHUYÊN SÂU - TOÁN CAO CẤP" class="w-full text-2xl font-bold text-slate-900 tracking-tight border-b-2 border-dashed border-slate-300 focus:border-rose-600 focus:outline-none py-1 bg-transparent" readonly>
+                        <p id="exam-topic-display" class="text-rose-600 font-semibold text-sm mt-3 flex items-center gap-1.5">
+                            <span class="w-1.5 h-1.5 rounded-full bg-rose-600 inline-block"></span> TOÁN CAO CẤP
+                        </p>
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div class="bg-slate-50 border p-4 rounded-xl space-y-2">
-                            <div class="text-xs font-bold text-slate-400 uppercase">Tổng kết</div>
-                            <div class="flex gap-4 text-sm font-semibold">
-                                <span class="text-emerald-600">● Đúng: <span id="res-correct-count">0</span></span>
-                                <span class="text-rose-600">● Sai: <span id="res-wrong-count">0</span></span>
-                                <span class="text-slate-400">● Bỏ trống: 0</span>
-                            </div>
-                            <div class="w-full bg-slate-200 h-2 rounded-full overflow-hidden flex">
-                                <div id="bar-correct" class="bg-emerald-500 h-full" style="width: 0%"></div>
-                                <div id="bar-wrong" class="bg-rose-500 h-full" style="width: 0%"></div>
+                        <div class="bg-slate-50 border border-slate-100 p-4 rounded-xl flex items-start gap-3">
+                            <div class="text-slate-400 mt-0.5"><i class="fa-solid fa-list-check text-lg"></i></div>
+                            <div class="flex-1">
+                                <div class="text-xs font-bold text-slate-400 uppercase tracking-wider">Số câu</div>
+                                <div class="flex items-center gap-2 mt-1">
+                                    <span id="display-exam-count" class="font-semibold text-slate-800 text-sm">0 câu trắc nghiệm</span>
+                                </div>
                             </div>
                         </div>
-                        <div class="bg-slate-50 border p-4 rounded-xl space-y-2">
-                            <div class="text-xs font-bold text-slate-400 uppercase">Điểm theo chủ đề</div>
-                            <div class="text-sm font-semibold text-slate-800 flex justify-between">
-                                <span id="res-topic-name">ĐỀ THI</span>
-                                <span id="res-topic-percent" class="text-emerald-600 font-bold">0%</span>
+
+                        <div class="bg-slate-50 border border-slate-100 p-4 rounded-xl flex items-start gap-3">
+                            <div class="text-slate-400 mt-0.5"><i class="fa-solid fa-clock text-lg"></i></div>
+                            <div class="flex-1">
+                                <div class="text-xs font-bold text-slate-400 uppercase tracking-wider">Thời gian (phút)</div>
+                                <div class="flex items-center gap-2 mt-1">
+                                    <input type="number" id="input-exam-time" value="0" min="0" max="180" class="w-20 bg-white border border-slate-300 rounded-lg px-2 py-1 font-semibold text-slate-800 text-sm focus:border-rose-600 focus:outline-none" readonly>
+                                    <span class="text-sm font-medium text-slate-600">(0 = Không giới hạn)</span>
+                                </div>
                             </div>
-                            <div class="w-full bg-slate-200 h-2 rounded-full overflow-hidden">
-                                <div id="bar-topic" class="bg-emerald-500 h-full" style="width: 0%"></div>
+                        </div>
+
+                        <div class="bg-slate-50 border border-slate-100 p-4 rounded-xl flex items-start gap-3">
+                            <div class="text-slate-400 mt-0.5"><i class="fa-solid fa-calculator text-lg"></i></div>
+                            <div>
+                                <div class="text-xs font-bold text-slate-400 uppercase tracking-wider">Cách tính điểm</div>
+                                <div class="font-semibold text-slate-800 text-sm mt-0.5">Mỗi câu bằng nhau, thang 10. Bỏ trống không có điểm, sai không bị trừ.</div>
+                            </div>
+                        </div>
+
+                        <div class="bg-slate-50 border border-slate-100 p-4 rounded-xl flex items-start gap-3 cursor-pointer hover:bg-slate-100 transition select-none" onclick="toggleShuffle()">
+                            <div class="text-rose-500 mt-0.5"><i class="fa-solid fa-shuffle text-lg"></i></div>
+                            <div class="flex-1">
+                                <div class="text-xs font-bold text-slate-400 uppercase tracking-wider">Thứ tự</div>
+                                <div class="font-semibold text-slate-800 text-sm mt-0.5 flex items-center justify-between">
+                                    <span id="shuffle-status-text">Trộn thứ tự câu hỏi và đáp án</span>
+                                    <span id="shuffle-badge" class="bg-rose-100 text-rose-700 text-xs px-2 py-0.5 rounded font-bold">Bật</span>
+                                </div>
                             </div>
                         </div>
                     </div>
 
-                    <div class="border-t pt-4 space-y-4">
-                        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-                            <h3 class="font-bold text-slate-900 text-base">Xem lại từng câu</h3>
-                            <div class="flex items-center gap-1 bg-slate-100 p-1 rounded-xl text-xs font-semibold">
-                                <button onclick="filterReview('all')" id="filter-btn-all" class="px-3 py-1.5 rounded-lg bg-white text-slate-900 shadow-sm transition">Tất cả (<span id="count-all">0</span>)</button>
-                                <button onclick="filterReview('wrong')" id="filter-btn-wrong" class="px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition">Sai (<span id="count-wrong">0</span>)</button>
-                                <button onclick="filterReview('correct')" id="filter-btn-correct" class="px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition">Đúng (<span id="count-correct">0</span>)</button>
+                    <div class="bg-slate-50 border border-slate-100 p-4 rounded-xl flex items-start gap-3">
+                        <div class="text-rose-500 mt-0.5"><i class="fa-solid fa-circle-question text-lg"></i></div>
+                        <div>
+                            <div class="text-xs font-bold text-slate-400 uppercase tracking-wider">Đáp án và giải thích</div>
+                            <div class="font-semibold text-slate-800 text-sm mt-0.5">Bấm nộp bài để xem kết quả đúng/sai từng câu chi tiết.</div>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center gap-2 text-xs text-slate-500 mt-2">
+                        <span class="font-bold">Chủ đề:</span>
+                        <input type="text" id="input-exam-topic" value="Toán Cao Cấp - Ôn Thi VB2 CAND" class="flex-1 bg-slate-50 border border-slate-200 text-slate-700 px-3 py-1.5 rounded-lg font-medium focus:border-rose-600 focus:outline-none" readonly>
+                    </div>
+
+                    <div class="bg-amber-50 border border-amber-200 text-amber-800 p-4 rounded-xl flex items-start gap-3 text-sm">
+                        <i class="fa-solid fa-triangle-exclamation text-amber-600 mt-0.5"></i>
+                        <div>
+                            Đồng hồ bắt đầu chạy ngay khi bạn bấm bắt đầu, kể cả khi thoát ra ngoài. Hết giờ hệ thống tự nộp bài.
+                        </div>
+                    </div>
+
+                    <div class="pt-2">
+                        <button onclick="startExam()" class="w-full bg-[#dc2626] hover:bg-[#b91c1c] text-white font-semibold py-4 rounded-xl shadow-lg shadow-rose-600/30 transition flex items-center justify-center gap-2 text-base cursor-pointer">
+                            <i class="fa-solid fa-circle-play text-lg"></i> Bắt đầu làm đề
+                        </button>
+                    </div>
+                </div>
+
+                <!-- TAB 2: LỊCH SỬ LÀM BÀI & THÀNH TÍCH -->
+                <div id="tab-history" class="hidden space-y-6 flex-1 flex flex-col">
+                    <div class="border-b pb-3 flex justify-between items-center">
+                        <div>
+                            <h2 class="text-xl font-bold text-slate-900">Lịch sử làm bài & Thành tích</h2>
+                            <p class="text-xs text-slate-500 mt-0.5">Tất cả các lượt làm bài của bạn. Bấm vào một lượt để xem lại kết quả.</p>
+                        </div>
+                        <button onclick="switchTab('dashboard')" class="bg-rose-600 hover:bg-rose-700 text-white px-4 py-2 rounded-xl text-xs font-medium transition shadow-md">
+                            <i class="fa-solid fa-house mr-1"></i> Trang chủ
+                        </button>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="bg-gradient-to-r from-rose-500 to-pink-600 text-white p-5 rounded-2xl shadow-md flex items-center justify-between">
+                            <div>
+                                <div class="text-xs uppercase tracking-wider font-semibold opacity-90">Thành tích tốt nhất</div>
+                                <div id="best-score-display" class="text-3xl font-black mt-1">0,00 /10</div>
+                                <div id="best-score-detail" class="text-xs mt-1 opacity-90">Chưa có lượt làm bài nào</div>
+                            </div>
+                            <div class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center text-2xl">
+                                <i class="fa-solid fa-trophy"></i>
                             </div>
                         </div>
 
-                        <div id="review-questions-container" class="space-y-4">
+                        <div class="bg-white border border-slate-200 p-5 rounded-2xl shadow-sm flex items-center justify-between">
+                            <div>
+                                <div class="text-xs uppercase tracking-wider font-semibold text-slate-400">Tổng số lượt làm</div>
+                                <div id="total-attempts-display" class="text-3xl font-black text-slate-900 mt-1">0</div>
+                                <div class="text-xs text-slate-500 mt-1">Lượt luyện tập & thi thử</div>
+                            </div>
+                            <div class="w-12 h-12 bg-rose-50 text-rose-600 rounded-xl flex items-center justify-center text-2xl">
+                                <i class="fa-solid fa-chart-line"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="full-history-list" class="space-y-3">
+                        <p class="text-xs text-slate-400 italic text-center py-12">Chưa có lịch sử làm bài nào.</p>
+                    </div>
+                </div>
+
+                <!-- TAB 3: QUẢN LÝ BỘ ĐỀ (CHỈ ADMIN) -->
+                <div id="tab-manual-creator" class="hidden space-y-6 flex-1 flex flex-col">
+                    <div class="border-b pb-3 flex justify-between items-center">
+                        <div>
+                            <h2 class="text-lg font-bold text-slate-950">Quản Lý & Tạo Đề Kiểm Tra</h2>
+                            <p class="text-xs text-slate-500">Tạo nhiều bộ đề, thêm câu hỏi bằng cách dán ảnh (Ctrl + V) và kích hoạt bộ đề cho học viên làm.</p>
+                        </div>
+                        <button onclick="switchTab('dashboard')" class="bg-rose-600 hover:bg-rose-700 text-white px-4 py-2 rounded-xl text-xs font-medium transition flex items-center gap-2 shadow-md shrink-0">
+                            <i class="fa-solid fa-arrow-left"></i> Về trang chủ
+                        </button>
+                    </div>
+
+                    <div class="bg-slate-50 border border-slate-200 p-5 rounded-xl space-y-4">
+                        <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2">
+                            <i class="fa-solid fa-plus-circle text-rose-600"></i> Tạo bộ đề mới
+                        </h3>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Tên bài tập / Bộ đề:</label>
+                                <input type="text" id="new-exam-title" placeholder="VD: Đề số 1 - Giới hạn hàm số" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs font-semibold text-slate-800 focus:border-rose-600 focus:outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Chủ đề:</label>
+                                <input type="text" id="new-exam-topic" value="TOÁN CAO CẤP" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs font-semibold text-slate-800 focus:border-rose-600 focus:outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Thời gian (phút, 0 = không giới hạn):</label>
+                                <input type="number" id="new-exam-time" value="0" min="0" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs font-semibold text-slate-800 focus:border-rose-600 focus:outline-none">
+                            </div>
+                        </div>
+
+                        <div class="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2 border-t">
+                            <div class="w-full sm:w-1/3">
+                                <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Tổng số câu hỏi:</label>
+                                <input type="number" id="input-total-questions" value="10" min="1" max="200" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs font-bold text-slate-800 focus:border-rose-600 focus:outline-none">
+                            </div>
+                            <button onclick="generateQuestionSlots()" class="w-full sm:w-auto bg-slate-900 hover:bg-slate-800 text-white font-semibold px-6 py-2.5 rounded-lg transition shadow text-xs">
+                                <i class="fa-solid fa-wand-magic-sparkles mr-1.5"></i> Tạo khung câu hỏi
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="space-y-3">
+                        <h3 class="font-bold text-slate-900 text-sm flex justify-between items-center">
+                            <span>Danh sách các bộ đề đã tạo trong hệ thống</span>
+                        </h3>
+                        <div id="admin-exams-list" class="space-y-3 max-h-[300px] overflow-y-auto custom-scrollbar pr-2">
+                            <p class="italic text-slate-400 text-center py-6">Chưa có bộ đề nào được tạo.</p>
+                        </div>
+                    </div>
+
+                    <div class="space-y-3 border-t pt-4">
+                        <h3 class="font-bold text-slate-800 text-xs flex justify-between items-center">
+                            <span>Soạn câu hỏi cho bộ đề hiện tại (<span id="manual-q-count">0</span> câu)</span>
+                            <span class="text-rose-600 font-semibold">💡 Mẹo: Click vào ô ảnh rồi bấm Ctrl + V để dán nhanh</span>
+                        </h3>
+                        <div id="manual-question-list" class="space-y-3 max-h-[380px] overflow-y-auto custom-scrollbar pr-2">
+                            <p class="italic text-slate-400 text-center py-8">Chưa có khung câu hỏi. Hãy nhập thông tin và bấm "Tạo khung câu hỏi" ở trên.</p>
+                        </div>
+
+                        <div class="pt-3 flex justify-end">
+                            <button onclick="saveCurrentExam()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-6 py-3 rounded-xl text-xs transition shadow-lg cursor-pointer flex items-center gap-2">
+                                <i class="fa-solid fa-floppy-disk text-sm"></i> Lưu bộ đề này vào hệ thống
+                            </button>
                         </div>
                     </div>
                 </div>
 
-                <div class="pt-4 border-t flex justify-end no-print">
-                    <button onclick="exportToPDF()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-6 py-3 rounded-xl text-sm transition shadow-lg flex items-center gap-2 cursor-pointer">
-                        <i class="fa-solid fa-file-pdf text-base"></i> Tải xuống / Xuất PDF toàn bộ bài thi
-                    </button>
+                <!-- TAB 4: QUIZ SOLVING INTERFACE -->
+                <div id="tab-quiz" class="hidden space-y-4 flex-1 flex flex-col">
+                    <div class="flex justify-between items-center bg-slate-50 p-4 rounded-xl border">
+                        <div>
+                            <h3 id="quiz-active-title" class="font-bold text-slate-900 text-lg">BÀI TẬP</h3>
+                            <p class="text-xs text-slate-500" id="quiz-active-subtitle">Đang làm bài trắc nghiệm</p>
+                        </div>
+                        <div class="flex items-center gap-4">
+                            <div class="text-sm font-semibold text-rose-600 bg-rose-50 px-3 py-1.5 rounded-lg border border-rose-100">
+                                <i class="fa-solid fa-clock mr-1.5"></i> <span id="timer-display">00:00</span>
+                            </div>
+                            <button onclick="validateAndSubmitExam()" class="bg-rose-600 hover:bg-rose-700 text-white font-medium px-5 py-2 rounded-xl text-sm transition shadow-md cursor-pointer">
+                                Nộp bài
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 items-start">
+                        <div id="quiz-questions-container" class="lg:col-span-3 space-y-4"></div>
+                        <div class="lg:col-span-1 bg-slate-50 border border-slate-200 p-4 rounded-xl sticky top-4 space-y-4 shadow-sm">
+                            <div class="text-xs font-bold text-slate-500 uppercase tracking-wider border-b pb-2">Danh sách câu hỏi</div>
+                            <div id="palette-grid" class="grid grid-cols-5 gap-2 max-h-[350px] overflow-y-auto custom-scrollbar p-1"></div>
+                            <div class="border-t pt-3 space-y-1.5 text-[11px] text-slate-600 font-medium">
+                                <div class="flex items-center gap-2"><span class="w-3 h-3 rounded bg-emerald-600 inline-block"></span> Đã làm</div>
+                                <div class="flex items-center gap-2"><span class="w-3 h-3 rounded bg-rose-500 inline-block"></span> Chưa làm</div>
+                            </div>
+                            <button onclick="validateAndSubmitExam()" class="w-full bg-rose-600 hover:bg-rose-700 text-white font-semibold py-2.5 rounded-lg text-xs transition shadow">Nộp bài ngay</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB 5: KẾT QUẢ & ĐÁNH GIÁ -->
+                <div id="tab-result" class="hidden space-y-6 flex-1 flex flex-col">
+                    <div id="pdf-export-content" class="space-y-6 bg-white p-2">
+                        <div class="bg-white border rounded-2xl p-6 shadow-sm flex flex-col md:flex-row items-center justify-between gap-6">
+                            <div class="flex items-center gap-6">
+                                <div class="relative w-28 h-28 flex items-center justify-center rounded-full border-8 border-rose-600 bg-rose-50 shadow-inner shrink-0">
+                                    <div class="text-center">
+                                        <span id="res-score" class="text-2xl font-black text-slate-900">9,29</span>
+                                        <span class="text-xs text-slate-500 block font-bold">/10</span>
+                                    </div>
+                                </div>
+                                <div>
+                                    <span id="res-topic-badge" class="text-xs font-bold text-slate-400 uppercase tracking-wider">Thi thử • TOÁN CAO CẤP</span>
+                                    <h2 class="text-2xl font-black text-slate-900 mt-1" id="res-msg-title">Xuất sắc!</h2>
+                                    <p class="text-xs text-slate-600 mt-1" id="res-msg-desc">Bạn nắm rất chắc nội dung này.</p>
+                                    <p class="text-xs font-semibold text-slate-800 mt-2" id="res-details-text">Đúng 13/14 câu • Nộp lúc 21:40</p>
+                                </div>
+                            </div>
+                            <div class="flex flex-col gap-2 w-full md:w-auto no-print">
+                                <button onclick="startExam()" class="bg-rose-600 hover:bg-rose-700 text-white font-medium px-5 py-2.5 rounded-xl text-sm transition text-center shadow-md">
+                                    <i class="fa-solid fa-rotate-right mr-1"></i> Làm lại đề
+                                </button>
+                                <button onclick="switchTab('dashboard')" class="bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 font-medium px-5 py-2.5 rounded-xl text-sm transition text-center">
+                                    <i class="fa-solid fa-house mr-1"></i> Về trang môn học
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="bg-slate-50 border p-4 rounded-xl space-y-2">
+                                <div class="text-xs font-bold text-slate-400 uppercase">Tổng kết</div>
+                                <div class="flex gap-4 text-sm font-semibold">
+                                    <span class="text-emerald-600">● Đúng: <span id="res-correct-count">0</span></span>
+                                    <span class="text-rose-600">● Sai: <span id="res-wrong-count">0</span></span>
+                                    <span class="text-slate-400">● Bỏ trống: 0</span>
+                                </div>
+                                <div class="w-full bg-slate-200 h-2 rounded-full overflow-hidden flex">
+                                    <div id="bar-correct" class="bg-emerald-500 h-full" style="width: 0%"></div>
+                                    <div id="bar-wrong" class="bg-rose-500 h-full" style="width: 0%"></div>
+                                </div>
+                            </div>
+                            <div class="bg-slate-50 border p-4 rounded-xl space-y-2">
+                                <div class="text-xs font-bold text-slate-400 uppercase">Điểm theo chủ đề</div>
+                                <div class="text-sm font-semibold text-slate-800 flex justify-between">
+                                    <span id="res-topic-name">TOÁN CAO CẤP</span>
+                                    <span id="res-topic-percent" class="text-emerald-600 font-bold">0%</span>
+                                </div>
+                                <div class="w-full bg-slate-200 h-2 rounded-full overflow-hidden">
+                                    <div id="bar-topic" class="bg-emerald-500 h-full" style="width: 0%"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="border-t pt-4 space-y-4">
+                            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                                <h3 class="font-bold text-slate-900 text-base">Xem lại từng câu</h3>
+                                <div class="flex items-center gap-1 bg-slate-100 p-1 rounded-xl text-xs font-semibold">
+                                    <button onclick="filterReview('all')" id="filter-btn-all" class="px-3 py-1.5 rounded-lg bg-white text-slate-900 shadow-sm transition">Tất cả (<span id="count-all">0</span>)</button>
+                                    <button onclick="filterReview('wrong')" id="filter-btn-wrong" class="px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition">Sai (<span id="count-wrong">0</span>)</button>
+                                    <button onclick="filterReview('correct')" id="filter-btn-correct" class="px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition">Đúng (<span id="count-correct">0</span>)</button>
+                                </div>
+                            </div>
+                            <div id="review-questions-container" class="space-y-4"></div>
+                        </div>
+                    </div>
+
+                    <div class="pt-4 border-t flex justify-end no-print">
+                        <button onclick="exportToPDF()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-6 py-3 rounded-xl text-sm transition shadow-lg flex items-center gap-2 cursor-pointer">
+                            <i class="fa-solid fa-file-pdf text-base"></i> Tải xuống / Xuất PDF toàn bộ bài thi
+                        </button>
+                    </div>
                 </div>
 
             </div>
 
-        </div>
-
-        <!-- Ô lịch sử các lần làm trước ở trang chủ -->
-        <div class="bg-white rounded-2xl shadow-xl p-6 md:p-8 space-y-4 no-print">
-            <h3 class="font-bold text-slate-900 text-base">Lịch sử các lần làm trước</h3>
-            <div id="history-container">
-                <p class="text-sm text-slate-400 italic">Chưa làm lần nào (Chưa có lịch sử làm bài)</p>
+            <!-- Ô Lịch sử nhanh ở trang chủ -->
+            <div class="bg-white rounded-2xl shadow-xl p-6 md:p-8 space-y-4 no-print">
+                <div class="flex justify-between items-center">
+                    <h3 class="font-bold text-slate-900 text-base">Lịch sử các lần làm trước</h3>
+                    <button onclick="switchTab('history')" class="text-rose-600 text-xs font-bold hover:underline">Xem tất cả lịch sử</button>
+                </div>
+                <div id="history-container">
+                    <p class="text-sm text-slate-400 italic">Chưa làm lần nào (Chưa có lịch sử làm bài)</p>
+                </div>
             </div>
-        </div>
-    </main>
+        </main>
+    </div>
 
-    <!-- Script xử lý hệ thống nhiều bộ đề & phân quyền -->
+    <!-- Script xử lý toàn diện -->
     <script>
         let registeredUsers = JSON.parse(localStorage.getItem('amc_users')) || ['DUCMANH', 'manhute73'];
         let pendingUsers = JSON.parse(localStorage.getItem('amc_pending')) || [];
         let allExams = JSON.parse(localStorage.getItem('amc_all_exams')) || [];
+        let globalHistory = JSON.parse(localStorage.getItem('amc_global_history')) || {};
         let currentActiveExamId = null;
         let currentUser = '';
+        let isSidebarCollapsed = false;
 
         let isShuffleEnabled = true;
         let manualQuestions = [];
@@ -524,11 +582,14 @@
         let examTimer = null;
         let secondsElapsed = 0;
         let countdownSeconds = 0;
-        let examHistory = [];
         let currentFilter = 'all';
 
         function saveExamsToStorage() {
             localStorage.setItem('amc_all_exams', JSON.stringify(allExams));
+        }
+
+        function saveHistoryToStorage() {
+            localStorage.setItem('amc_global_history', JSON.stringify(globalHistory));
         }
 
         function setDynamicGreeting() {
@@ -568,8 +629,7 @@
                 return;
             }
 
-            let newUser = { username, fullname, email };
-            pendingUsers.push(newUser);
+            pendingUsers.push({ username, fullname, email });
             localStorage.setItem('amc_pending', JSON.stringify(pendingUsers));
 
             let templateParams = {
@@ -577,15 +637,15 @@
                 email: "manhute73@gmail.com",
                 fullname: fullname,
                 username: username,
-                notification_content: `Yêu cầu đăng ký mới đang chờ bạn phê duyệt:\n- Họ tên: ${fullname}\n- Username: ${username}\n- Email: ${email}`
+                notification_content: `Yêu cầu đăng ký mới:\n- Họ tên: ${fullname}\n- Username: ${username}\n- Email: ${email}`
             };
 
             emailjs.send('service_x7jmmhb', 'template_hc69xxo', templateParams)
-                .then(function(response) {
-                    alert(`Gửi yêu cầu thành công! Hệ thống đã báo cáo đến Admin. Trạng thái: Đang chờ duyệt.`);
+                .then(function() {
+                    alert(`Gửi yêu cầu thành công! Đang chờ Admin duyệt.`);
                     toggleAuthForm('login');
-                }, function(error) {
-                    alert("Lỗi khi gửi yêu cầu: " + JSON.stringify(error));
+                }, function(err) {
+                    alert("Lỗi khi gửi: " + JSON.stringify(err));
                 });
         }
 
@@ -606,17 +666,17 @@
                 document.getElementById('app-container').classList.remove('hidden');
                 
                 const adminBtn = document.getElementById('nav-admin-btn');
-                const creatorNavBtn = document.getElementById('nav-creator-btn');
                 const dashboardCreatorBtn = document.getElementById('dashboard-creator-btn');
+                const bodeText = document.getElementById('menu-bode-text');
 
                 if(isMasterAdmin) {
                     adminBtn.classList.remove('hidden');
-                    creatorNavBtn.classList.remove('hidden');
                     dashboardCreatorBtn.classList.remove('hidden');
+                    bodeText.innerText = "Quản lý bộ đề";
                 } else {
                     adminBtn.classList.add('hidden');
-                    creatorNavBtn.classList.add('hidden');
                     dashboardCreatorBtn.classList.add('hidden');
+                    bodeText.innerText = "Bộ đề";
                 }
 
                 updateDashboardInfo();
@@ -654,7 +714,7 @@
                         <div class="text-slate-500">Email: ${u.email}</div>
                     </div>
                     <button onclick="approveUser(${idx})" class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-4 py-2 rounded-lg transition shrink-0 cursor-pointer">
-                        Phê duyệt & Gửi mail thành công
+                        Phê duyệt & Gửi mail
                     </button>
                 </div>
             `).join('');
@@ -673,15 +733,15 @@
                 email: u.email,
                 fullname: u.fullname,
                 username: u.username,
-                notification_content: `Xin chào ${u.fullname},\nTài khoản của bạn đã được Admin phê duyệt thành công!\nTên đăng nhập của bạn là: ${u.username}\nBây giờ bạn có thể truy cập vào trang web để bắt đầu làm bài trắc nghiệm.`
+                notification_content: `Xin chào ${u.fullname},\nTài khoản của bạn đã được Admin phê duyệt thành công!\nUsername: ${u.username}\nHãy vào web để làm bài.`
             };
 
             emailjs.send('service_x7jmmhb', 'template_hc69xxo', templateParams)
-                .then(function(response) {
-                    alert(`Đã phê duyệt tài khoản "${u.username}" và gửi email thông báo thành công đến ${u.email}!`);
+                .then(function() {
+                    alert(`Đã phê duyệt tài khoản "${u.username}"!`);
                     renderAdminPendingList();
-                }, function(error) {
-                    alert("Đã cấp quyền trong hệ thống nhưng gửi email phản hồi lỗi: " + JSON.stringify(error));
+                }, function(err) {
+                    alert("Đã cấp quyền nhưng gửi mail lỗi: " + JSON.stringify(err));
                     renderAdminPendingList();
                 });
         }
@@ -691,6 +751,35 @@
             document.getElementById('app-container').classList.add('hidden');
             document.getElementById('main-header').classList.add('hidden');
             document.getElementById('auth-screen').classList.remove('hidden');
+        }
+
+        function handleMenuBode() {
+            let isMasterAdmin = (currentUser.toUpperCase() === 'DUCMANH' || currentUser === 'manhute73');
+            if(isMasterAdmin) {
+                switchTab('manual-creator');
+            } else {
+                switchTab('dashboard');
+                alert("Hãy chọn bộ đề kiểm tra ở ô lựa chọn phía trên để bắt đầu làm bài!");
+            }
+        }
+
+        function toggleSidebarCollapse() {
+            isSidebarCollapsed = !isSidebarCollapsed;
+            const sidebar = document.getElementById('sidebar-container');
+            const texts = document.querySelectorAll('.menu-text');
+            const collapseIcon = document.getElementById('collapse-icon');
+
+            if(isSidebarCollapsed) {
+                sidebar.classList.remove('w-64');
+                sidebar.classList.add('w-20');
+                texts.forEach(el => el.classList.add('hidden'));
+                collapseIcon.className = "fa-solid fa-angles-right w-5 text-center";
+            } else {
+                sidebar.classList.remove('w-20');
+                sidebar.classList.add('w-64');
+                texts.forEach(el => el.classList.remove('hidden'));
+                collapseIcon.className = "fa-solid fa-angles-left w-5 text-center";
+            }
         }
 
         function toggleShuffle() {
@@ -707,16 +796,29 @@
 
         function switchTab(tabId) {
             document.getElementById('tab-dashboard').classList.add('hidden');
+            document.getElementById('tab-history').classList.add('hidden');
             document.getElementById('tab-manual-creator').classList.add('hidden');
             document.getElementById('tab-quiz').classList.add('hidden');
             document.getElementById('tab-result').classList.add('hidden');
 
+            document.getElementById('menu-dashboard').className = "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-600 hover:bg-slate-50 transition";
+            document.getElementById('menu-subject').className = "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-600 hover:bg-slate-50 transition";
+            document.getElementById('menu-bode').className = "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-600 hover:bg-slate-50 transition";
+            document.getElementById('menu-history').className = "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-600 hover:bg-slate-50 transition";
+
             if(tabId === 'dashboard') {
                 document.getElementById('tab-dashboard').classList.remove('hidden');
+                document.getElementById('menu-dashboard').className = "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-rose-600 bg-rose-50 font-semibold transition";
                 updateDashboardInfo();
+            }
+            if(tabId === 'history') {
+                document.getElementById('tab-history').classList.remove('hidden');
+                document.getElementById('menu-history').className = "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-rose-600 bg-rose-50 font-semibold transition";
+                renderFullHistoryUI();
             }
             if(tabId === 'manual-creator') {
                 document.getElementById('tab-manual-creator').classList.remove('hidden');
+                document.getElementById('menu-bode').className = "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-rose-600 bg-rose-50 font-semibold transition";
                 renderAdminExamsList();
             }
             if(tabId === 'quiz') document.getElementById('tab-quiz').classList.remove('hidden');
@@ -726,7 +828,6 @@
         function updateDashboardInfo() {
             let isMasterAdmin = (currentUser.toUpperCase() === 'DUCMANH' || currentUser === 'manhute73');
             const selector = document.getElementById('exam-selector');
-            
             let availableExams = isMasterAdmin ? allExams : allExams.filter(e => e.isActive);
 
             if (availableExams.length === 0) {
@@ -747,7 +848,6 @@
                     currentActiveExamId = availableExams[0].id;
                     selector.value = currentActiveExamId;
                 }
-
                 loadSelectedExamToDashboard(currentActiveExamId);
             }
             updateHistoryUI();
@@ -765,25 +865,19 @@
 
             document.getElementById('input-exam-title').value = exam.title;
             document.getElementById('input-exam-topic').value = exam.topic;
+            document.getElementById('exam-topic-display').innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-rose-600 inline-block"></span> ${exam.topic}`;
             document.getElementById('input-exam-time').value = exam.timeLimit;
             let filledCount = exam.questions.filter(q => q && q.imgUrl).length;
             document.getElementById('display-exam-count').innerText = `${filledCount}/${exam.questions.length} câu trắc nghiệm`;
         }
 
-        // --- QUẢN LÝ TẠO BỘ ĐỀ CỦA ADMIN ---
+        // --- QUẢN LÝ TẠO BỘ ĐỀ ---
         function generateQuestionSlots() {
             let totalQ = parseInt(document.getElementById('input-total-questions').value) || 10;
             manualQuestions = [];
-
             for (let i = 0; i < totalQ; i++) {
-                manualQuestions.push({
-                    id: i + 1,
-                    imgUrl: "",
-                    options: ["A", "B", "C", "D"],
-                    correct: 0
-                });
+                manualQuestions.push({ id: i + 1, imgUrl: "", options: ["A", "B", "C", "D"], correct: 0 });
             }
-
             updateManualListUI();
         }
 
@@ -798,22 +892,9 @@
                         const img = new Image();
                         img.onload = function() {
                             const canvas = document.createElement('canvas');
-                            canvas.width = img.width;
-                            canvas.height = img.height;
+                            canvas.width = img.width; canvas.height = img.height;
                             const ctx = canvas.getContext('2d');
                             ctx.drawImage(img, 0, 0);
-                            
-                            let imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-                            let data = imgData.data;
-                            for (let p = 0; p < data.length; p += 4) {
-                                let r = data[p], g = data[p+1], b = data[p+2];
-                                if (r > 245 && g > 245 && b > 245) {
-                                    data[p] = 248;     
-                                    data[p+1] = 250;   
-                                    data[p+2] = 252;   
-                                }
-                            }
-                            ctx.putImageData(imgData, 0, 0);
                             manualQuestions[index].imgUrl = canvas.toDataURL('image/png');
                             updateManualListUI();
                         };
@@ -829,33 +910,10 @@
         function handleQuestionImageUpload(index, event) {
             const file = event.target.files[0];
             if (!file) return;
-
             const reader = new FileReader();
             reader.onload = function(e) {
-                let imgDataUrl = e.target.result;
-                const img = new Image();
-                img.onload = function() {
-                    const canvas = document.createElement('canvas');
-                    canvas.width = img.width;
-                    canvas.height = img.height;
-                    const ctx = canvas.getContext('2d');
-                    ctx.drawImage(img, 0, 0);
-                    
-                    let imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-                    let data = imgData.data;
-                    for (let p = 0; p < data.length; p += 4) {
-                        let r = data[p], g = data[p+1], b = data[p+2];
-                        if (r > 245 && g > 245 && b > 245) {
-                            data[p] = 248;     
-                            data[p+1] = 250;   
-                            data[p+2] = 252;   
-                        }
-                    }
-                    ctx.putImageData(imgData, 0, 0);
-                    manualQuestions[index].imgUrl = canvas.toDataURL('image/png');
-                    updateManualListUI();
-                };
-                img.src = imgDataUrl;
+                manualQuestions[index].imgUrl = e.target.result;
+                updateManualListUI();
             };
             reader.readAsDataURL(file);
         }
@@ -868,25 +926,17 @@
             let filledCount = manualQuestions.filter(q => q && q.imgUrl).length;
             document.getElementById('manual-q-count').innerText = `${filledCount}/${manualQuestions.length}`;
             const listEl = document.getElementById('manual-question-list');
-
             if (manualQuestions.length === 0) {
                 listEl.innerHTML = `<p class="italic text-slate-400 text-center py-8">Chưa có khung câu hỏi nào.</p>`;
                 return;
             }
-
             listEl.innerHTML = manualQuestions.map((q, idx) => `
                 <div class="bg-white border ${q.imgUrl ? 'border-emerald-200 bg-emerald-50/10' : 'border-slate-200'} p-3 rounded-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-sm">
                     <div class="flex items-center gap-3 w-full sm:w-auto">
                         <span class="font-bold text-slate-900 text-xs bg-slate-100 px-2.5 py-1.5 rounded-lg shrink-0">Câu ${idx + 1}</span>
-                        
-                        <div tabindex="0" onpaste="handlePasteImage(${idx}, event)" title="Click vào đây rồi bấm Ctrl + V để dán ảnh" class="paste-zone w-28 h-12 bg-slate-50 hover:bg-slate-100 rounded border border-dashed border-slate-300 flex items-center justify-center overflow-hidden shrink-0 cursor-pointer relative group">
-                            ${q.imgUrl ? `
-                                <img src="${q.imgUrl}" class="w-full h-full object-cover">
-                            ` : `
-                                <span class="text-[10px] text-slate-400 text-center px-1">Ctrl + V hoặc chọn ảnh</span>
-                            `}
+                        <div tabindex="0" onpaste="handlePasteImage(${idx}, event)" title="Click vào đây rồi bấm Ctrl + V để dán ảnh" class="paste-zone w-28 h-12 bg-slate-50 hover:bg-slate-100 rounded border border-dashed border-slate-300 flex items-center justify-center overflow-hidden shrink-0 cursor-pointer">
+                            ${q.imgUrl ? `<img src="${q.imgUrl}" class="w-full h-full object-cover">` : `<span class="text-[10px] text-slate-400 text-center px-1">Ctrl + V hoặc chọn ảnh</span>`}
                         </div>
-
                         <div class="flex-1">
                             <input type="file" accept="image/*" id="file_q_${idx}" class="hidden" onchange="handleQuestionImageUpload(${idx}, event)">
                             <label for="file_q_${idx}" class="cursor-pointer bg-white hover:bg-slate-100 border border-slate-300 text-slate-700 text-xs font-semibold px-3 py-1.5 rounded-lg transition inline-flex items-center gap-1.5 shadow-sm">
@@ -894,7 +944,6 @@
                             </label>
                         </div>
                     </div>
-
                     <div class="flex items-center gap-2 w-full sm:w-auto justify-end">
                         <span class="text-xs font-bold text-slate-500">Đáp án:</span>
                         <select onchange="updateQuestionCorrect(${idx}, this.value)" class="bg-white border border-slate-300 rounded-lg px-2.5 py-1.5 text-xs font-bold text-emerald-700 focus:border-rose-600 focus:outline-none shadow-sm">
@@ -913,29 +962,20 @@
             let topic = document.getElementById('new-exam-topic').value.trim();
             let timeLimit = parseInt(document.getElementById('new-exam-time').value) || 0;
 
-            if(!title) {
-                alert("Vui lòng nhập tên bài tập / bộ đề!");
-                return;
-            }
-
+            if(!title) { alert("Vui lòng nhập tên bài tập / bộ đề!"); return; }
             let validQuestions = manualQuestions.filter(q => q && q.imgUrl);
-            if(validQuestions.length === 0) {
-                alert("Vui lòng dán ảnh cho ít nhất 1 câu hỏi!");
-                return;
-            }
+            if(validQuestions.length === 0) { alert("Vui lòng dán ảnh cho ít nhất 1 câu hỏi!"); return; }
 
-            let newExam = {
+            allExams.push({
                 id: 'exam_' + Date.now(),
                 title: title,
                 topic: topic,
                 timeLimit: timeLimit,
                 questions: manualQuestions,
-                isActive: false // Mặc định chưa kích hoạt
-            };
-
-            allExams.push(newExam);
+                isActive: false
+            });
             saveExamsToStorage();
-            alert(`Đã lưu bộ đề "${title}" thành công! Hãy vào danh sách phía dưới để kích hoạt cho học viên làm.`);
+            alert(`Đã lưu bộ đề "${title}" thành công!`);
             renderAdminExamsList();
         }
 
@@ -945,8 +985,7 @@
                 listEl.innerHTML = `<p class="italic text-slate-400 text-center py-6">Chưa có bộ đề nào được tạo.</p>`;
                 return;
             }
-
-            listEl.innerHTML = allExams.map((e, idx) => `
+            listEl.innerHTML = allExams.map(e => `
                 <div class="bg-white border p-4 rounded-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-sm">
                     <div>
                         <div class="font-bold text-slate-900 text-sm">${e.title}</div>
@@ -965,12 +1004,7 @@
         }
 
         function toggleExamActive(examId) {
-            allExams = allExams.map(e => {
-                if(e.id === examId) {
-                    e.isActive = !e.isActive;
-                }
-                return e;
-            });
+            allExams = allExams.map(e => { if(e.id === examId) e.isActive = !e.isActive; return e; });
             saveExamsToStorage();
             renderAdminExamsList();
         }
@@ -982,30 +1016,17 @@
             renderAdminExamsList();
         }
 
-        // --- BẮT ĐẦU LÀM BÀI ---
+        // --- LÀM BÀI THI ---
         function startExam() {
-            if(!currentActiveExamId) {
-                alert("Vui lòng chọn bộ đề kiểm tra!");
-                return;
-            }
-
+            if(!currentActiveExamId) { alert("Vui lòng chọn bộ đề kiểm tra!"); return; }
             let exam = allExams.find(e => e.id === currentActiveExamId);
-            if(!exam || exam.questions.length === 0) {
-                alert("Bộ đề hiện tại chưa có câu hỏi nào!");
-                return;
-            }
+            if(!exam || exam.questions.length === 0) { alert("Bộ đề chưa có câu hỏi!"); return; }
 
             let validQuestions = exam.questions.filter(q => q && q.imgUrl);
-            if(validQuestions.length === 0) {
-                alert("Bộ đề này chưa có ảnh câu hỏi hợp lệ!");
-                return;
-            }
+            if(validQuestions.length === 0) { alert("Bộ đề chưa có ảnh câu hỏi hợp lệ!"); return; }
 
-            let pool = [...validQuestions];
-            if (isShuffleEnabled) {
-                pool.sort(() => Math.random() - 0.5);
-            }
-            activeQuestions = pool;
+            activeQuestions = [...validQuestions];
+            if (isShuffleEnabled) activeQuestions.sort(() => Math.random() - 0.5);
 
             userAnswers = {};
             secondsElapsed = 0;
@@ -1022,12 +1043,10 @@
                         submitExam();
                         return;
                     }
-                    let m = Math.floor(countdownSeconds / 60);
-                    let s = countdownSeconds % 60;
+                    let m = Math.floor(countdownSeconds / 60), s = countdownSeconds % 60;
                     document.getElementById('timer-display').innerText = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
                 } else {
-                    let m = Math.floor(secondsElapsed / 60);
-                    let s = secondsElapsed % 60;
+                    let m = Math.floor(secondsElapsed / 60), s = secondsElapsed % 60;
                     document.getElementById('timer-display').innerText = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
                 }
             }, 1000);
@@ -1040,15 +1059,9 @@
                 <div id="question_card_${qIdx}" class="bg-white border border-slate-200 p-4 rounded-xl shadow-sm space-y-3">
                     <div class="flex items-center justify-between pb-2 border-b border-slate-100">
                         <span class="font-bold text-slate-900 text-xs bg-slate-100 px-2.5 py-1 rounded-md">Câu ${qIdx + 1}</span>
-                        <div class="flex items-center gap-3">
-                            <span class="text-xs font-semibold text-slate-500">${exam.title}</span>
-                        </div>
+                        <span class="text-xs font-semibold text-slate-500">${exam.title}</span>
                     </div>
-
-                    <div class="question-frame-box">
-                        <img src="${q.imgUrl}" alt="Câu hỏi">
-                    </div>
-
+                    <div class="question-frame-box"><img src="${q.imgUrl}" alt="Câu hỏi"></div>
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
                         ${q.options.map((opt, optIdx) => `
                             <label id="label_q_${qIdx}_${optIdx}" onclick="selectOption(${qIdx}, ${optIdx})" class="flex items-center justify-center gap-2 py-2 px-3 rounded-lg border border-slate-200 hover:border-emerald-500 hover:bg-emerald-50/20 cursor-pointer transition select-none">
@@ -1068,23 +1081,13 @@
             const paletteEl = document.getElementById('palette-grid');
             paletteEl.innerHTML = activeQuestions.map((q, qIdx) => {
                 let isAnswered = userAnswers[qIdx] !== undefined;
-                let btnClass = isAnswered 
-                    ? "bg-emerald-600 text-white font-bold shadow-sm" 
-                    : "bg-white text-rose-600 border border-rose-300 font-normal hover:bg-rose-50";
-
-                return `
-                    <button onclick="scrollToQuestion(${qIdx})" class="w-9 h-9 rounded-lg text-xs flex items-center justify-center transition ${btnClass}">
-                        ${qIdx + 1}
-                    </button>
-                `;
+                return `<button onclick="scrollToQuestion(${qIdx})" class="w-9 h-9 rounded-lg text-xs flex items-center justify-center transition ${isAnswered ? "bg-emerald-600 text-white font-bold" : "bg-white text-rose-600 border border-rose-300 font-normal"}">${qIdx + 1}</button>`;
             }).join('');
         }
 
         function scrollToQuestion(qIdx) {
             let el = document.getElementById(`question_card_${qIdx}`);
-            if(el) {
-                el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }
+            if(el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
 
         function selectOption(qIdx, optIdx) {
@@ -1106,60 +1109,61 @@
         function validateAndSubmitExam() {
             let total = activeQuestions.length;
             let answeredCount = Object.keys(userAnswers).length;
-
             if (answeredCount < total) {
-                if(!confirm(`Bạn mới trả lời ${answeredCount}/${total} câu. Bạn có chắc chắn muốn nộp bài không?`)) {
-                    return;
-                }
+                if(!confirm(`Bạn mới trả lời ${answeredCount}/${total} câu. Bạn có chắc chắn muốn nộp bài không?`)) return;
             }
-
             submitExam();
         }
 
         function submitExam() {
             clearInterval(examTimer);
-            let correctCount = 0;
-            let total = activeQuestions.length;
-            let wrongCount = 0;
-
+            let correctCount = 0, total = activeQuestions.length, wrongCount = 0;
             activeQuestions.forEach((q, idx) => {
-                if(userAnswers[idx] === q.correct) {
-                    correctCount++;
-                } else {
-                    wrongCount++;
-                }
+                if(userAnswers[idx] === q.correct) correctCount++; else wrongCount++;
             });
 
-            let score = total > 0 ? ((correctCount / total) * 10).toFixed(2).replace('.', ',') : '0';
-            document.getElementById('res-score').innerText = score;
+            let scoreNum = total > 0 ? (correctCount / total) * 10 : 0;
+            let scoreStr = scoreNum.toFixed(2).replace('.', ',');
+            let percent = total > 0 ? Math.round((correctCount / total) * 100) : 0;
+            
+            let exam = allExams.find(e => e.id === currentActiveExamId);
+            let examTitle = exam ? exam.title : "ĐỀ THI";
+            let examTopic = exam ? exam.topic : "TOÁN CAO CẤP";
+
+            let m = Math.floor(secondsElapsed / 60), s = secondsElapsed % 60;
+            let durationStr = `${m} phút ${s} giây`;
+            let now = new Date();
+            let timeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')} ${now.getDate().toString().padStart(2, '0')}/${(now.getMonth()+1).toString().padStart(2, '0')}/${now.getFullYear()}`;
+
+            document.getElementById('res-score').innerText = scoreStr;
             document.getElementById('res-correct-count').innerText = correctCount;
             document.getElementById('res-wrong-count').innerText = wrongCount;
-            
-            let percent = total > 0 ? Math.round((correctCount / total) * 100) : 0;
             document.getElementById('res-topic-percent').innerText = percent + '%';
-            document.getElementById('res-topic-name').innerText = document.getElementById('input-exam-title').value;
+            document.getElementById('res-topic-name').innerText = examTopic;
+            document.getElementById('res-topic-badge').innerText = `Thi thử • ${examTopic}`;
 
             document.getElementById('bar-correct').style.width = `${total > 0 ? (correctCount/total)*100 : 0}%`;
             document.getElementById('bar-wrong').style.width = `${total > 0 ? (wrongCount/total)*100 : 0}%`;
             document.getElementById('bar-topic').style.width = `${percent}%`;
-            
-            let m = Math.floor(secondsElapsed / 60);
-            let s = secondsElapsed % 60;
-            let durationStr = `${m} phút ${s} giây`;
-            let now = new Date();
-            let timeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')} ${now.getDate().toString().padStart(2, '0')}/${(now.getMonth()+1).toString().padStart(2, '0')}/${now.getFullYear()}`;
-            
+
             document.getElementById('res-details-text').innerText = `Đúng ${correctCount}/${total} câu (${percent}%) • Nộp lúc ${timeStr}`;
             document.getElementById('res-msg-title').innerText = percent >= 80 ? "Xuất sắc!" : "Cần cố gắng hơn!";
-            document.getElementById('res-msg-desc').innerText = percent >= 80 ? "Bạn nắm rất chắc nội dung này. Hãy thử bộ đề khó hơn." : "Bạn cần ôn tập thêm kiến thức phần này.";
+            document.getElementById('res-msg-desc').innerText = percent >= 80 ? "Bạn nắm rất chắc nội dung này." : "Bạn cần ôn tập thêm kiến thức phần này.";
 
-            examHistory.unshift({
+            if(!globalHistory[currentUser]) globalHistory[currentUser] = [];
+            globalHistory[currentUser].unshift({
+                examTitle: examTitle,
+                topic: examTopic,
                 timeStr: timeStr,
-                score: score,
+                scoreNum: scoreNum,
+                score: scoreStr,
                 correct: correctCount,
                 total: total,
-                durationStr: durationStr
+                durationStr: durationStr,
+                userAnswers: {...userAnswers},
+                activeQuestions: [...activeQuestions]
             });
+            saveHistoryToStorage();
 
             document.getElementById('count-all').innerText = total;
             document.getElementById('count-wrong').innerText = wrongCount;
@@ -1180,7 +1184,6 @@
 
         function renderReviewList(filterType) {
             const reviewContainer = document.getElementById('review-questions-container');
-            
             let filteredQuestions = activeQuestions.map((q, idx) => ({q, idx})).filter(item => {
                 let userChoice = userAnswers[item.idx];
                 let isCorrect = userChoice === item.q.correct;
@@ -1203,18 +1206,12 @@
                 return `
                     <div class="bg-white border ${isCorrect ? 'border-emerald-200' : 'border-rose-200'} p-4 rounded-xl space-y-3 shadow-sm">
                         <div class="flex items-center justify-between pb-2 border-b border-slate-100">
-                            <div class="flex items-center gap-3">
-                                <span class="font-bold text-slate-900 text-xs bg-slate-100 px-2.5 py-1 rounded-md">Câu ${qIdx + 1}</span>
-                                <span class="text-xs px-2.5 py-0.5 rounded-full font-semibold ${isCorrect ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}">
-                                    <i class="fa-solid ${isCorrect ? 'fa-check' : 'fa-xmark'} mr-1"></i> ${isCorrect ? 'Đúng' : 'Sai'}
-                                </span>
-                            </div>
+                            <span class="font-bold text-slate-900 text-xs bg-slate-100 px-2.5 py-1 rounded-md">Câu ${qIdx + 1}</span>
+                            <span class="text-xs px-2.5 py-0.5 rounded-full font-semibold ${isCorrect ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}">
+                                <i class="fa-solid ${isCorrect ? 'fa-check' : 'fa-xmark'} mr-1"></i> ${isCorrect ? 'Đúng' : 'Sai'}
+                            </span>
                         </div>
-
-                        <div class="question-frame-box">
-                            <img src="${q.imgUrl}" alt="Câu hỏi">
-                        </div>
-
+                        <div class="question-frame-box"><img src="${q.imgUrl}" alt="Câu hỏi"></div>
                         <div class="text-xs font-medium text-slate-700 mt-2 pt-2 border-t border-slate-100">
                             Bạn chọn <span class="font-bold">${userChoiceLetter}</span>. Đáp án đúng: <span class="font-bold text-emerald-600">${correctLetter}</span>.
                         </div>
@@ -1224,33 +1221,105 @@
         }
 
         function updateHistoryUI() {
+            let userHistory = globalHistory[currentUser] || [];
             const container = document.getElementById('history-container');
-            const resultHistoryList = document.getElementById('result-history-list');
-            const historyCountBadge = document.getElementById('history-count-badge');
-
-            if(historyCountBadge) historyCountBadge.innerText = `${examHistory.length} lần`;
-
-            if (examHistory.length === 0) {
-                if(container) container.innerHTML = `<p class="text-sm text-slate-400 italic">Chưa làm lần nào (Chưa có lịch sử làm bài)</p>`;
-                if(resultHistoryList) resultHistoryList.innerHTML = `<p class="text-xs text-slate-500 italic">Chưa có lịch sử làm bài.</p>`;
+            
+            if (userHistory.length === 0) {
+                container.innerHTML = `<p class="text-sm text-slate-400 italic">Chưa làm lần nào (Chưa có lịch sử làm bài)</p>`;
             } else {
-                let htmlStr = examHistory.map((item, idx) => `
-                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center py-2 border-b border-slate-200/60 gap-2 text-xs">
-                        <span class="text-rose-600 font-bold">Lần ${examHistory.length - idx}: <span class="text-slate-700 font-normal">${item.timeStr}</span></span>
-                        <div class="font-semibold text-slate-800">
-                            Điểm: <span class="text-rose-600 font-bold">${item.score}/10</span> <span class="text-slate-500 font-normal">(${item.correct}/${item.total} câu đúng • ${item.durationStr})</span>
+                container.innerHTML = userHistory.map((item) => `
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center py-3 border-b border-slate-100 gap-2">
+                        <div>
+                            <div class="text-xs font-bold text-slate-900">${item.examTitle}</div>
+                            <span class="text-rose-600 font-medium text-xs">Chủ đề: ${item.topic} • ${item.timeStr}</span>
+                        </div>
+                        <div class="text-sm font-semibold text-slate-800">
+                            <span class="text-rose-600 font-bold">${item.score}/10 điểm</span> <span class="text-slate-500 font-normal">(${item.correct}/${item.total} câu • ${item.durationStr})</span>
                         </div>
                     </div>
                 `).join('');
-
-                if(container) container.innerHTML = htmlStr;
-                if(resultHistoryList) resultHistoryList.innerHTML = htmlStr;
             }
         }
 
-        function exportToPDF() {
-            window.print();
+        function renderFullHistoryUI() {
+            let userHistory = globalHistory[currentUser] || [];
+            const listEl = document.getElementById('full-history-list');
+            
+            let bestScore = 0;
+            if(userHistory.length > 0) {
+                bestScore = Math.max(...userHistory.map(i => i.scoreNum));
+                document.getElementById('best-score-display').innerText = bestScore.toFixed(2).replace('.', ',') + ' /10';
+                document.getElementById('best-score-detail').innerText = `Đạt được trong tổng số ${userHistory.length} bài thi`;
+            } else {
+                document.getElementById('best-score-display').innerText = `0,00 /10`;
+                document.getElementById('best-score-detail').innerText = `Chưa có lượt làm bài nào`;
+            }
+            document.getElementById('total-attempts-display').innerText = userHistory.length;
+
+            if (userHistory.length === 0) {
+                listEl.innerHTML = `<p class="text-xs text-slate-400 italic text-center py-12">Chưa có lịch sử làm bài nào.</p>`;
+                return;
+            }
+
+            listEl.innerHTML = userHistory.map((item, idx) => `
+                <div class="bg-white border border-slate-200 p-5 rounded-2xl shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                    <div class="space-y-1">
+                        <div class="flex items-center gap-2">
+                            <span class="bg-rose-100 text-rose-700 text-[10px] font-bold px-2 py-0.5 rounded-full">Thi thử</span>
+                            <span class="font-bold text-slate-900 text-base">${item.examTitle}</span>
+                        </div>
+                        <div class="text-xs text-slate-500 font-semibold flex items-center gap-2">
+                            <span><i class="fa-solid fa-bookmark text-rose-600 mr-1"></i> ${item.topic}</span>
+                            <span>•</span>
+                            <span><i class="fa-solid fa-clock mr-1"></i> ${item.timeStr}</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-6 w-full md:w-auto justify-between md:justify-end border-t md:border-t-0 pt-3 md:pt-0">
+                        <div class="text-right">
+                            <div class="text-lg font-black text-rose-600">${item.score}/10</div>
+                            <div class="text-[11px] text-slate-500 font-medium">Đúng ${item.correct}/${item.total} câu • ${item.durationStr}</div>
+                        </div>
+                        <button onclick="viewHistoryDetail(${idx})" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold px-4 py-2 rounded-xl text-xs transition cursor-pointer">
+                            Xem lại
+                        </button>
+                    </div>
+                </div>
+            `).join('');
         }
+
+        function viewHistoryDetail(idx) {
+            let item = globalHistory[currentUser][idx];
+            activeQuestions = item.activeQuestions;
+            userAnswers = item.userAnswers;
+
+            let correctCount = item.correct;
+            let total = item.total;
+            let wrongCount = total - correctCount;
+
+            document.getElementById('res-score').innerText = item.score;
+            document.getElementById('res-correct-count').innerText = correctCount;
+            document.getElementById('res-wrong-count').innerText = wrongCount;
+            document.getElementById('res-topic-percent').innerText = Math.round((correctCount/total)*100) + '%';
+            document.getElementById('res-topic-name').innerText = item.topic;
+            document.getElementById('res-topic-badge').innerText = `Lịch sử • ${item.topic}`;
+
+            document.getElementById('bar-correct').style.width = `${(correctCount/total)*100}%`;
+            document.getElementById('bar-wrong').style.width = `${(wrongCount/total)*100}%`;
+            document.getElementById('bar-topic').style.width = `${(correctCount/total)*100}%`;
+
+            document.getElementById('res-details-text').innerText = `Lượt làm ngày ${item.timeStr} • Thời gian: ${item.durationStr}`;
+            document.getElementById('res-msg-title').innerText = "Xem lại lịch sử";
+            document.getElementById('res-msg-desc').innerText = `Bài làm bộ đề: ${item.examTitle}`;
+
+            document.getElementById('count-all').innerText = total;
+            document.getElementById('count-wrong').innerText = wrongCount;
+            document.getElementById('count-correct').innerText = correctCount;
+
+            renderReviewList('all');
+            switchTab('result');
+        }
+
+        function exportToPDF() { window.print(); }
 
         window.onload = function() {
             setDynamicGreeting();
