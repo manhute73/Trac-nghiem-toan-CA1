@@ -1419,9 +1419,9 @@
                         ${q.options.map((opt, optIdx) => {
                             let isSelected = userAnswers[qIdx] === optIdx;
                             return `
-                                <label id="label_q_${qIdx}_${optIdx}" onclick="selectOption(${qIdx}, ${optIdx})" class="flex items-center justify-center gap-2 py-2 px-3 rounded-lg border ${isSelected ? 'border-sky-500 bg-sky-50/40 shadow-sm' : 'border-slate-200 hover:border-sky-500 hover:bg-sky-50/20'} cursor-pointer transition select-none">
+                                <label id="label_q_${qIdx}_${optIdx}" onclick="selectOption(${qIdx}, ${optIdx})" class="flex items-center justify-center gap-2 py-2 px-3 rounded-lg border ${isSelected ? 'border-sky-500 bg-sky-50/40 shadow-sm' : 'border-slate-200 bg-slate-50 hover:border-sky-500 hover:bg-sky-50/25'} cursor-pointer transition select-none">
                                     <input type="radio" name="q_${qIdx}" value="${optIdx}" ${isSelected ? 'checked' : ''} class="w-3.5 h-3.5 text-sky-600 focus:ring-sky-500 hidden">
-                                    <span id="badge_q_${qIdx}_${optIdx}" class="font-bold ${isSelected ? 'text-white bg-sky-600' : 'text-slate-700 bg-slate-100 border border-slate-200'} text-xs w-6 h-6 rounded-full flex items-center justify-center shrink-0">${String.fromCharCode(65 + optIdx)}</span>
+                                    <span id="badge_q_${qIdx}_${optIdx}" class="font-bold ${isSelected ? 'text-white bg-sky-600' : 'text-slate-700 bg-white border border-slate-200'} text-xs w-6 h-6 rounded-full flex items-center justify-center shrink-0">${String.fromCharCode(65 + optIdx)}</span>
                                 </label>
                             `;
                         }).join('')}
@@ -1456,8 +1456,8 @@
                     lbl.className = "flex items-center justify-center gap-2 py-2 px-3 rounded-lg border border-sky-500 bg-sky-50/40 cursor-pointer transition select-none shadow-sm";
                     badge.className = "font-bold text-white text-xs w-6 h-6 rounded-full bg-sky-600 flex items-center justify-center shrink-0";
                 } else {
-                    lbl.className = "flex items-center justify-center gap-2 py-2 px-3 rounded-lg border border-slate-200 hover:border-sky-500 hover:bg-sky-50/20 cursor-pointer transition select-none";
-                    badge.className = "font-bold text-slate-700 text-xs w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center shrink-0 border border-slate-200";
+                    lbl.className = "flex items-center justify-center gap-2 py-2 px-3 rounded-lg border border-slate-200 bg-slate-50 hover:border-sky-500 hover:bg-sky-50/25 cursor-pointer transition select-none";
+                    badge.className = "font-bold text-slate-700 text-xs w-6 h-6 rounded-full bg-white border border-slate-200 flex items-center justify-center shrink-0";
                 }
             }
             updatePaletteGrid();
