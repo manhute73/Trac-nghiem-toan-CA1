@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AMC - Luyện Thi VB2 CAND 2027 Toán Cao Cấp</title>
+    <title>TestMaster - Luyện Thi VB2 CAND 2027 Toán Cao Cấp</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome Icons -->
@@ -60,7 +60,7 @@
             <span class="w-3 h-3 rounded-full bg-rose-500 inline-block"></span>
             <span class="w-3 h-3 rounded-full bg-amber-500 inline-block"></span>
             <span class="w-3 h-3 rounded-full bg-emerald-500 inline-block"></span>
-            <span class="ml-3 font-medium text-slate-200">AMC - Luyện Thi VB2 CAND 2027</span>
+            <span class="ml-3 font-medium text-slate-200">Luyện Thi VB2 CAND 2027</span>
         </div>
         <div class="flex items-center space-x-4">
             <button onclick="switchTab('dashboard')" class="hover:text-white transition"><i class="fa-solid fa-house mr-1"></i> Trang chủ</button>
@@ -73,13 +73,14 @@
     <div id="auth-screen" class="min-h-screen flex flex-col md:flex-row w-full bg-slate-50">
         <div class="md:w-1/2 bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 p-8 md:p-16 flex flex-col justify-between border-r border-slate-200">
             <div class="space-y-6">
-                <div class="w-12 h-12 bg-white rounded-xl shadow-md flex items-center justify-center p-2 border border-slate-100">
-                    <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" alt="Logo" class="w-full h-full object-contain">
+                <!-- Logo DM Thương Hiệu -->
+                <div class="w-14 h-14 bg-gradient-to-tr from-rose-600 to-pink-500 rounded-2xl shadow-lg flex items-center justify-center text-white font-black text-2xl tracking-wider border-2 border-white">
+                    DM
                 </div>
                 
                 <div class="space-y-2">
                     <span id="dynamic-greeting" class="text-xs font-bold text-rose-600 uppercase tracking-widest bg-rose-100 px-3 py-1 rounded-full inline-block">Chào bạn!</span>
-                    <h1 class="text-3xl md:text-4xl font-extrabold text-slate-900 leading-tight">AMC - Luyện thi VB2 CAND 2027 TOÁN CAO CẤP CA1</h1>
+                    <h1 class="text-3xl md:text-4xl font-extrabold text-slate-900 leading-tight">Luyện thi VB2 CAND 2027 TOÁN CAO CẤP CA1</h1>
                     <p class="text-sm font-semibold text-slate-600">Xóa mất gốc - Ôn thi cấp tốc</p>
                 </div>
 
@@ -186,15 +187,15 @@
     <!-- Main Container Layout with Sidebar & Content -->
     <div id="app-container" class="flex-1 flex w-full max-w-7xl mx-auto hidden">
         
-        <!-- SIDEBAR TRÁI ĐÚNG CHUẨN MẪU YÊU CẦU -->
+        <!-- SIDEBAR TRÁI VỚI LOGO DM ĐẸP -->
         <aside id="sidebar-container" class="w-64 bg-white border-r border-slate-200 hidden md:flex flex-col justify-between p-4 space-y-4 no-print shrink-0 transition-all duration-300">
             <div class="space-y-6">
-                <!-- Logo & Title -->
+                <!-- Logo DM & Title -->
                 <div class="flex flex-col items-center text-center px-2 pt-2 border-b border-slate-100 pb-4">
-                    <div class="w-12 h-12 bg-amber-50 rounded-2xl flex items-center justify-center text-amber-600 font-bold shadow-sm mb-2 border border-amber-100">
-                        <i class="fa-solid fa-graduation-cap text-xl"></i>
+                    <div class="w-12 h-12 bg-gradient-to-tr from-rose-600 to-pink-500 rounded-2xl shadow-md flex items-center justify-center text-white font-black text-lg tracking-wider mb-2 border border-white">
+                        DM
                     </div>
-                    <div class="text-xs font-extrabold text-slate-900 leading-snug">AMC - Luyện thi VB2 CAND 2027 TOÁN CAO CẤP CA1</div>
+                    <div class="text-xs font-extrabold text-slate-900 leading-snug">Luyện thi VB2 CAND 2027 TOÁN CAO CẤP CA1</div>
                 </div>
 
                 <!-- 8 Menu Items chuẩn mẫu -->
@@ -838,9 +839,10 @@
                 document.getElementById('input-exam-time').value = 0;
                 currentActiveExamId = null;
             } else {
+                // Tên đề hiển thị sạch sẽ tuyệt đối, không gắn đuôi trạng thái thừa thãi
                 selector.innerHTML = availableExams.map(e => `
                     <option value="${e.id}" ${currentActiveExamId === e.id ? 'selected' : ''}>
-                        ${e.title} (${e.questions.length} câu) ${e.isActive ? ' - [Đang kích hoạt]' : ''}
+                        ${e.title} (${e.questions.length} câu)
                     </option>
                 `).join('');
 
@@ -992,8 +994,9 @@
                         <div class="text-xs text-slate-500">Chủ đề: ${e.topic} • ${e.questions.length} câu • Thời gian: ${e.timeLimit} phút</div>
                     </div>
                     <div class="flex items-center gap-2">
-                        <button onclick="toggleExamActive('${e.id}')" class="${e.isActive ? 'bg-amber-600 hover:bg-amber-700' : 'bg-emerald-600 hover:bg-emerald-700'} text-white text-xs font-bold px-3 py-2 rounded-lg transition cursor-pointer">
-                            ${e.isActive ? 'Đang kích hoạt (Bấm tắt)' : 'Kích hoạt bộ đề'}
+                        <!-- Đổi tên nút thành "Đã kích hoạt" khi active và "Kích hoạt bộ đề" khi chưa -->
+                        <button onclick="toggleExamActive('${e.id}')" class="${e.isActive ? 'bg-sky-600 hover:bg-sky-700 text-white' : 'bg-emerald-600 hover:bg-emerald-700 text-white'} text-xs font-bold px-3.5 py-2 rounded-lg transition cursor-pointer">
+                            ${e.isActive ? 'Đã kích hoạt' : 'Kích hoạt bộ đề'}
                         </button>
                         <button onclick="deleteExam('${e.id}')" class="bg-slate-200 hover:bg-rose-600 hover:text-white text-slate-700 text-xs font-bold px-3 py-2 rounded-lg transition cursor-pointer">
                             <i class="fa-solid fa-trash"></i>
