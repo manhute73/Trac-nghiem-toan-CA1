@@ -17,7 +17,7 @@
         .question-frame-box {
             width: 100%;
             min-height: 140px;
-            background-color: transparent; /* Đồng bộ nền với khung câu hỏi chính */
+            background-color: transparent;
             border: none;
             border-radius: 0;
             display: flex;
@@ -65,35 +65,38 @@
 
     <!-- MÀN HÌNH ĐĂNG NHẬP -->
     <div id="auth-screen" class="min-h-screen flex flex-col md:flex-row w-full bg-slate-50">
-        <div class="md:w-1/2 bg-gradient-to-br from-blue-900 via-sky-900 to-slate-900 p-8 md:p-16 flex flex-col justify-between text-white">
-            <div class="space-y-6">
+        <!-- Đã làm mới bố cục và chuyển sang tông màu xanh nhạt, hiện đại hơn -->
+        <div class="md:w-1/2 bg-gradient-to-br from-blue-700 via-sky-600 to-indigo-800 p-8 md:p-16 flex flex-col justify-between text-white">
+            <div class="space-y-8 my-auto">
                 <!-- Logo DM -->
-                <div class="w-16 h-16 bg-gradient-to-tr from-sky-500 to-blue-600 rounded-2xl shadow-xl flex items-center justify-center text-white font-black text-2xl tracking-widest border border-sky-400/30">
+                <div class="w-16 h-16 bg-white/10 backdrop-blur-md rounded-2xl shadow-xl flex items-center justify-center text-white font-black text-2xl tracking-widest border border-white/20">
                     DM
                 </div>
                 
-                <div class="space-y-2">
-                    <span id="dynamic-greeting" class="text-xs font-bold text-sky-300 uppercase tracking-widest bg-sky-950/80 px-3 py-1 rounded-full inline-block border border-sky-800/50">Chào bạn!</span>
-                    <h1 class="text-3xl md:text-4xl font-extrabold leading-tight">Luyện thi VB2 CAND 2027</h1>
-                    <p class="text-sm font-semibold text-sky-200">Xóa mất gốc - Ôn thi cấp tốc chuyên sâu</p>
+                <div class="space-y-3">
+                    <span id="dynamic-greeting" class="text-xs font-bold text-sky-100 uppercase tracking-widest bg-white/15 backdrop-blur-sm px-3.5 py-1.5 rounded-full inline-block border border-white/10 shadow-sm">Chào bạn!</span>
+                    <h1 class="text-3xl md:text-5xl font-extrabold tracking-tight leading-tight">Luyện thi VB2 CAND 2027</h1>
+                    <p class="text-sm md:text-base font-medium text-sky-100/90">Xóa mất gốc - Ôn thi cấp tốc chuyên sâu</p>
                 </div>
 
-                <div class="space-y-3 pt-4 text-xs font-medium text-sky-100">
-                    <div class="flex items-center gap-2">
-                        <i class="fa-solid fa-circle-check text-sky-400"></i> Toán Cao Cấp & Nghị Luận Xã Hội
+                <div class="space-y-3.5 pt-2 text-xs md:text-sm font-medium text-sky-50">
+                    <div class="flex items-center gap-3">
+                        <div class="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center shrink-0"><i class="fa-solid fa-check text-xs text-white"></i></div> 
+                        <span>Toán Cao Cấp & Nghị Luận Xã Hội chuẩn cấu trúc</span>
                     </div>
-                    <div class="flex items-center gap-2">
-                        <i class="fa-solid fa-circle-check text-sky-400"></i> Tự động lưu bài khi thoát, đánh giá tiến độ (%) chuẩn xác
+                    <div class="flex items-center gap-3">
+                        <div class="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center shrink-0"><i class="fa-solid fa-check text-xs text-white"></i></div> 
+                        <span>Tự động lưu bài khi thoát, đánh giá tiến độ (%) chuẩn xác</span>
                     </div>
-                    <div class="flex items-center gap-2">
-                        <i class="fa-solid fa-circle-check text-sky-400"></i> Truy cập đa thiết bị với tài khoản cấp phép
+                    <div class="flex items-center gap-3">
+                        <div class="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center shrink-0"><i class="fa-solid fa-check text-xs text-white"></i></div> 
+                        <span>Truy cập đa thiết bị với tài khoản cấp phép bảo mật</span>
                     </div>
                 </div>
             </div>
 
-            <div class="text-xs text-sky-400/70 pt-8">
-                © 2026 TestMaster Pro • Hệ thống ôn thi chuyên sâu.
-            </div>
+            <!-- Đã xóa hoàn toàn cụm chữ 2026 test... theo yêu cầu -->
+            <div class="hidden md:block"></div>
         </div>
 
         <div class="md:w-1/2 flex items-center justify-center p-8 md:p-16 bg-white">
@@ -110,8 +113,9 @@
                         <input type="text" id="login-username" placeholder="Nhập tên đăng nhập..." class="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-3 text-sm text-slate-800 focus:border-sky-600 focus:outline-none">
                     </div>
 
-                    <button onclick="handleLogin()" class="w-full bg-sky-600 hover:bg-sky-700 text-white font-semibold py-3 rounded-xl shadow-lg shadow-sky-600/30 transition text-sm cursor-pointer">
-                        Vào web làm bài
+                    <!-- Đã đổi tên nút thành "Đăng nhập" -->
+                    <button onclick="handleLogin()" class="w-full bg-sky-600 hover:bg-sky-700 text-white font-semibold py-3.5 rounded-xl shadow-lg shadow-sky-600/30 transition text-sm cursor-pointer">
+                        Đăng nhập
                     </button>
                 </div>
 
@@ -190,7 +194,7 @@
                     <button onclick="handleMenuBode()" id="menu-bode" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-600 hover:bg-slate-50 transition">
                         <i class="fa-solid fa-folder-open w-5 text-center"></i> <span class="menu-text" id="menu-bode-text">Bộ đề</span>
                     </button>
-                    <!-- MỤC QUẢN LÝ TÀI KHOẢN (CHỈ ADMIN DUCMANH MỚI THẤY) -->
+                    <!-- MỤC QUẢN LÝ TÀI KHOẢN (CHỈ ADMIN MỚI THẤY) -->
                     <button onclick="switchTab('admin-users')" id="menu-admin-users" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-600 hover:bg-slate-50 transition hidden">
                         <i class="fa-solid fa-users-gear w-5 text-center text-sky-600"></i> <span class="menu-text">Quản lý tài khoản</span>
                     </button>
@@ -308,7 +312,7 @@
                     </div>
                 </div>
 
-                <!-- TAB: QUẢN LÝ TÀI KHOẢN (CHỈ ADMIN DUCMANH THẤY) -->
+                <!-- TAB: QUẢN LÝ TÀI KHOẢN (CHỈ ADMIN THẤY) -->
                 <div id="tab-admin-users" class="hidden space-y-6 flex-1 flex flex-col">
                     <div class="border-b pb-3 flex justify-between items-center">
                         <div>
@@ -435,7 +439,7 @@
                     </div>
                 </div>
 
-                <!-- TAB 3: QUẢN LÝ BỘ ĐỀ (CHỈ ADMIN DUCMANH THẤY) -->
+                <!-- TAB 3: QUẢN LÝ BỘ ĐỀ (CHỈ ADMIN THẤY) -->
                 <div id="tab-manual-creator" class="hidden space-y-6 flex-1 flex flex-col">
                     <div class="border-b pb-3 flex justify-between items-center">
                         <div>
@@ -706,15 +710,19 @@
             localStorage.setItem('amc_saved_answers', JSON.stringify(userSavedAnswers));
         }
 
-        function setDynamicGreeting() {
+        function setDynamicGreeting(username = "") {
             const now = new Date();
             const hour = now.getHours();
             let greeting = "Chào buổi sáng";
             if (hour >= 12 && hour < 14) greeting = "Chào buổi trưa";
             else if (hour >= 14 && hour < 18) greeting = "Chào buổi chiều";
             else if (hour >= 18 || hour < 4) greeting = "Chào buổi tối";
+            
             const greetingEl = document.getElementById('dynamic-greeting');
-            if (greetingEl) greetingEl.innerText = `${greeting}, bạn ơi!`;
+            if (greetingEl) {
+                // Thay đổi hiển thị Chào buổi tối + tên đăng nhập (áp dụng cho cả admin và user)
+                greetingEl.innerText = username ? `${greeting}, ${username}!` : `${greeting}, bạn ơi!`;
+            }
         }
 
         function isUserAdmin(username) {
@@ -735,6 +743,9 @@
 
             if(isAdmin || isMember) {
                 currentUser = user;
+                // Cập nhật lời chào hiển thị trực tiếp tên đăng nhập
+                setDynamicGreeting(currentUser);
+
                 document.getElementById('auth-screen').classList.add('hidden');
                 document.getElementById('main-header').classList.remove('hidden');
                 document.getElementById('app-container').classList.remove('hidden');
@@ -828,6 +839,7 @@
 
         function logout() {
             currentUser = '';
+            setDynamicGreeting("");
             document.getElementById('app-container').classList.add('hidden');
             document.getElementById('main-header').classList.add('hidden');
             document.getElementById('auth-screen').classList.remove('hidden');
@@ -1706,7 +1718,7 @@
         function exportToPDF() { window.print(); }
 
         window.onload = function() {
-            setDynamicGreeting();
+            setDynamicGreeting("");
             document.getElementById('auth-screen').classList.remove('hidden');
             document.getElementById('main-header').classList.add('hidden');
             document.getElementById('app-container').classList.add('hidden');
