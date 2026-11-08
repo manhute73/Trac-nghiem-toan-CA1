@@ -354,11 +354,24 @@
                     <div class="border-b pb-3 flex justify-between items-center">
                         <div>
                             <h2 class="text-xl font-bold text-slate-900">Quản Lý Tài Khoản Truy Cập</h2>
-                            <p class="text-xs text-slate-500 mt-0.5">Danh sách các tài khoản đã được cấp quyền và đang đợi cấp quyền truy cập hệ thống.</p>
+                            <p class="text-xs text-slate-500 mt-0.5">Thêm nhanh username thủ công hoặc duyệt các yêu cầu đăng ký.</p>
                         </div>
                         <button onclick="switchTab('dashboard')" class="bg-sky-600 hover:bg-sky-700 text-white px-4 py-2 rounded-xl text-xs font-medium transition shadow-md">
                             <i class="fa-solid fa-house mr-1"></i> Trang chủ
                         </button>
+                    </div>
+
+                    <!-- Khung Thêm Nhanh Username Vào Code/Hệ Thống -->
+                    <div class="bg-slate-50 border border-slate-200 p-4 rounded-xl space-y-3">
+                        <h3 class="font-bold text-slate-900 text-xs uppercase tracking-wider flex items-center gap-2">
+                            <i class="fa-solid fa-user-plus text-sky-600"></i> Thêm trực tiếp Username vào danh sách cấp quyền
+                        </h3>
+                        <div class="flex gap-2">
+                            <input type="text" id="manual-add-username" placeholder="Nhập username cần cấp quyền (VD: hocvien01)..." class="flex-1 bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs font-semibold text-slate-800 focus:border-sky-600 focus:outline-none">
+                            <button onclick="manualAddUser()" class="bg-sky-600 hover:bg-sky-700 text-white font-semibold px-4 py-2 rounded-lg text-xs transition cursor-pointer shrink-0">
+                                <i class="fa-solid fa-plus mr-1"></i> Cấp quyền ngay
+                            </button>
+                        </div>
                     </div>
 
                     <!-- Phần Đang chờ duyệt -->
@@ -846,6 +859,23 @@
             document.getElementById('badge-subject-label').innerText = subjectName;
             closeSubjectModal();
             updateDashboardInfo();
+        }
+
+        function manualAddUser() {
+            let newUsername = document.getElementById('manual-add-username').value.trim();
+            if(!newUsername) {
+                alert("Vui lòng nhập tên đăng nhập!");
+                return;
+            }
+            if(registeredUsers.includes(newUsername)) {
+                alert("Tài khoản này đã có trong danh sách được cấp quyền!");
+                return;
+            }
+            registeredUsers.push(newUsername);
+            localStorage.setItem('amc_users', JSON.stringify(registeredUsers));
+            document.getElementById('manual-add-username').value = "";
+            alert(`Đã cấp quyền thành công cho tài khoản "${newUsername}"!`);
+            renderAdminUsersManagement();
         }
 
         function renderAdminUsersManagement() {
