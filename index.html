@@ -89,7 +89,7 @@
                         <i class="fa-solid fa-circle-check text-rose-600"></i> Hai chế độ: luyện tập có giải thích ngay và thi thử tính giờ
                     </div>
                     <div class="flex items-center gap-2">
-                        <i class="fa-solid fa-circle-check text-rose-600"></i> Quản lý bộ đề, lịch sử làm bài và thành tích cá nhân
+                        <i class="fa-solid fa-circle-check text-rose-600"></i> Quản lý bộ đề, lịch sử làm bài và đánh dấu câu hỏi ôn tập
                     </div>
                     <div class="flex items-center gap-2">
                         <i class="fa-solid fa-circle-check text-rose-600"></i> Đăng ký tài khoản và chờ Admin duyệt để vào web làm bài
@@ -218,7 +218,7 @@
                     <button onclick="switchTab('history')" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-600 hover:bg-slate-50 transition">
                         <i class="fa-solid fa-trophy w-5 text-center"></i> <span class="menu-text">Thành tích</span>
                     </button>
-                    <button onclick="alert('Tính năng Câu đã đánh dấu đang được cập nhật!')" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-600 hover:bg-slate-50 transition">
+                    <button onclick="switchTab('bookmarks')" id="menu-bookmarks" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-600 hover:bg-slate-50 transition">
                         <i class="fa-solid fa-bookmark w-5 text-center"></i> <span class="menu-text">Câu đã đánh dấu</span>
                     </button>
                     <button onclick="alert('Tính năng Đổi mật khẩu đang được cập nhật!')" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-600 hover:bg-slate-50 transition">
@@ -379,12 +379,29 @@
                     </div>
                 </div>
 
+                <!-- TAB MỚI: CÂU ĐÃ ĐÁNH DẤU -->
+                <div id="tab-bookmarks" class="hidden space-y-6 flex-1 flex flex-col">
+                    <div class="border-b pb-3 flex justify-between items-center">
+                        <div>
+                            <h2 class="text-xl font-bold text-slate-900">Câu Đã Đánh Dấu Để Ôn Tập</h2>
+                            <p class="text-xs text-slate-500 mt-0.5">Danh sách các câu hỏi bạn đã lưu lại kèm theo thông tin chủ đề.</p>
+                        </div>
+                        <button onclick="switchTab('dashboard')" class="bg-rose-600 hover:bg-rose-700 text-white px-4 py-2 rounded-xl text-xs font-medium transition shadow-md">
+                            <i class="fa-solid fa-house mr-1"></i> Trang chủ
+                        </button>
+                    </div>
+
+                    <div id="bookmarks-list-container" class="space-y-4">
+                        <p class="text-xs text-slate-400 italic text-center py-12">Chưa có câu hỏi nào được đánh dấu.</p>
+                    </div>
+                </div>
+
                 <!-- TAB 3: QUẢN LÝ BỘ ĐỀ (CHỈ ADMIN) -->
                 <div id="tab-manual-creator" class="hidden space-y-6 flex-1 flex flex-col">
                     <div class="border-b pb-3 flex justify-between items-center">
                         <div>
-                            <h2 class="text-lg font-bold text-slate-950">Quản Lý & Tạo Đề Kiểm Tra</h2>
-                            <p class="text-xs text-slate-500">Tạo nhiều bộ đề, thêm câu hỏi bằng cách dán ảnh (Ctrl + V) và kích hoạt bộ đề cho học viên làm.</p>
+                            <h2 id="creator-main-title" class="text-lg font-bold text-slate-950">Quản Lý & Tạo Đề Kiểm Tra</h2>
+                            <p class="text-xs text-slate-500">Tạo mới, chỉnh sửa bộ đề và kích hoạt cho học viên làm.</p>
                         </div>
                         <button onclick="switchTab('dashboard')" class="bg-rose-600 hover:bg-rose-700 text-white px-4 py-2 rounded-xl text-xs font-medium transition flex items-center gap-2 shadow-md shrink-0">
                             <i class="fa-solid fa-arrow-left"></i> Về trang chủ
@@ -392,7 +409,7 @@
                     </div>
 
                     <div class="bg-slate-50 border border-slate-200 p-5 rounded-xl space-y-4">
-                        <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2">
+                        <h3 id="form-mode-title" class="font-bold text-slate-900 text-sm flex items-center gap-2">
                             <i class="fa-solid fa-plus-circle text-rose-600"></i> Tạo bộ đề mới
                         </h3>
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
@@ -439,8 +456,11 @@
                             <p class="italic text-slate-400 text-center py-8">Chưa có khung câu hỏi. Hãy nhập thông tin và bấm "Tạo khung câu hỏi" ở trên.</p>
                         </div>
 
-                        <div class="pt-3 flex justify-end">
-                            <button onclick="saveCurrentExam()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-6 py-3 rounded-xl text-xs transition shadow-lg cursor-pointer flex items-center gap-2">
+                        <div class="pt-3 flex justify-between items-center">
+                            <button id="cancel-edit-btn" onclick="cancelEditExam()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold px-4 py-3 rounded-xl text-xs transition hidden">
+                                Hủy chỉnh sửa
+                            </button>
+                            <button id="save-exam-btn" onclick="saveCurrentExam()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-6 py-3 rounded-xl text-xs transition shadow-lg cursor-pointer flex items-center gap-2 ml-auto">
                                 <i class="fa-solid fa-floppy-disk text-sm"></i> Lưu bộ đề này vào hệ thống
                             </button>
                         </div>
@@ -572,7 +592,10 @@
         let pendingUsers = JSON.parse(localStorage.getItem('amc_pending')) || [];
         let allExams = JSON.parse(localStorage.getItem('amc_all_exams')) || [];
         let globalHistory = JSON.parse(localStorage.getItem('amc_global_history')) || {};
+        let userBookmarks = JSON.parse(localStorage.getItem('amc_bookmarks')) || {};
+        
         let currentActiveExamId = null;
+        let editingExamId = null; // Biến lưu ID bộ đề đang sửa
         let currentUser = '';
         let isSidebarCollapsed = false;
 
@@ -584,6 +607,8 @@
         let secondsElapsed = 0;
         let countdownSeconds = 0;
         let currentFilter = 'all';
+        let currentExamTitle = "";
+        let currentExamTopic = "";
 
         function saveExamsToStorage() {
             localStorage.setItem('amc_all_exams', JSON.stringify(allExams));
@@ -591,6 +616,10 @@
 
         function saveHistoryToStorage() {
             localStorage.setItem('amc_global_history', JSON.stringify(globalHistory));
+        }
+
+        function saveBookmarksToStorage() {
+            localStorage.setItem('amc_bookmarks', JSON.stringify(userBookmarks));
         }
 
         function setDynamicGreeting() {
@@ -757,6 +786,7 @@
         function handleMenuBode() {
             let isMasterAdmin = (currentUser.toUpperCase() === 'DUCMANH' || currentUser === 'manhute73');
             if(isMasterAdmin) {
+                cancelEditExam();
                 switchTab('manual-creator');
             } else {
                 switchTab('dashboard');
@@ -798,6 +828,7 @@
         function switchTab(tabId) {
             document.getElementById('tab-dashboard').classList.add('hidden');
             document.getElementById('tab-history').classList.add('hidden');
+            document.getElementById('tab-bookmarks').classList.add('hidden');
             document.getElementById('tab-manual-creator').classList.add('hidden');
             document.getElementById('tab-quiz').classList.add('hidden');
             document.getElementById('tab-result').classList.add('hidden');
@@ -806,6 +837,7 @@
             document.getElementById('menu-subject').className = "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-600 hover:bg-slate-50 transition";
             document.getElementById('menu-bode').className = "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-600 hover:bg-slate-50 transition";
             document.getElementById('menu-history').className = "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-600 hover:bg-slate-50 transition";
+            document.getElementById('menu-bookmarks').className = "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-600 hover:bg-slate-50 transition";
 
             if(tabId === 'dashboard') {
                 document.getElementById('tab-dashboard').classList.remove('hidden');
@@ -816,6 +848,11 @@
                 document.getElementById('tab-history').classList.remove('hidden');
                 document.getElementById('menu-history').className = "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-rose-600 bg-rose-50 font-semibold transition";
                 renderFullHistoryUI();
+            }
+            if(tabId === 'bookmarks') {
+                document.getElementById('tab-bookmarks').classList.remove('hidden');
+                document.getElementById('menu-bookmarks').className = "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-rose-600 bg-rose-50 font-semibold transition";
+                renderBookmarksUI();
             }
             if(tabId === 'manual-creator') {
                 document.getElementById('tab-manual-creator').classList.remove('hidden');
@@ -839,7 +876,6 @@
                 document.getElementById('input-exam-time').value = 0;
                 currentActiveExamId = null;
             } else {
-                // Tên đề hiển thị sạch sẽ tuyệt đối, không gắn đuôi trạng thái thừa thãi
                 selector.innerHTML = availableExams.map(e => `
                     <option value="${e.id}" ${currentActiveExamId === e.id ? 'selected' : ''}>
                         ${e.title} (${e.questions.length} câu)
@@ -865,6 +901,8 @@
             let exam = allExams.find(e => e.id == examId);
             if(!exam) return;
 
+            currentExamTitle = exam.title;
+            currentExamTopic = exam.topic;
             document.getElementById('input-exam-title').value = exam.title;
             document.getElementById('input-exam-topic').value = exam.topic;
             document.getElementById('exam-topic-display').innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-rose-600 inline-block"></span> ${exam.topic}`;
@@ -873,12 +911,25 @@
             document.getElementById('display-exam-count').innerText = `${filledCount}/${exam.questions.length} câu trắc nghiệm`;
         }
 
-        // --- QUẢN LÝ TẠO BỘ ĐỀ ---
+        // --- QUẢN LÝ TẠO & CHỈNH SỬA BỘ ĐỀ ---
         function generateQuestionSlots() {
             let totalQ = parseInt(document.getElementById('input-total-questions').value) || 10;
-            manualQuestions = [];
-            for (let i = 0; i < totalQ; i++) {
-                manualQuestions.push({ id: i + 1, imgUrl: "", options: ["A", "B", "C", "D"], correct: 0 });
+            // Nếu đang không sửa (tạo mới) hoặc số lượng câu thay đổi, reset mảng
+            if(!editingExamId) {
+                manualQuestions = [];
+                for (let i = 0; i < totalQ; i++) {
+                    manualQuestions.push({ id: i + 1, imgUrl: "", options: ["A", "B", "C", "D"], correct: 0 });
+                }
+            } else {
+                // Đang sửa: thêm hoặc cắt bớt mảng
+                if(totalQ > manualQuestions.length) {
+                    let diff = totalQ - manualQuestions.length;
+                    for(let i=0; i<diff; i++) {
+                        manualQuestions.push({ id: manualQuestions.length + 1, imgUrl: "", options: ["A", "B", "C", "D"], correct: 0 });
+                    }
+                } else if(totalQ < manualQuestions.length) {
+                    manualQuestions = manualQuestions.slice(0, totalQ);
+                }
             }
             updateManualListUI();
         }
@@ -968,17 +1019,69 @@
             let validQuestions = manualQuestions.filter(q => q && q.imgUrl);
             if(validQuestions.length === 0) { alert("Vui lòng dán ảnh cho ít nhất 1 câu hỏi!"); return; }
 
-            allExams.push({
-                id: 'exam_' + Date.now(),
-                title: title,
-                topic: topic,
-                timeLimit: timeLimit,
-                questions: manualQuestions,
-                isActive: false
-            });
+            if(editingExamId) {
+                // Cập nhật bộ đề hiện tại đang sửa
+                allExams = allExams.map(e => {
+                    if(e.id === editingExamId) {
+                        return { ...e, title, topic, timeLimit, questions: manualQuestions };
+                    }
+                    return e;
+                });
+                alert(`Đã cập nhật bộ đề "${title}" thành công!`);
+                cancelEditExam();
+            } else {
+                // Thêm mới
+                allExams.push({
+                    id: 'exam_' + Date.now(),
+                    title: title,
+                    topic: topic,
+                    timeLimit: timeLimit,
+                    questions: manualQuestions,
+                    isActive: false
+                });
+                alert(`Đã lưu bộ đề "${title}" thành công!`);
+                document.getElementById('new-exam-title').value = "";
+                manualQuestions = [];
+                updateManualListUI();
+            }
             saveExamsToStorage();
-            alert(`Đã lưu bộ đề "${title}" thành công!`);
             renderAdminExamsList();
+        }
+
+        function editExam(examId) {
+            let exam = allExams.find(e => e.id === examId);
+            if(!exam) return;
+
+            editingExamId = examId;
+            document.getElementById('new-exam-title').value = exam.title;
+            document.getElementById('new-exam-topic').value = exam.topic;
+            document.getElementById('new-exam-time').value = exam.timeLimit;
+            document.getElementById('input-total-questions').value = exam.questions.length;
+            manualQuestions = JSON.parse(JSON.stringify(exam.questions));
+
+            document.getElementById('form-mode-title').innerHTML = `<i class="fa-solid fa-pen-to-square text-sky-600"></i> Chỉnh sửa bộ đề: <span class="text-sky-600">${exam.title}</span>`;
+            document.getElementById('save-exam-btn').innerHTML = `<i class="fa-solid fa-floppy-disk text-sm"></i> Cập nhật lại bộ đề`;
+            document.getElementById('save-exam-btn').className = "bg-sky-600 hover:bg-sky-700 text-white font-semibold px-6 py-3 rounded-xl text-xs transition shadow-lg cursor-pointer flex items-center gap-2 ml-auto";
+            document.getElementById('cancel-edit-btn').classList.remove('hidden');
+
+            updateManualListUI();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function cancelEditExam() {
+            editingExamId = null;
+            document.getElementById('new-exam-title').value = "";
+            document.getElementById('new-exam-topic').value = "TOÁN CAO CẤP";
+            document.getElementById('new-exam-time').value = 0;
+            document.getElementById('input-total-questions').value = 10;
+            manualQuestions = [];
+
+            document.getElementById('form-mode-title').innerHTML = `<i class="fa-solid fa-plus-circle text-rose-600"></i> Tạo bộ đề mới`;
+            document.getElementById('save-exam-btn').innerHTML = `<i class="fa-solid fa-floppy-disk text-sm"></i> Lưu bộ đề này vào hệ thống`;
+            document.getElementById('save-exam-btn').className = "bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-6 py-3 rounded-xl text-xs transition shadow-lg cursor-pointer flex items-center gap-2 ml-auto";
+            document.getElementById('cancel-edit-btn').classList.add('hidden');
+
+            updateManualListUI();
         }
 
         function renderAdminExamsList() {
@@ -994,7 +1097,9 @@
                         <div class="text-xs text-slate-500">Chủ đề: ${e.topic} • ${e.questions.length} câu • Thời gian: ${e.timeLimit} phút</div>
                     </div>
                     <div class="flex items-center gap-2">
-                        <!-- Đổi tên nút thành "Đã kích hoạt" khi active và "Kích hoạt bộ đề" khi chưa -->
+                        <button onclick="editExam('${e.id}')" class="bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold px-3.5 py-2 rounded-lg transition cursor-pointer flex items-center gap-1">
+                            <i class="fa-solid fa-pen text-slate-500"></i> Sửa
+                        </button>
                         <button onclick="toggleExamActive('${e.id}')" class="${e.isActive ? 'bg-sky-600 hover:bg-sky-700 text-white' : 'bg-emerald-600 hover:bg-emerald-700 text-white'} text-xs font-bold px-3.5 py-2 rounded-lg transition cursor-pointer">
                             ${e.isActive ? 'Đã kích hoạt' : 'Kích hoạt bộ đề'}
                         </button>
@@ -1014,6 +1119,7 @@
 
         function deleteExam(examId) {
             if(!confirm("Bạn có chắc chắn muốn xóa bộ đề này không?")) return;
+            if(editingExamId === examId) cancelEditExam();
             allExams = allExams.filter(e => e.id !== examId);
             saveExamsToStorage();
             renderAdminExamsList();
@@ -1027,6 +1133,9 @@
 
             let validQuestions = exam.questions.filter(q => q && q.imgUrl);
             if(validQuestions.length === 0) { alert("Bộ đề chưa có ảnh câu hỏi hợp lệ!"); return; }
+
+            currentExamTitle = exam.title;
+            currentExamTopic = exam.topic;
 
             activeQuestions = [...validQuestions];
             if (isShuffleEnabled) activeQuestions.sort(() => Math.random() - 0.5);
@@ -1129,10 +1238,6 @@
             let scoreStr = scoreNum.toFixed(2).replace('.', ',');
             let percent = total > 0 ? Math.round((correctCount / total) * 100) : 0;
             
-            let exam = allExams.find(e => e.id === currentActiveExamId);
-            let examTitle = exam ? exam.title : "ĐỀ THI";
-            let examTopic = exam ? exam.topic : "TOÁN CAO CẤP";
-
             let m = Math.floor(secondsElapsed / 60), s = secondsElapsed % 60;
             let durationStr = `${m} phút ${s} giây`;
             let now = new Date();
@@ -1142,8 +1247,8 @@
             document.getElementById('res-correct-count').innerText = correctCount;
             document.getElementById('res-wrong-count').innerText = wrongCount;
             document.getElementById('res-topic-percent').innerText = percent + '%';
-            document.getElementById('res-topic-name').innerText = examTopic;
-            document.getElementById('res-topic-badge').innerText = `Thi thử • ${examTopic}`;
+            document.getElementById('res-topic-name').innerText = currentExamTopic;
+            document.getElementById('res-topic-badge').innerText = `Thi thử • ${currentExamTopic}`;
 
             document.getElementById('bar-correct').style.width = `${total > 0 ? (correctCount/total)*100 : 0}%`;
             document.getElementById('bar-wrong').style.width = `${total > 0 ? (wrongCount/total)*100 : 0}%`;
@@ -1155,8 +1260,8 @@
 
             if(!globalHistory[currentUser]) globalHistory[currentUser] = [];
             globalHistory[currentUser].unshift({
-                examTitle: examTitle,
-                topic: examTopic,
+                examTitle: currentExamTitle,
+                topic: currentExamTopic,
                 timeStr: timeStr,
                 scoreNum: scoreNum,
                 score: scoreStr,
@@ -1185,6 +1290,30 @@
             renderReviewList(type);
         }
 
+        function toggleBookmarkQuestion(qIdx) {
+            if(!userBookmarks[currentUser]) userBookmarks[currentUser] = [];
+            let q = activeQuestions[qIdx];
+            let bookmarkId = `${currentExamTitle}_q_${qIdx}`;
+            
+            let existingIdx = userBookmarks[currentUser].findIndex(b => b.id === bookmarkId);
+            if(existingIdx >= 0) {
+                userBookmarks[currentUser].splice(existingIdx, 1);
+                alert("Đã bỏ đánh dấu câu hỏi này!");
+            } else {
+                userBookmarks[currentUser].push({
+                    id: bookmarkId,
+                    examTitle: currentExamTitle,
+                    topic: currentExamTopic,
+                    questionIndex: qIdx + 1,
+                    imgUrl: q.imgUrl,
+                    correct: q.correct
+                });
+                alert("Đã thêm vào danh sách câu hỏi cần ôn tập!");
+            }
+            saveBookmarksToStorage();
+            renderReviewList(currentFilter);
+        }
+
         function renderReviewList(filterType) {
             const reviewContainer = document.getElementById('review-questions-container');
             let filteredQuestions = activeQuestions.map((q, idx) => ({q, idx})).filter(item => {
@@ -1200,19 +1329,28 @@
                 return;
             }
 
+            let bookmarks = userBookmarks[currentUser] || [];
+
             reviewContainer.innerHTML = filteredQuestions.map(({q, idx: qIdx}) => {
                 let userChoice = userAnswers[qIdx];
                 let isCorrect = userChoice === q.correct;
                 let userChoiceLetter = userChoice !== undefined ? String.fromCharCode(65 + userChoice) : "Không chọn";
                 let correctLetter = String.fromCharCode(65 + q.correct);
+                let bookmarkId = `${currentExamTitle}_q_${qIdx}`;
+                let isBookmarked = bookmarks.some(b => b.id === bookmarkId);
 
                 return `
                     <div class="bg-white border ${isCorrect ? 'border-emerald-200' : 'border-rose-200'} p-4 rounded-xl space-y-3 shadow-sm">
                         <div class="flex items-center justify-between pb-2 border-b border-slate-100">
                             <span class="font-bold text-slate-900 text-xs bg-slate-100 px-2.5 py-1 rounded-md">Câu ${qIdx + 1}</span>
-                            <span class="text-xs px-2.5 py-0.5 rounded-full font-semibold ${isCorrect ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}">
-                                <i class="fa-solid ${isCorrect ? 'fa-check' : 'fa-xmark'} mr-1"></i> ${isCorrect ? 'Đúng' : 'Sai'}
-                            </span>
+                            <div class="flex items-center gap-2">
+                                <button onclick="toggleBookmarkQuestion(${qIdx})" class="${isBookmarked ? 'bg-amber-500 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'} text-xs font-bold px-3 py-1.5 rounded-lg transition flex items-center gap-1.5 cursor-pointer">
+                                    <i class="fa-solid fa-bookmark"></i> ${isBookmarked ? 'Đã đánh dấu' : 'Đánh dấu câu'}
+                                </button>
+                                <span class="text-xs px-2.5 py-0.5 rounded-full font-semibold ${isCorrect ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}">
+                                    <i class="fa-solid ${isCorrect ? 'fa-check' : 'fa-xmark'} mr-1"></i> ${isCorrect ? 'Đúng' : 'Sai'}
+                                </span>
+                            </div>
                         </div>
                         <div class="question-frame-box"><img src="${q.imgUrl}" alt="Câu hỏi"></div>
                         <div class="text-xs font-medium text-slate-700 mt-2 pt-2 border-t border-slate-100">
@@ -1221,6 +1359,41 @@
                     </div>
                 `;
             }).join('');
+        }
+
+        function renderBookmarksUI() {
+            let bookmarks = userBookmarks[currentUser] || [];
+            const container = document.getElementById('bookmarks-list-container');
+
+            if (bookmarks.length === 0) {
+                container.innerHTML = `<p class="text-xs text-slate-400 italic text-center py-12">Chưa có câu hỏi nào được đánh dấu. Hãy làm bài và bấm "Đánh dấu câu" ở những câu cần ôn tập nhé!</p>`;
+                return;
+            }
+
+            container.innerHTML = bookmarks.map((b, idx) => `
+                <div class="bg-white border border-slate-200 p-5 rounded-2xl shadow-sm space-y-3">
+                    <div class="flex items-center justify-between border-b pb-2">
+                        <div>
+                            <span class="bg-rose-100 text-rose-700 text-[10px] font-bold px-2.5 py-1 rounded-full uppercase">Chủ đề: ${b.topic}</span>
+                            <h4 class="font-bold text-slate-900 text-sm mt-1.5">${b.examTitle} - Câu ${b.questionIndex}</h4>
+                        </div>
+                        <button onclick="removeBookmark('${b.id}')" class="bg-slate-100 hover:bg-rose-600 hover:text-white text-slate-600 text-xs font-bold px-3 py-1.5 rounded-lg transition cursor-pointer">
+                            <i class="fa-solid fa-trash mr-1"></i> Bỏ đánh dấu
+                        </button>
+                    </div>
+                    <div class="question-frame-box"><img src="${b.imgUrl}" alt="Câu hỏi đánh dấu"></div>
+                    <div class="text-xs font-semibold text-emerald-700">
+                        Đáp án đúng: <span class="uppercase">${String.fromCharCode(65 + b.correct)}</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function removeBookmark(id) {
+            if(!userBookmarks[currentUser]) return;
+            userBookmarks[currentUser] = userBookmarks[currentUser].filter(b => b.id !== id);
+            saveBookmarksToStorage();
+            renderBookmarksUI();
         }
 
         function updateHistoryUI() {
@@ -1294,6 +1467,8 @@
             let item = globalHistory[currentUser][idx];
             activeQuestions = item.activeQuestions;
             userAnswers = item.userAnswers;
+            currentExamTitle = item.examTitle;
+            currentExamTopic = item.topic;
 
             let correctCount = item.correct;
             let total = item.total;
