@@ -319,7 +319,7 @@
                             </div>
                         </div>
 
-                        <!-- PHẦN THỜI GIAN LÀM BÀI & KHUNG GIỜ ADMIN SET (ĐÃ ĐỒNG BỘ CHÍNH XÁC) -->
+                        <!-- PHẦN THỜI GIAN LÀM BÀI & KHUNG GIỜ ADMIN SET -->
                         <div class="bg-slate-50 border border-slate-100 p-4 rounded-xl flex items-start gap-3">
                             <div class="text-sky-500 mt-0.5"><i class="fa-solid fa-clock text-lg"></i></div>
                             <div class="flex-1">
@@ -1021,10 +1021,9 @@
             activeExamDeadline = exam.endTime ? new Date(exam.endTime) : null;
 
             document.getElementById('input-exam-title').value = exam.title;
-            document.getElementById('input-exam-topic').value = exam.topic;
             document.getElementById('exam-topic-display').innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-sky-600 inline-block"></span> ${exam.topic}`;
             
-            // Đã cập nhật chuẩn xác thời lượng (phút) và khung giờ từ cấu hình của Admin
+            // Cập nhật chuẩn xác số phút làm bài từ Admin set
             document.getElementById('input-exam-time').value = `${exam.timeLimit || 0} phút`;
             
             let startStr = exam.startTime ? new Date(exam.startTime).toLocaleString('vi-VN') : 'Không giới hạn';
@@ -1032,14 +1031,13 @@
             document.getElementById('exam-window-display').innerHTML = `Khung giờ: Từ <b>${startStr}</b> Đến <b>${endStr}</b>`;
 
             let totalQ = exam.questions.length;
-            let filledCount = exam.questions.filter(q => q && q.imgUrl).length;
             
             let userHistory = globalHistory[currentUser] || [];
             let passed = userHistory.some(h => h.examTitle === exam.title);
             let pct = passed ? 100 : 0;
             
-            // Đồng bộ chính xác số câu hỏi được set từ Admin
-            document.getElementById('display-exam-count').innerText = `${filledCount}/${totalQ} câu trắc nghiệm (Tiến độ: ${pct}%)`;
+            // Cập nhật chuẩn xác tổng số câu hỏi mà Admin đã tạo
+            document.getElementById('display-exam-count').innerText = `${totalQ} câu trắc nghiệm (Tiến độ: ${pct}%)`;
         }
 
         function renderProgressUI() {
@@ -1312,7 +1310,7 @@
             currentExamTopic = exam.topic;
             activeExamDeadline = exam.endTime ? new Date(exam.endTime) : null;
 
-            activeQuestions = [...exam.questions]; // Lấy đúng toàn bộ câu hỏi Admin đã tạo
+            activeQuestions = [...exam.questions];
             if (isShuffleEnabled) activeQuestions.sort(() => Math.random() - 0.5);
 
             userAnswers = {};
@@ -1321,7 +1319,7 @@
             }
 
             secondsElapsed = 0;
-            countdownSeconds = (exam.timeLimit || 30) * 60; // Gán đúng số phút Admin đã cài đặt
+            countdownSeconds = (exam.timeLimit || 30) * 60;
 
             if(examTimer) clearInterval(examTimer);
             examTimer = setInterval(() => {
