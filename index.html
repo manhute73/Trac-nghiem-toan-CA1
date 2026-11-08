@@ -12,7 +12,7 @@
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
     <script type="text/javascript">
        (function(){
-          emailjs.init("YOUR_PUBLIC_KEY"); // <-- Thay Public Key của EmailJS vào đây
+          emailjs.init("NB9xq1TAR60kJFMDs"); // Public Key của bạn
        })();
     </script>
     <style>
@@ -79,7 +79,7 @@
                 </div>
                 
                 <div class="space-y-2">
-                    <span id="dynamic-greeting" class="text-xs font-bold text-rose-600 uppercase tracking-widest bg-rose-100 px-3 py-1 rounded-full inline-block">Chào buổi sáng, bạn ơi!</span>
+                    <span id="dynamic-greeting" class="text-xs font-bold text-rose-600 uppercase tracking-widest bg-rose-100 px-3 py-1 rounded-full inline-block">Chào bạn!</span>
                     <h1 class="text-3xl md:text-4xl font-extrabold text-slate-900 leading-tight">AMC - Luyện thi VB2 CAND 2027 TOÁN CAO CẤP CA1</h1>
                     <p class="text-sm font-semibold text-slate-600">Xóa mất gốc - Ôn thi cấp tốc</p>
                 </div>
@@ -92,7 +92,7 @@
                         <i class="fa-solid fa-circle-check text-rose-600"></i> Xem lại từng câu, biết chủ đề nào còn yếu để ôn tiếp
                     </div>
                     <div class="flex items-center gap-2">
-                        <i class="fa-solid fa-circle-check text-rose-600"></i> Hệ thống tự sinh mã mật khẩu và gửi thông báo về manhute73@gmail.com khi đăng ký
+                        <i class="fa-solid fa-circle-check text-rose-600"></i> Tự động gửi thông tin đăng ký về email manhute73@gmail.com
                     </div>
                 </div>
             </div>
@@ -403,8 +403,8 @@
                 temppass: tempPass
             };
 
-            // Thay YOUR_SERVICE_ID và YOUR_TEMPLATE_ID của bạn vào đây
-            emailjs.send('YOUR_SERVICE_ID', 'YOUR_TEMPLATE_ID', templateParams)
+            // Sử dụng Service ID và Template ID của bạn
+            emailjs.send('service_cbg83wf', 'template_09ywv7j', templateParams)
                 .then(function(response) {
                     alert(`Đăng ký thành công! Hệ thống đã tự động gửi email thông báo mã mật khẩu tạm thời về hộp thư manhute73@gmail.com.`);
                     toggleAuthForm('login');
@@ -476,7 +476,6 @@
             localStorage.setItem('amc_users', JSON.stringify(registeredUsers));
             localStorage.setItem('amc_pending', JSON.stringify(pendingUsers));
 
-            // Gửi email phản hồi mật khẩu đến người dùng qua EmailJS
             let templateParams = {
                 to_email: u.email,
                 fullname: u.fullname,
@@ -484,7 +483,7 @@
                 temppass: u.pass
             };
 
-            emailjs.send('YOUR_SERVICE_ID', 'YOUR_TEMPLATE_ID_RESPONSE', templateParams)
+            emailjs.send('service_cbg83wf', 'template_09ywv7j', templateParams)
                 .then(function(response) {
                     alert(`Đã phê duyệt tài khoản và gửi email cấp mật khẩu thành công cho ${u.fullname}!`);
                     renderAdminPendingList();
@@ -499,7 +498,6 @@
             document.getElementById('auth-screen').classList.remove('hidden');
         }
 
-        // Biến toàn cục luyện thi
         let isShuffleEnabled = true;
         let manualQuestions = [];
         let activeQuestions = [];
