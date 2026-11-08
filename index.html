@@ -86,10 +86,10 @@
 
                 <div class="space-y-3 pt-4 text-xs font-medium text-slate-700">
                     <div class="flex items-center gap-2">
-                        <i class="fa-solid fa-circle-check text-rose-600"></i> Chỉ cần nhập đúng tên đăng nhập để vào web làm bài
+                        <i class="fa-solid fa-circle-check text-rose-600"></i> Đăng ký gửi yêu cầu xét duyệt cho Admin
                     </div>
                     <div class="flex items-center gap-2">
-                        <i class="fa-solid fa-circle-check text-rose-600"></i> Giao diện ôn tập chuyên sâu, tiện lợi
+                        <i class="fa-solid fa-circle-check text-rose-600"></i> Nhập đúng tên đăng nhập để vào web sau khi được duyệt
                     </div>
                 </div>
             </div>
@@ -106,13 +106,13 @@
                 <div id="form-login" class="space-y-6">
                     <div class="space-y-1">
                         <h2 class="text-2xl font-bold text-slate-900">Đăng nhập</h2>
-                        <p class="text-xs text-slate-500">Nhập tên đăng nhập đã được Admin phê duyệt để vào web.</p>
+                        <p class="text-xs text-slate-500">Nhập tên đăng nhập của bạn để vào làm bài.</p>
                     </div>
 
                     <div class="space-y-4">
                         <div>
                             <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Tên đăng nhập</label>
-                            <input type="text" id="login-username" placeholder="Nhập tên đăng nhập của bạn..." class="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-3 text-sm text-slate-800 focus:border-rose-600 focus:outline-none">
+                            <input type="text" id="login-username" placeholder="Nhập tên đăng nhập..." class="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-3 text-sm text-slate-800 focus:border-rose-600 focus:outline-none">
                         </div>
 
                         <button onclick="handleLogin()" class="w-full bg-rose-600 hover:bg-rose-700 text-white font-semibold py-3 rounded-xl shadow-lg shadow-rose-600/30 transition text-sm cursor-pointer">
@@ -129,7 +129,7 @@
                 <div id="form-register" class="space-y-6 hidden">
                     <div class="space-y-1">
                         <h2 class="text-2xl font-bold text-slate-900">Đăng ký truy cập</h2>
-                        <p class="text-xs text-slate-500">Gửi thông tin về email <b>manhute73@gmail.com</b> để chờ duyệt.</p>
+                        <p class="text-xs text-slate-500">Gửi yêu cầu xét duyệt tới Admin <b>manhute73@gmail.com</b>.</p>
                     </div>
 
                     <div class="space-y-4">
@@ -147,7 +147,7 @@
                         </div>
 
                         <button onclick="handleRegister()" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-semibold py-3 rounded-xl shadow transition text-sm cursor-pointer">
-                            Gửi yêu cầu đăng ký
+                            Gửi yêu cầu chờ duyệt
                         </button>
                     </div>
 
@@ -348,6 +348,7 @@
             }
         }
 
+        // Người dùng bấm gửi đăng ký -> Chỉ gửi 1 mail duy nhất về cho Admin (manhute73@gmail.com)
         function handleRegister() {
             let fullname = document.getElementById('reg-fullname').value.trim();
             let username = document.getElementById('reg-username').value.trim();
@@ -373,24 +374,26 @@
             pendingUsers.push(newUser);
             localStorage.setItem('amc_pending', JSON.stringify(pendingUsers));
 
+            // Chỉ bắn 1 email thông báo duy nhất về hòm thư Admin
             let templateParams = {
                 to_email: "manhute73@gmail.com",
                 message_title: "YÊU CẦU CẤP QUYỀN TRUY CẬP WEB",
                 fullname: fullname,
                 username: username,
                 email: email,
-                notification_content: `Có người dùng mới gửi yêu cầu truy cập:\n- Họ tên: ${fullname}\n- Tên đăng nhập: ${username}\n- Email: ${email}\n\nHãy vào lịch sử EmailJS bấm 'Gửi lại' nếu cần, và bấm Phê duyệt trong web.`
+                notification_content: `Có người dùng mới gửi yêu cầu truy cập:\n- Họ tên: ${fullname}\n- Tên đăng nhập: ${username}\n- Email: ${email}\n\nHãy vào trang quản trị web để bấm Phê duyệt cho phép vào web.`
             };
 
             emailjs.send('service_x7jmmhb', 'template_hc69xxo', templateParams)
                 .then(function(response) {
-                    alert(`Gửi yêu cầu thành công! Vui lòng chờ Admin (manhute73@gmail.com) phê duyệt.`);
+                    alert(`Gửi yêu cầu đăng ký thành công! Vui lòng chờ Admin (manhute73@gmail.com) phê duyệt.`);
                     toggleAuthForm('login');
                 }, function(error) {
                     alert("Lỗi khi gửi yêu cầu: " + JSON.stringify(error));
                 });
         }
 
+        // Đăng nhập đơn giản bằng Tên đăng nhập sau khi đã được Admin duyệt
         function handleLogin() {
             let user = document.getElementById('login-username').value.trim();
             
@@ -410,7 +413,7 @@
                 if(isPending) {
                     alert("Tài khoản của bạn đang chờ Admin (manhute73@gmail.com) phê duyệt.");
                 } else {
-                    alert("Tên đăng nhập không tồn tại hoặc chưa được phê duyệt!");
+                    alert("Tên đăng nhập không tồn tại hoặc chưa được Admin phê duyệt!");
                 }
             }
         }
@@ -444,6 +447,7 @@
             `).join('');
         }
 
+        // Admin bấm Phê duyệt trực tiếp trên web -> Người dùng chỉ cần gõ Tên đăng nhập là vào làm bài
         function approveUser(idx) {
             let u = pendingUsers[idx];
             registeredUsers.push(u.username);
@@ -452,7 +456,7 @@
             localStorage.setItem('amc_users', JSON.stringify(registeredUsers));
             localStorage.setItem('amc_pending', JSON.stringify(pendingUsers));
 
-            alert(`Đã phê duyệt cho tài khoản "${u.username}" (${u.fullname}) truy cập thành công!`);
+            alert(`Đã phê duyệt cho tài khoản "${u.username}" (${u.fullname}) vào web thành công! Người dùng giờ có thể đăng nhập bằng tên này.`);
             renderAdminPendingList();
         }
 
