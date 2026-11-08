@@ -86,7 +86,7 @@
 
                 <div class="space-y-3 pt-4 text-xs font-medium text-slate-700">
                     <div class="flex items-center gap-2">
-                        <i class="fa-solid fa-circle-check text-rose-600"></i> Chỉ cần nhập tên đăng nhập để vào web sau khi Admin duyệt
+                        <i class="fa-solid fa-circle-check text-rose-600"></i> Chỉ cần nhập đúng tên đăng nhập để vào web làm bài
                     </div>
                     <div class="flex items-center gap-2">
                         <i class="fa-solid fa-circle-check text-rose-600"></i> Giao diện ôn tập chuyên sâu, tiện lợi
@@ -106,7 +106,7 @@
                 <div id="form-login" class="space-y-6">
                     <div class="space-y-1">
                         <h2 class="text-2xl font-bold text-slate-900">Đăng nhập</h2>
-                        <p class="text-xs text-slate-500">Chỉ cần nhập chính xác tên đăng nhập đã được Admin phê duyệt.</p>
+                        <p class="text-xs text-slate-500">Nhập tên đăng nhập đã được Admin phê duyệt để vào web.</p>
                     </div>
 
                     <div class="space-y-4">
@@ -129,7 +129,7 @@
                 <div id="form-register" class="space-y-6 hidden">
                     <div class="space-y-1">
                         <h2 class="text-2xl font-bold text-slate-900">Đăng ký truy cập</h2>
-                        <p class="text-xs text-slate-500">Gửi yêu cầu tới Admin <b>manhute73@gmail.com</b> để được cấp quyền vào web.</p>
+                        <p class="text-xs text-slate-500">Gửi thông tin về email <b>manhute73@gmail.com</b> để chờ duyệt.</p>
                     </div>
 
                     <div class="space-y-4">
@@ -147,7 +147,7 @@
                         </div>
 
                         <button onclick="handleRegister()" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-semibold py-3 rounded-xl shadow transition text-sm cursor-pointer">
-                            Gửi yêu cầu cho Admin
+                            Gửi yêu cầu đăng ký
                         </button>
                     </div>
 
@@ -324,7 +324,6 @@
 
     <!-- Script xử lý logic -->
     <script>
-        // Danh sách tài khoản đã được duyệt (chỉ cần username)
         let registeredUsers = JSON.parse(localStorage.getItem('amc_users')) || ['admin', 'manhute73'];
         let pendingUsers = JSON.parse(localStorage.getItem('amc_pending')) || [];
 
@@ -349,7 +348,6 @@
             }
         }
 
-        // Bước 1: Gửi yêu cầu đăng ký truy cập tới Admin (manhute73@gmail.com)
         function handleRegister() {
             let fullname = document.getElementById('reg-fullname').value.trim();
             let username = document.getElementById('reg-username').value.trim();
@@ -375,26 +373,24 @@
             pendingUsers.push(newUser);
             localStorage.setItem('amc_pending', JSON.stringify(pendingUsers));
 
-            // Tham số gửi EmailJS tới Admin
             let templateParams = {
                 to_email: "manhute73@gmail.com",
                 message_title: "YÊU CẦU CẤP QUYỀN TRUY CẬP WEB",
                 fullname: fullname,
                 username: username,
                 email: email,
-                notification_content: `Có người dùng mới gửi yêu cầu truy cập hệ thống:\n- Họ tên: ${fullname}\n- Tên đăng nhập: ${username}\n- Email: ${email}\n\nVui lòng vào bảng quản trị web để bấm Phê duyệt.`
+                notification_content: `Có người dùng mới gửi yêu cầu truy cập:\n- Họ tên: ${fullname}\n- Tên đăng nhập: ${username}\n- Email: ${email}\n\nHãy vào lịch sử EmailJS bấm 'Gửi lại' nếu cần, và bấm Phê duyệt trong web.`
             };
 
             emailjs.send('service_x7jmmhb', 'template_hc69xxo', templateParams)
                 .then(function(response) {
-                    alert(`Gửi yêu cầu thành công! Vui lòng chờ Admin (manhute73@gmail.com) phê duyệt để vào web.`);
+                    alert(`Gửi yêu cầu thành công! Vui lòng chờ Admin (manhute73@gmail.com) phê duyệt.`);
                     toggleAuthForm('login');
                 }, function(error) {
                     alert("Lỗi khi gửi yêu cầu: " + JSON.stringify(error));
                 });
         }
 
-        // Bước 2: Đăng nhập chỉ bằng Tên đăng nhập (Không cần mật khẩu)
         function handleLogin() {
             let user = document.getElementById('login-username').value.trim();
             
@@ -414,7 +410,7 @@
                 if(isPending) {
                     alert("Tài khoản của bạn đang chờ Admin (manhute73@gmail.com) phê duyệt.");
                 } else {
-                    alert("Tên đăng nhập không tồn tại hoặc chưa được Admin phê duyệt!");
+                    alert("Tên đăng nhập không tồn tại hoặc chưa được phê duyệt!");
                 }
             }
         }
@@ -448,7 +444,6 @@
             `).join('');
         }
 
-        // Bước 3: Admin bấm Phê duyệt -> Cho phép tài khoản đó đăng nhập trực tiếp
         function approveUser(idx) {
             let u = pendingUsers[idx];
             registeredUsers.push(u.username);
