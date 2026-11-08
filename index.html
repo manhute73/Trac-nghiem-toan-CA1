@@ -65,7 +65,7 @@
         <div class="flex items-center space-x-4">
             <button onclick="switchTab('dashboard')" class="hover:text-white transition"><i class="fa-solid fa-house mr-1"></i> Trang chủ</button>
             <button onclick="switchTab('manual-creator')" class="hover:text-white transition text-rose-400 font-semibold"><i class="fa-solid fa-clipboard mr-1"></i> Dán Ảnh Cắt Thủ Công</button>
-            <!-- Nút Quản lý Admin chỉ hiện duy nhất với tài khoản DUCMANH -->
+            <!-- Nút Quản lý Admin chỉ hiển thị với tài khoản DUCMANH -->
             <button id="nav-admin-btn" onclick="openAdminModal()" class="hover:text-amber-400 transition text-amber-300 font-medium hidden"><i class="fa-solid fa-shield-halved mr-1"></i> Quản lý Admin</button>
             <button onclick="logout()" class="hover:text-rose-400 transition text-slate-400"><i class="fa-solid fa-right-from-bracket mr-1"></i> Đăng xuất</button>
         </div>
@@ -93,7 +93,7 @@
                         <i class="fa-solid fa-circle-check text-rose-600"></i> Xem lại từng câu, biết chủ đề nào còn yếu để ôn tiếp
                     </div>
                     <div class="flex items-center gap-2">
-                        <i class="fa-solid fa-circle-check text-rose-600"></i> Nhập tên đăng nhập để vào web sau khi được Admin phê duyệt
+                        <i class="fa-solid fa-circle-check text-rose-600"></i> Đăng ký chờ Admin duyệt để vào web bằng tên đăng nhập
                     </div>
                 </div>
             </div>
@@ -185,7 +185,7 @@
         </div>
     </div>
 
-    <!-- GIAO DIỆN HỆ THỐNG LUYỆN THI (Giữ đúng chuẩn như đêm qua) -->
+    <!-- GIAO DIỆN CHÍNH (ĐÚNG CHUẨN GIAO DIỆN ĐÊM QUA) -->
     <main id="app-container" class="flex-1 max-w-5xl w-full mx-auto p-4 md:p-6 space-y-4 hidden">
         <div class="bg-white rounded-2xl shadow-2xl p-6 md:p-8 flex flex-col space-y-6">
             
@@ -211,7 +211,7 @@
                     </p>
                 </div>
 
-                <!-- 4 Ô CHỨC NĂNG CHUẨN ĐÊM QUA -->
+                <!-- 4 Ô CHỨC NĂNG CHUẨN -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div class="bg-slate-50 border border-slate-100 p-4 rounded-xl flex items-start gap-3">
                         <div class="text-slate-400 mt-0.5"><i class="fa-solid fa-list-check text-lg"></i></div>
@@ -287,7 +287,7 @@
                 </div>
             </div>
 
-            <!-- TAB 2: TẠO KHUNG CÂU HỎI -->
+            <!-- TAB 2: TẠO KHUNG CÂU HỎI (ĐÚNG CHUẨN GIAO DIỆN HÌNH BẠN GỬI) -->
             <div id="tab-manual-creator" class="hidden space-y-4 flex-1 flex flex-col">
                 <div class="border-b pb-3 flex justify-between items-center">
                     <div>
@@ -382,7 +382,7 @@
         </div>
     </main>
 
-    <!-- Script xử lý logic tích hợp -->
+    <!-- Script xử lý logic -->
     <script>
         let registeredUsers = JSON.parse(localStorage.getItem('amc_users')) || ['DUCMANH', 'manhute73'];
         let pendingUsers = JSON.parse(localStorage.getItem('amc_pending')) || [];
@@ -468,9 +468,9 @@
                 
                 const adminBtn = document.getElementById('nav-admin-btn');
                 if(user.toUpperCase() === 'DUCMANH') {
-                    adminBtn.classList.remove('hidden'); // Chỉ hiện với DUCMANH
+                    adminBtn.classList.remove('hidden'); // Chỉ DUCMANH thấy
                 } else {
-                    adminBtn.classList.add('hidden');    // Ẩn với tài khoản thường
+                    adminBtn.classList.add('hidden');    // Tài khoản khác ẩn
                 }
 
                 switchTab('dashboard');
@@ -544,7 +544,6 @@
             document.getElementById('auth-screen').classList.remove('hidden');
         }
 
-        // Logic câu hỏi & làm bài
         let manualQuestions = [];
         let activeQuestions = [];
         let userAnswers = {};
@@ -566,7 +565,7 @@
             container.innerHTML = manualQuestions.map((q, idx) => `
                 <div class="bg-white border border-slate-200 p-4 rounded-xl space-y-3 shadow-sm">
                     <div class="flex justify-between items-center">
-                        <span class="font-bold text-slate-800 text-xs uppercase">Câu hỏi ${idx + 1}</span>
+                        <span class="font-bold text-slate-800 text-xs uppercase">CÂU HỎI ${idx + 1}</span>
                         <div class="flex items-center gap-2">
                             <span class="text-xs text-slate-500 font-medium">Đáp án đúng:</span>
                             <select onchange="updateCorrectAnswer(${idx}, this.value)" class="bg-slate-50 border border-slate-300 rounded px-2 py-1 text-xs font-bold text-rose-600 focus:outline-none">
