@@ -12,7 +12,7 @@
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
     <script type="text/javascript">
        (function(){
-          emailjs.init("NB9xq1TAR60kJFMDs"); // Public Key EmailJS của bạn
+          emailjs.init("NB9xq1TAR60kJFMDs"); // Public Key EmailJS của bạn[cite: 12]
        })();
     </script>
     <style>
@@ -64,8 +64,8 @@
         </div>
         <div class="flex items-center space-x-4">
             <button onclick="switchTab('dashboard')" class="hover:text-white transition"><i class="fa-solid fa-house mr-1"></i> Trang chủ</button>
-            <!-- Nút Dán Ảnh Cắt Thủ Công: CHỈ ADMIN MỚI THẤY -->
-            <button id="nav-creator-btn" onclick="switchTab('manual-creator')" class="hover:text-white transition text-rose-400 font-semibold hidden"><i class="fa-solid fa-clipboard mr-1"></i> Dán Ảnh Cắt Thủ Công</button>
+            <!-- Nút Tạo đề kiểm tra: CHỈ ADMIN MỚI THẤY -->
+            <button id="nav-creator-btn" onclick="switchTab('manual-creator')" class="hover:text-white transition text-rose-400 font-semibold hidden"><i class="fa-solid fa-folder-plus mr-1"></i> Quản lý bộ đề</button>
             <!-- Nút Quản lý Admin: CHỈ ADMIN MỚI THẤY -->
             <button id="nav-admin-btn" onclick="openAdminModal()" class="hover:text-amber-400 transition text-amber-300 font-medium hidden"><i class="fa-solid fa-shield-halved mr-1"></i> Quản lý Admin</button>
             <button onclick="logout()" class="hover:text-rose-400 transition text-slate-400"><i class="fa-solid fa-right-from-bracket mr-1"></i> Đăng xuất</button>
@@ -194,10 +194,18 @@
             <div id="tab-dashboard" class="space-y-6 flex-1 flex flex-col">
                 <div class="flex justify-between items-center pb-4 mb-2 border-b border-slate-100">
                     <h2 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Bảng điều khiển luyện tập</h2>
-                    <!-- Nút Dán Ảnh Cắt Thủ Công (Khoanh cam): CHỈ ADMIN MỚI HIỂN THỊ -->
+                    <!-- Nút Tạo đề kiểm tra: CHỈ ADMIN MỚI HIỂN THỊ -->
                     <button id="dashboard-creator-btn" onclick="switchTab('manual-creator')" class="bg-rose-50 hover:bg-rose-100 text-rose-700 px-4 py-2 rounded-xl font-medium text-sm transition flex items-center gap-2 border border-rose-200 hidden">
-                        <i class="fa-solid fa-clipboard"></i> Dán ảnh câu hỏi trực tiếp
+                        <i class="fa-solid fa-folder-plus"></i> Tạo đề kiểm tra
                     </button>
+                </div>
+
+                <!-- Ô LỰA CHỌN BỘ ĐỀ CHO NGƯỜI DÙNG & ADMIN -->
+                <div class="bg-slate-50 border border-slate-200 p-4 rounded-xl space-y-2">
+                    <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">Chọn bộ đề kiểm tra:</label>
+                    <select id="exam-selector" onchange="selectExamFromDropdown(this.value)" class="w-full bg-white border border-slate-300 rounded-xl px-4 py-3 text-sm font-bold text-slate-900 focus:border-rose-600 focus:outline-none shadow-sm">
+                        <option value="">-- Chưa có bộ đề nào được kích hoạt --</option>
+                    </select>
                 </div>
 
                 <div class="flex items-center gap-2">
@@ -229,7 +237,7 @@
                         <div class="flex-1">
                             <div class="text-xs font-bold text-slate-400 uppercase tracking-wider">Thời gian (phút)</div>
                             <div class="flex items-center gap-2 mt-1">
-                                <input type="number" id="input-exam-time" value="0" min="0" max="180" class="w-20 bg-white border border-slate-300 rounded-lg px-2 py-1 font-semibold text-slate-800 text-sm focus:border-rose-600 focus:outline-none">
+                                <input type="number" id="input-exam-time" value="0" min="0" max="180" class="w-20 bg-white border border-slate-300 rounded-lg px-2 py-1 font-semibold text-slate-800 text-sm focus:border-rose-600 focus:outline-none" readonly>
                                 <span class="text-sm font-medium text-slate-600">(0 = Không giới hạn)</span>
                             </div>
                         </div>
@@ -282,37 +290,73 @@
                 </div>
             </div>
 
-            <!-- TAB 2: TẠO KHUNG DANH SÁCH & DÁN TRỰC TIẾP (CHỈ ADMIN MỚI TRUY CẬP ĐƯỢC) -->
-            <div id="tab-manual-creator" class="hidden space-y-4 flex-1 flex flex-col">
+            <!-- TAB 2: TẠO & QUẢN LÝ BỘ ĐỀ (CHỈ ADMIN MỚI THẤY) -->
+            <div id="tab-manual-creator" class="hidden space-y-6 flex-1 flex flex-col">
                 <div class="border-b pb-3 flex justify-between items-center">
                     <div>
-                        <h2 class="text-lg font-bold text-slate-950">Dán Ảnh Trực Tiếp Cho Từng Câu Hỏi</h2>
-                        <p class="text-xs text-slate-500">Nhập số lượng câu, sau đó click vào ô mỗi câu rồi nhấn <b>Ctrl + V</b> để dán ảnh từ clipboard!</p>
+                        <h2 class="text-lg font-bold text-slate-950">Quản Lý & Tạo Đề Kiểm Tra</h2>
+                        <p class="text-xs text-slate-500">Tạo nhiều bộ đề, thêm câu hỏi bằng cách dán ảnh (Ctrl + V) và kích hoạt bộ đề cho học viên làm.</p>
                     </div>
                     <button onclick="switchTab('dashboard')" class="bg-rose-600 hover:bg-rose-700 text-white px-4 py-2 rounded-xl text-xs font-medium transition flex items-center gap-2 shadow-md shrink-0">
-                        <i class="fa-solid fa-arrow-left"></i> Xong, về trang chủ
+                        <i class="fa-solid fa-arrow-left"></i> Về trang chủ
                     </button>
                 </div>
 
-                <div class="bg-slate-50 border border-slate-200 p-4 rounded-xl flex flex-col sm:flex-row items-center gap-3">
-                    <div class="flex-1 w-full">
-                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Nhập tổng số câu của đề thi:</label>
-                        <input type="number" id="input-total-questions" value="10" min="1" max="200" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-sm font-bold text-slate-800 focus:border-rose-600 focus:outline-none">
+                <!-- FORM TẠO BỘ ĐỀ MỚI -->
+                <div class="bg-slate-50 border border-slate-200 p-5 rounded-xl space-y-4">
+                    <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2">
+                        <i class="fa-solid fa-plus-circle text-rose-600"></i> Tạo bộ đề mới
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Tên bài tập / Bộ đề:</label>
+                            <input type="text" id="new-exam-title" placeholder="VD: Đề số 1 - Giới hạn hàm số" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs font-semibold text-slate-800 focus:border-rose-600 focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Chủ đề:</label>
+                            <input type="text" id="new-exam-topic" value="Toán Cao Cấp - Ôn Thi VB2 CAND" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs font-semibold text-slate-800 focus:border-rose-600 focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Thời gian (phút, 0 = không giới hạn):</label>
+                            <input type="number" id="new-exam-time" value="0" min="0" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs font-semibold text-slate-800 focus:border-rose-600 focus:outline-none">
+                        </div>
                     </div>
-                    <div class="w-full sm:w-auto pt-4">
+
+                    <div class="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2 border-t">
+                        <div class="w-full sm:w-1/3">
+                            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Tổng số câu hỏi:</label>
+                            <input type="number" id="input-total-questions" value="10" min="1" max="200" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs font-bold text-slate-800 focus:border-rose-600 focus:outline-none">
+                        </div>
                         <button onclick="generateQuestionSlots()" class="w-full sm:w-auto bg-slate-900 hover:bg-slate-800 text-white font-semibold px-6 py-2.5 rounded-lg transition shadow text-xs">
-                            <i class="fa-solid fa-wand-magic-sparkles mr-1.5"></i> Tạo danh sách các câu
+                            <i class="fa-solid fa-wand-magic-sparkles mr-1.5"></i> Tạo khung câu hỏi
                         </button>
                     </div>
                 </div>
 
+                <!-- DANH SÁCH CÁC BỘ ĐỀ ĐÃ TẠO -->
                 <div class="space-y-3">
+                    <h3 class="font-bold text-slate-900 text-sm flex justify-between items-center">
+                        <span>Danh sách các bộ đề đã tạo trong hệ thống</span>
+                    </h3>
+                    <div id="admin-exams-list" class="space-y-3 max-h-[300px] overflow-y-auto custom-scrollbar pr-2">
+                        <p class="italic text-slate-400 text-center py-6">Chưa có bộ đề nào được tạo.</p>
+                    </div>
+                </div>
+
+                <!-- KHUNG DẢN ẢNH CÂU HỎI CHO BỘ ĐỀ ĐANG TẠO -->
+                <div class="space-y-3 border-t pt-4">
                     <h3 class="font-bold text-slate-800 text-xs flex justify-between items-center">
-                        <span>Danh sách khung câu hỏi (<span id="manual-q-count">0</span> câu)</span>
+                        <span>Soạn câu hỏi cho bộ đề hiện tại (<span id="manual-q-count">0</span> câu)</span>
                         <span class="text-rose-600 font-semibold">💡 Mẹo: Click vào ô ảnh rồi bấm Ctrl + V để dán nhanh</span>
                     </h3>
-                    <div id="manual-question-list" class="space-y-3 max-h-[420px] overflow-y-auto custom-scrollbar pr-2">
-                        <p class="italic text-slate-400 text-center py-12">Chưa tạo khung. Hãy nhập tổng số câu ở phía trên và bấm "Tạo danh sách các câu".</p>
+                    <div id="manual-question-list" class="space-y-3 max-h-[380px] overflow-y-auto custom-scrollbar pr-2">
+                        <p class="italic text-slate-400 text-center py-8">Chưa có khung câu hỏi. Hãy nhập thông tin và bấm "Tạo khung câu hỏi" ở trên.</p>
+                    </div>
+
+                    <div class="pt-3 flex justify-end">
+                        <button onclick="saveCurrentExam()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-6 py-3 rounded-xl text-xs transition shadow-lg cursor-pointer flex items-center gap-2">
+                            <i class="fa-solid fa-floppy-disk text-sm"></i> Lưu bộ đề này vào hệ thống
+                        </button>
                     </div>
                 </div>
             </div>
@@ -364,15 +408,13 @@
                 </div>
             </div>
 
-            <!-- TAB 4: RESULT SCORE REPORT (Giao diện trả kết quả chuẩn mẫu) -->
+            <!-- TAB 4: RESULT SCORE REPORT -->
             <div id="tab-result" class="hidden space-y-6 flex-1 flex flex-col">
                 
                 <div id="pdf-export-content" class="space-y-6 bg-white p-2">
                     
-                    <!-- Phần Tổng quan điểm số dạng chuẩn -->
                     <div class="bg-white border rounded-2xl p-6 shadow-sm flex flex-col md:flex-row items-center justify-between gap-6">
                         <div class="flex items-center gap-6">
-                            <!-- Vòng tròn điểm số -->
                             <div class="relative w-28 h-28 flex items-center justify-center rounded-full border-8 border-rose-600 bg-rose-50 shadow-inner shrink-0">
                                 <div class="text-center">
                                     <span id="res-score" class="text-2xl font-black text-slate-900">9,29</span>
@@ -396,7 +438,6 @@
                         </div>
                     </div>
 
-                    <!-- Bảng thay thế các ô khoanh đen: Lịch sử các lần làm -->
                     <div class="bg-slate-50 border border-slate-200 rounded-2xl p-5 space-y-3">
                         <div class="flex items-center justify-between border-b pb-2">
                             <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2">
@@ -409,7 +450,6 @@
                         </div>
                     </div>
 
-                    <!-- Tổng kết chi tiết -->
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div class="bg-slate-50 border p-4 rounded-xl space-y-2">
                             <div class="text-xs font-bold text-slate-400 uppercase">Tổng kết</div>
@@ -435,7 +475,6 @@
                         </div>
                     </div>
 
-                    <!-- XEM LẠI TỪNG CÂU VÀ BỘ LỌC TẤT CẢ / SAI / ĐÚNG -->
                     <div class="border-t pt-4 space-y-4">
                         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
                             <h3 class="font-bold text-slate-900 text-base">Xem lại từng câu</h3>
@@ -451,7 +490,6 @@
                     </div>
                 </div>
 
-                <!-- Nút Tải xuống / Xuất PDF toàn bộ bài thi -->
                 <div class="pt-4 border-t flex justify-end no-print">
                     <button onclick="exportToPDF()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-6 py-3 rounded-xl text-sm transition shadow-lg flex items-center gap-2 cursor-pointer">
                         <i class="fa-solid fa-file-pdf text-base"></i> Tải xuống / Xuất PDF toàn bộ bài thi
@@ -462,7 +500,7 @@
 
         </div>
 
-        <!-- Khung lịch sử các lần làm trước ở trang chủ (Ô chữ nhật xanh của bộ đề) -->
+        <!-- Ô lịch sử các lần làm trước ở trang chủ -->
         <div class="bg-white rounded-2xl shadow-xl p-6 md:p-8 space-y-4 no-print">
             <h3 class="font-bold text-slate-900 text-base">Lịch sử các lần làm trước</h3>
             <div id="history-container">
@@ -471,22 +509,26 @@
         </div>
     </main>
 
-    <!-- Script xử lý phân quyền & hệ thống -->
+    <!-- Script xử lý hệ thống nhiều bộ đề & phân quyền -->
     <script>
         let registeredUsers = JSON.parse(localStorage.getItem('amc_users')) || ['DUCMANH', 'manhute73'];
         let pendingUsers = JSON.parse(localStorage.getItem('amc_pending')) || [];
+        let allExams = JSON.parse(localStorage.getItem('amc_all_exams')) || [];
+        let currentActiveExamId = null;
         let currentUser = '';
 
-        // Tự động lưu bộ đề do Admin tạo vào localStorage chung để học viên vào làm
-        function saveAdminQuestionsToStorage() {
-            localStorage.setItem('amc_shared_questions', JSON.stringify(manualQuestions));
-        }
+        let isShuffleEnabled = true;
+        let manualQuestions = [];
+        let activeQuestions = [];
+        let userAnswers = {};
+        let examTimer = null;
+        let secondsElapsed = 0;
+        let countdownSeconds = 0;
+        let examHistory = [];
+        let currentFilter = 'all';
 
-        function loadAdminQuestionsFromStorage() {
-            let saved = localStorage.getItem('amc_shared_questions');
-            if (saved) {
-                manualQuestions = JSON.parse(saved);
-            }
+        function saveExamsToStorage() {
+            localStorage.setItem('amc_all_exams', JSON.stringify(allExams));
         }
 
         function setDynamicGreeting() {
@@ -568,20 +610,17 @@
                 const dashboardCreatorBtn = document.getElementById('dashboard-creator-btn');
 
                 if(isMasterAdmin) {
-                    // HIỂN THỊ QUYỀN ADMIN (Nút dán ảnh, quản lý admin)
                     adminBtn.classList.remove('hidden');
                     creatorNavBtn.classList.remove('hidden');
                     dashboardCreatorBtn.classList.remove('hidden');
                 } else {
-                    // ẨN HOÀN TOÀN CÁC NÚT TẠO ĐỀ VỚI USER THƯỜNG
                     adminBtn.classList.add('hidden');
                     creatorNavBtn.classList.add('hidden');
                     dashboardCreatorBtn.classList.add('hidden');
                 }
 
-                loadAdminQuestionsFromStorage();
-                switchTab('dashboard');
                 updateDashboardInfo();
+                switchTab('dashboard');
             } else {
                 let isPending = pendingUsers.some(u => u.username === user);
                 if(isPending) {
@@ -654,16 +693,6 @@
             document.getElementById('auth-screen').classList.remove('hidden');
         }
 
-        let isShuffleEnabled = true;
-        let manualQuestions = [];
-        let activeQuestions = [];
-        let userAnswers = {};
-        let examTimer = null;
-        let secondsElapsed = 0;
-        let countdownSeconds = 0;
-        let examHistory = [];
-        let currentFilter = 'all';
-
         function toggleShuffle() {
             isShuffleEnabled = !isShuffleEnabled;
             const badge = document.getElementById('shuffle-badge');
@@ -686,53 +715,75 @@
                 document.getElementById('tab-dashboard').classList.remove('hidden');
                 updateDashboardInfo();
             }
-            if(tabId === 'manual-creator') document.getElementById('tab-manual-creator').classList.remove('hidden');
+            if(tabId === 'manual-creator') {
+                document.getElementById('tab-manual-creator').classList.remove('hidden');
+                renderAdminExamsList();
+            }
             if(tabId === 'quiz') document.getElementById('tab-quiz').classList.remove('hidden');
             if(tabId === 'result') document.getElementById('tab-result').classList.remove('hidden');
         }
 
         function updateDashboardInfo() {
-            loadAdminQuestionsFromStorage();
-            let filledCount = manualQuestions.filter(q => q && q.imgUrl).length;
-            document.getElementById('display-exam-count').innerText = `${filledCount}/${manualQuestions.length} câu trắc nghiệm`;
+            let isMasterAdmin = (currentUser.toUpperCase() === 'DUCMANH' || currentUser === 'manhute73');
+            const selector = document.getElementById('exam-selector');
+            
+            let availableExams = isMasterAdmin ? allExams : allExams.filter(e => e.isActive);
+
+            if (availableExams.length === 0) {
+                selector.innerHTML = `<option value="">-- Chưa có bộ đề nào được kích hoạt --</option>`;
+                document.getElementById('display-exam-count').innerText = `0 câu trắc nghiệm`;
+                document.getElementById('input-exam-title').value = "Chưa chọn bộ đề";
+                document.getElementById('input-exam-topic').value = "";
+                document.getElementById('input-exam-time').value = 0;
+                currentActiveExamId = null;
+            } else {
+                selector.innerHTML = availableExams.map(e => `
+                    <option value="${e.id}" ${currentActiveExamId === e.id ? 'selected' : ''}>
+                        ${e.title} (${e.questions.length} câu) ${e.isActive ? ' - [Đang kích hoạt]' : ''}
+                    </option>
+                `).join('');
+
+                if (!currentActiveExamId || !availableExams.some(e => e.id === currentActiveExamId)) {
+                    currentActiveExamId = availableExams[0].id;
+                    selector.value = currentActiveExamId;
+                }
+
+                loadSelectedExamToDashboard(currentActiveExamId);
+            }
             updateHistoryUI();
         }
 
-        function updateHistoryUI() {
-            const container = document.getElementById('history-container');
-            if (examHistory.length === 0) {
-                container.innerHTML = `<p class="text-sm text-slate-400 italic">Chưa làm lần nào (Chưa có lịch sử làm bài)</p>`;
-            } else {
-                container.innerHTML = examHistory.map((item, idx) => `
-                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center py-3 border-b border-slate-100 gap-2">
-                        <span class="text-rose-600 font-medium text-sm">Lần ${examHistory.length - idx}: ${item.timeStr}</span>
-                        <div class="text-sm font-semibold text-slate-800">
-                            <span class="text-rose-600 font-bold">${item.score}/10 điểm</span> <span class="text-slate-500 font-normal">(${item.correct}/${item.total} câu đúng • ${item.durationStr})</span>
-                        </div>
-                    </div>
-                `).join('');
-            }
+        function selectExamFromDropdown(examId) {
+            if(!examId) return;
+            currentActiveExamId = examId;
+            loadSelectedExamToDashboard(examId);
         }
 
+        function loadSelectedExamToDashboard(examId) {
+            let exam = allExams.find(e => e.id == examId);
+            if(!exam) return;
+
+            document.getElementById('input-exam-title').value = exam.title;
+            document.getElementById('input-exam-topic').value = exam.topic;
+            document.getElementById('input-exam-time').value = exam.timeLimit;
+            let filledCount = exam.questions.filter(q => q && q.imgUrl).length;
+            document.getElementById('display-exam-count').innerText = `${filledCount}/${exam.questions.length} câu trắc nghiệm`;
+        }
+
+        // --- QUẢN LÝ TẠO BỘ ĐỀ CỦA ADMIN ---
         function generateQuestionSlots() {
             let totalQ = parseInt(document.getElementById('input-total-questions').value) || 10;
-            let oldQuestions = [...manualQuestions];
             manualQuestions = [];
 
             for (let i = 0; i < totalQ; i++) {
-                if (oldQuestions[i]) {
-                    manualQuestions.push(oldQuestions[i]);
-                } else {
-                    manualQuestions.push({
-                        id: i + 1,
-                        imgUrl: "",
-                        options: ["A", "B", "C", "D"],
-                        correct: 0
-                    });
-                }
+                manualQuestions.push({
+                    id: i + 1,
+                    imgUrl: "",
+                    options: ["A", "B", "C", "D"],
+                    correct: 0
+                });
             }
 
-            saveAdminQuestionsToStorage();
             updateManualListUI();
         }
 
@@ -764,7 +815,6 @@
                             }
                             ctx.putImageData(imgData, 0, 0);
                             manualQuestions[index].imgUrl = canvas.toDataURL('image/png');
-                            saveAdminQuestionsToStorage();
                             updateManualListUI();
                         };
                         img.src = imgDataUrl;
@@ -803,7 +853,6 @@
                     }
                     ctx.putImageData(imgData, 0, 0);
                     manualQuestions[index].imgUrl = canvas.toDataURL('image/png');
-                    saveAdminQuestionsToStorage();
                     updateManualListUI();
                 };
                 img.src = imgDataUrl;
@@ -813,7 +862,6 @@
 
         function updateQuestionCorrect(index, value) {
             manualQuestions[index].correct = parseInt(value);
-            saveAdminQuestionsToStorage();
         }
 
         function updateManualListUI() {
@@ -822,7 +870,7 @@
             const listEl = document.getElementById('manual-question-list');
 
             if (manualQuestions.length === 0) {
-                listEl.innerHTML = `<p class="italic text-slate-400 text-center py-12">Chưa có khung câu hỏi nào.</p>`;
+                listEl.innerHTML = `<p class="italic text-slate-400 text-center py-8">Chưa có khung câu hỏi nào.</p>`;
                 return;
             }
 
@@ -858,14 +906,98 @@
                     </div>
                 </div>
             `).join('');
-            updateDashboardInfo();
         }
 
-        function startExam() {
-            loadAdminQuestionsFromStorage();
+        function saveCurrentExam() {
+            let title = document.getElementById('new-exam-title').value.trim();
+            let topic = document.getElementById('new-exam-topic').value.trim();
+            let timeLimit = parseInt(document.getElementById('new-exam-time').value) || 0;
+
+            if(!title) {
+                alert("Vui lòng nhập tên bài tập / bộ đề!");
+                return;
+            }
+
             let validQuestions = manualQuestions.filter(q => q && q.imgUrl);
-            if (validQuestions.length === 0) {
-                alert("Đề thi chưa có câu hỏi nào! Vui lòng chờ Admin cập nhật bộ đề.");
+            if(validQuestions.length === 0) {
+                alert("Vui lòng dán ảnh cho ít nhất 1 câu hỏi!");
+                return;
+            }
+
+            let newExam = {
+                id: 'exam_' + Date.now(),
+                title: title,
+                topic: topic,
+                timeLimit: timeLimit,
+                questions: manualQuestions,
+                isActive: false // Mặc định chưa kích hoạt
+            };
+
+            allExams.push(newExam);
+            saveExamsToStorage();
+            alert(`Đã lưu bộ đề "${title}" thành công! Hãy vào danh sách phía dưới để kích hoạt cho học viên làm.`);
+            renderAdminExamsList();
+        }
+
+        function renderAdminExamsList() {
+            const listEl = document.getElementById('admin-exams-list');
+            if (allExams.length === 0) {
+                listEl.innerHTML = `<p class="italic text-slate-400 text-center py-6">Chưa có bộ đề nào được tạo.</p>`;
+                return;
+            }
+
+            listEl.innerHTML = allExams.map((e, idx) => `
+                <div class="bg-white border p-4 rounded-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-sm">
+                    <div>
+                        <div class="font-bold text-slate-900 text-sm">${e.title}</div>
+                        <div class="text-xs text-slate-500">Chủ đề: ${e.topic} • ${e.questions.length} câu • Thời gian: ${e.timeLimit} phút</div>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button onclick="toggleExamActive('${e.id}')" class="${e.isActive ? 'bg-amber-600 hover:bg-amber-700' : 'bg-emerald-600 hover:bg-emerald-700'} text-white text-xs font-bold px-3 py-2 rounded-lg transition cursor-pointer">
+                            ${e.isActive ? 'Đang kích hoạt (Bấm tắt)' : 'Kích hoạt bộ đề'}
+                        </button>
+                        <button onclick="deleteExam('${e.id}')" class="bg-slate-200 hover:bg-rose-600 hover:text-white text-slate-700 text-xs font-bold px-3 py-2 rounded-lg transition cursor-pointer">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function toggleExamActive(examId) {
+            allExams = allExams.map(e => {
+                if(e.id === examId) {
+                    e.isActive = !e.isActive;
+                }
+                return e;
+            });
+            saveExamsToStorage();
+            renderAdminExamsList();
+        }
+
+        function deleteExam(examId) {
+            if(!confirm("Bạn có chắc chắn muốn xóa bộ đề này không?")) return;
+            allExams = allExams.filter(e => e.id !== examId);
+            saveExamsToStorage();
+            renderAdminExamsList();
+        }
+
+        // --- BẮT ĐẦU LÀM BÀI ---
+        function startExam() {
+            if(!currentActiveExamId) {
+                alert("Vui lòng chọn bộ đề kiểm tra!");
+                return;
+            }
+
+            let exam = allExams.find(e => e.id === currentActiveExamId);
+            if(!exam || exam.questions.length === 0) {
+                alert("Bộ đề hiện tại chưa có câu hỏi nào!");
+                return;
+            }
+
+            let validQuestions = exam.questions.filter(q => q && q.imgUrl);
+            if(validQuestions.length === 0) {
+                alert("Bộ đề này chưa có ảnh câu hỏi hợp lệ!");
                 return;
             }
 
@@ -877,8 +1009,7 @@
 
             userAnswers = {};
             secondsElapsed = 0;
-            let limitMinutes = parseInt(document.getElementById('input-exam-time').value) || 0;
-            countdownSeconds = limitMinutes * 60;
+            countdownSeconds = exam.timeLimit * 60;
 
             if(examTimer) clearInterval(examTimer);
             examTimer = setInterval(() => {
@@ -901,10 +1032,8 @@
                 }
             }, 1000);
 
-            let examTitle = document.getElementById('input-exam-title').value;
-            let examTopic = document.getElementById('input-exam-topic').value;
-            document.getElementById('quiz-active-title').innerText = examTitle;
-            document.getElementById('quiz-active-subtitle').innerText = examTopic;
+            document.getElementById('quiz-active-title').innerText = exam.title;
+            document.getElementById('quiz-active-subtitle').innerText = exam.topic;
 
             const container = document.getElementById('quiz-questions-container');
             container.innerHTML = activeQuestions.map((q, qIdx) => `
@@ -912,7 +1041,7 @@
                     <div class="flex items-center justify-between pb-2 border-b border-slate-100">
                         <span class="font-bold text-slate-900 text-xs bg-slate-100 px-2.5 py-1 rounded-md">Câu ${qIdx + 1}</span>
                         <div class="flex items-center gap-3">
-                            <span class="text-xs font-semibold text-slate-500">${examTitle}</span>
+                            <span class="text-xs font-semibold text-slate-500">${exam.title}</span>
                         </div>
                     </div>
 
@@ -1128,7 +1257,6 @@
             document.getElementById('auth-screen').classList.remove('hidden');
             document.getElementById('main-header').classList.add('hidden');
             document.getElementById('app-container').classList.add('hidden');
-            loadAdminQuestionsFromStorage();
         };
     </script>
 </body>
