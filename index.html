@@ -12,7 +12,7 @@
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
     <script type="text/javascript">
        (function(){
-          emailjs.init("NB9xq1TAR60kJFMDs"); // Public Key của bạn[cite: 12]
+          emailjs.init("NB9xq1TAR60kJFMDs"); // Public Key của bạn
        })();
     </script>
     <style>
@@ -348,7 +348,7 @@
             }
         }
 
-        // Người dùng bấm gửi đăng ký -> Chỉ gửi 1 mail duy nhất về cho Admin (manhute73@gmail.com)
+        // 1. Khi người dùng bấm đăng ký -> Gửi 1 email thông báo về hòm thư Admin (manhute73@gmail.com)
         function handleRegister() {
             let fullname = document.getElementById('reg-fullname').value.trim();
             let username = document.getElementById('reg-username').value.trim();
@@ -374,26 +374,24 @@
             pendingUsers.push(newUser);
             localStorage.setItem('amc_pending', JSON.stringify(pendingUsers));
 
-            // Chỉ bắn 1 email thông báo duy nhất về hòm thư Admin
             let templateParams = {
                 to_email: "manhute73@gmail.com",
-                message_title: "YÊU CẦU CẤP QUYỀN TRUY CẬP WEB",
                 fullname: fullname,
                 username: username,
                 email: email,
-                notification_content: `Có người dùng mới gửi yêu cầu truy cập:\n- Họ tên: ${fullname}\n- Tên đăng nhập: ${username}\n- Email: ${email}\n\nHãy vào trang quản trị web để bấm Phê duyệt cho phép vào web.`
+                notification_content: `Có người dùng mới đăng ký:\n- Họ tên: ${fullname}\n- Username: ${username}\n- Email: ${email}`
             };
 
             emailjs.send('service_x7jmmhb', 'template_hc69xxo', templateParams)
                 .then(function(response) {
-                    alert(`Gửi yêu cầu đăng ký thành công! Vui lòng chờ Admin (manhute73@gmail.com) phê duyệt.`);
+                    alert(`Gửi yêu cầu thành công! Vui lòng chờ Admin (manhute73@gmail.com) phê duyệt.`);
                     toggleAuthForm('login');
                 }, function(error) {
                     alert("Lỗi khi gửi yêu cầu: " + JSON.stringify(error));
                 });
         }
 
-        // Đăng nhập đơn giản bằng Tên đăng nhập sau khi đã được Admin duyệt
+        // 2. Đăng nhập trực tiếp bằng tên đăng nhập sau khi được duyệt
         function handleLogin() {
             let user = document.getElementById('login-username').value.trim();
             
@@ -413,7 +411,7 @@
                 if(isPending) {
                     alert("Tài khoản của bạn đang chờ Admin (manhute73@gmail.com) phê duyệt.");
                 } else {
-                    alert("Tên đăng nhập không tồn tại hoặc chưa được Admin phê duyệt!");
+                    alert("Tên đăng nhập không tồn tại hoặc chưa được phê duyệt!");
                 }
             }
         }
@@ -441,13 +439,13 @@
                         <div class="text-slate-500">Email: ${u.email}</div>
                     </div>
                     <button onclick="approveUser(${idx})" class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-4 py-2 rounded-lg transition shrink-0">
-                        Phê duyệt cho vào web
+                        Phê duyệt & Gửi mail kích hoạt
                     </button>
                 </div>
             `).join('');
         }
 
-        // Admin bấm Phê duyệt trực tiếp trên web -> Người dùng chỉ cần gõ Tên đăng nhập là vào làm bài
+        // 3. Admin bấm Phê duyệt -> Tự động gửi email kích hoạt tới người đăng ký
         function approveUser(idx) {
             let u = pendingUsers[idx];
             registeredUsers.push(u.username);
@@ -456,8 +454,20 @@
             localStorage.setItem('amc_users', JSON.stringify(registeredUsers));
             localStorage.setItem('amc_pending', JSON.stringify(pendingUsers));
 
-            alert(`Đã phê duyệt cho tài khoản "${u.username}" (${u.fullname}) vào web thành công! Người dùng giờ có thể đăng nhập bằng tên này.`);
-            renderAdminPendingList();
+            let templateParams = {
+                to_email: u.email,       // Gửi trực tiếp tới email của người đăng ký
+                fullname: u.fullname,
+                username: u.username
+            };
+
+            emailjs.send('service_x7jmmhb', 'template_hc69xxo', templateParams)
+                .then(function(response) {
+                    alert(`Đã phê duyệt tài khoản "${u.username}" và tự động gửi email kích hoạt đến ${u.email} thành công!`);
+                    renderAdminPendingList();
+                }, function(error) {
+                    alert("Đã cấp quyền trên web nhưng gửi email phản hồi lỗi: " + JSON.stringify(error));
+                    renderAdminPendingList();
+                });
         }
 
         function logout() {
