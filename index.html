@@ -89,10 +89,10 @@
                         <i class="fa-solid fa-circle-check text-sky-400"></i> Toán Cao Cấp & Nghị Luận Xã Hội
                     </div>
                     <div class="flex items-center gap-2">
-                        <i class="fa-solid fa-circle-check text-sky-400"></i> Quản lý bộ đề, lịch sử làm bài và đánh dấu câu hỏi ôn tập
+                        <i class="fa-solid fa-circle-check text-sky-400"></i> Tự động lưu bài khi thoát, đánh giá tiến độ (%) chuẩn xác
                     </div>
                     <div class="flex items-center gap-2">
-                        <i class="fa-solid fa-circle-check text-sky-400"></i> Hệ thống bảo mật & xét duyệt tài khoản tự động
+                        <i class="fa-solid fa-circle-check text-sky-400"></i> Hệ thống xét duyệt tài khoản bảo mật
                     </div>
                 </div>
             </div>
@@ -240,7 +240,7 @@
                     <span class="text-[10px] text-sky-600 font-bold bg-sky-50 px-2 py-0.5 rounded-full mt-1">VB2 CAND 2027</span>
                 </div>
 
-                <!-- Menu Items Chuẩn (Đã bỏ đổi mật khẩu, đổi toàn bộ accent sang xanh nước biển) -->
+                <!-- Menu Items -->
                 <nav class="space-y-1 text-sm font-medium">
                     <button onclick="switchTab('dashboard')" id="menu-dashboard" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-600 hover:bg-slate-50 transition">
                         <i class="fa-solid fa-house w-5 text-center"></i> <span class="menu-text">Tổng quan</span>
@@ -254,7 +254,7 @@
                     <button onclick="switchTab('history')" id="menu-history" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-600 hover:bg-slate-50 transition">
                         <i class="fa-solid fa-clock-rotate-left w-5 text-center"></i> <span class="menu-text">Lịch sử</span>
                     </button>
-                    <button onclick="alert('Tính năng Tiến độ đang được cập nhật!')" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-600 hover:bg-slate-50 transition">
+                    <button onclick="switchTab('progress')" id="menu-progress" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-600 hover:bg-slate-50 transition">
                         <i class="fa-solid fa-chart-line w-5 text-center"></i> <span class="menu-text">Tiến độ</span>
                     </button>
                     <button onclick="switchTab('history')" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-600 hover:bg-slate-50 transition">
@@ -312,21 +312,21 @@
                         <div class="bg-slate-50 border border-slate-100 p-4 rounded-xl flex items-start gap-3">
                             <div class="text-slate-400 mt-0.5"><i class="fa-solid fa-list-check text-lg"></i></div>
                             <div class="flex-1">
-                                <div class="text-xs font-bold text-slate-400 uppercase tracking-wider">Số câu</div>
+                                <div class="text-xs font-bold text-slate-400 uppercase tracking-wider">Số câu & Tiến độ đề</div>
                                 <div class="flex items-center gap-2 mt-1">
                                     <span id="display-exam-count" class="font-semibold text-slate-800 text-sm">0 câu trắc nghiệm</span>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- PHẦN THỜI GIAN: ADMIN TẠO, NGƯỜI DÙNG KHÔNG CHỈNH SỬA -->
+                        <!-- PHẦN THỜI GIAN CỐ ĐỊNH + KHOẢNG THỜI GIAN LÀM BÀI -->
                         <div class="bg-slate-50 border border-slate-100 p-4 rounded-xl flex items-start gap-3">
                             <div class="text-sky-500 mt-0.5"><i class="fa-solid fa-clock text-lg"></i></div>
                             <div class="flex-1">
-                                <div class="text-xs font-bold text-slate-400 uppercase tracking-wider">Thời gian (phút)</div>
+                                <div class="text-xs font-bold text-slate-400 uppercase tracking-wider">Thời gian làm bài</div>
                                 <div class="flex items-center gap-2 mt-1">
-                                    <input type="number" id="input-exam-time" value="0" class="w-20 bg-slate-100 border border-slate-200 rounded-lg px-2 py-1 font-semibold text-slate-700 text-sm cursor-not-allowed" readonly disabled>
-                                    <span class="text-xs font-medium text-slate-500">(Cố định theo đề Admin)</span>
+                                    <input type="text" id="input-exam-time" value="0 phút" class="w-32 bg-slate-100 border border-slate-200 rounded-lg px-2 py-1 font-semibold text-slate-700 text-sm cursor-not-allowed" readonly disabled>
+                                    <span id="exam-window-display" class="text-[11px] font-medium text-slate-500">Khung giờ: Không giới hạn</span>
                                 </div>
                             </div>
                         </div>
@@ -351,23 +351,10 @@
                         </div>
                     </div>
 
-                    <div class="bg-slate-50 border border-slate-100 p-4 rounded-xl flex items-start gap-3">
-                        <div class="text-sky-500 mt-0.5"><i class="fa-solid fa-circle-question text-lg"></i></div>
-                        <div>
-                            <div class="text-xs font-bold text-slate-400 uppercase tracking-wider">Đáp án và giải thích</div>
-                            <div class="font-semibold text-slate-800 text-sm mt-0.5">Bấm nộp bài để xem kết quả đúng/sai từng câu chi tiết.</div>
-                        </div>
-                    </div>
-
-                    <div class="flex items-center gap-2 text-xs text-slate-500 mt-2">
-                        <span class="font-bold">Chủ đề môn học:</span>
-                        <input type="text" id="input-exam-topic" value="TOÁN CAO CẤP" class="flex-1 bg-slate-50 border border-slate-200 text-slate-700 px-3 py-1.5 rounded-lg font-medium focus:outline-none" readonly>
-                    </div>
-
                     <div class="bg-sky-50 border border-sky-200 text-sky-900 p-4 rounded-xl flex items-start gap-3 text-sm">
                         <i class="fa-solid fa-circle-info text-sky-600 mt-0.5"></i>
                         <div>
-                            Đồng hồ bắt đầu chạy ngay khi bạn bấm bắt đầu. Hết giờ hệ thống sẽ tự động nộp bài.
+                            Hệ thống sẽ **tự động lưu lại đáp án** khi bạn đang làm. Nếu lỡ thoát app ra ngoài hoặc tải lại trang, bạn vẫn tiếp tục làm bình thường mà không bị mất đáp án!
                         </div>
                     </div>
 
@@ -378,7 +365,35 @@
                     </div>
                 </div>
 
-                <!-- TAB 2: LỊCH SỬ LÀM BÀI & THÀNH TÍCH (CÓ NÚT XÓA LỊCH SỬ) -->
+                <!-- TAB: TIẾN ĐỘ HOÀN THÀNH -->
+                <div id="tab-progress" class="hidden space-y-6 flex-1 flex flex-col">
+                    <div class="border-b pb-3 flex justify-between items-center">
+                        <div>
+                            <h2 class="text-xl font-bold text-slate-900">Tiến Độ Ôn Tập & Hoàn Thành Đề</h2>
+                            <p class="text-xs text-slate-500 mt-0.5">Thống kê phần trăm tiến độ đã hoàn thành dựa trên tổng số câu hỏi tích lũy.</p>
+                        </div>
+                        <button onclick="switchTab('dashboard')" class="bg-sky-600 hover:bg-sky-700 text-white px-4 py-2 rounded-xl text-xs font-medium transition shadow-md">
+                            <i class="fa-solid fa-house mr-1"></i> Trang chủ
+                        </button>
+                    </div>
+
+                    <div class="bg-gradient-to-r from-sky-600 to-blue-700 text-white p-6 rounded-2xl shadow-md space-y-3">
+                        <div class="flex justify-between items-center">
+                            <span class="text-xs uppercase tracking-wider font-semibold opacity-90">Tổng tiến độ hoàn thành bộ đề</span>
+                            <span id="overall-progress-pct" class="text-2xl font-black">0%</span>
+                        </div>
+                        <div class="w-full bg-black/20 h-3 rounded-full overflow-hidden">
+                            <div id="overall-progress-bar" class="bg-emerald-400 h-full transition-all duration-500" style="width: 0%"></div>
+                        </div>
+                        <div id="overall-progress-detail" class="text-xs opacity-90">Đã hoàn thành 0/0 câu hỏi trong hệ thống.</div>
+                    </div>
+
+                    <div id="progress-exams-container" class="space-y-3">
+                        <p class="text-xs text-slate-400 italic text-center py-12">Chưa có bộ đề nào để thống kê tiến độ.</p>
+                    </div>
+                </div>
+
+                <!-- TAB 2: LỊCH SỬ LÀM BÀI & THÀNH TÍCH -->
                 <div id="tab-history" class="hidden space-y-6 flex-1 flex flex-col">
                     <div class="border-b pb-3 flex justify-between items-center">
                         <div>
@@ -441,12 +456,12 @@
                     </div>
                 </div>
 
-                <!-- TAB 3: QUẢN LÝ BỘ ĐỀ (CHỈ ADMIN) -->
+                <!-- TAB 3: QUẢN LÝ BỘ ĐỀ (CHỈ ADMIN - CÓ SET THỜI GIAN BẮT ĐẦU VÀ KẾT THÚC) -->
                 <div id="tab-manual-creator" class="hidden space-y-6 flex-1 flex flex-col">
                     <div class="border-b pb-3 flex justify-between items-center">
                         <div>
                             <h2 id="creator-main-title" class="text-lg font-bold text-slate-950">Quản Lý & Tạo Đề Kiểm Tra</h2>
-                            <p class="text-xs text-slate-500">Tạo mới, chỉnh sửa bộ đề và kích hoạt cho học viên làm.</p>
+                            <p class="text-xs text-slate-500">Tạo mới, chỉnh sửa bộ đề, set thời gian bắt đầu/kết thúc và kích hoạt đề.</p>
                         </div>
                         <button onclick="switchTab('dashboard')" class="bg-sky-600 hover:bg-sky-700 text-white px-4 py-2 rounded-xl text-xs font-medium transition flex items-center gap-2 shadow-md shrink-0">
                             <i class="fa-solid fa-arrow-left"></i> Về trang chủ
@@ -457,30 +472,42 @@
                         <h3 id="form-mode-title" class="font-bold text-slate-900 text-sm flex items-center gap-2">
                             <i class="fa-solid fa-plus-circle text-sky-600"></i> Tạo bộ đề mới
                         </h3>
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
                             <div>
-                                <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Tên bài tập / Bộ đề:</label>
-                                <input type="text" id="new-exam-title" placeholder="VD: Đề số 1 - Giới hạn hàm số" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs font-semibold text-slate-800 focus:border-sky-600 focus:outline-none">
+                                <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Tên bộ đề:</label>
+                                <input type="text" id="new-exam-title" placeholder="VD: Đề số 1 - Giới hạn" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs font-semibold text-slate-800 focus:border-sky-600 focus:outline-none">
                             </div>
                             <div>
-                                <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Chọn Môn học:</label>
+                                <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Môn học:</label>
                                 <select id="new-exam-topic" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs font-bold text-slate-800 focus:border-sky-600 focus:outline-none">
                                     <option value="TOÁN CAO CẤP">TOÁN CAO CẤP</option>
                                     <option value="NGHỊ LUẬN XÃ HỘI">NGHỊ LUẬN XÃ HỘI</option>
                                 </select>
                             </div>
                             <div>
-                                <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Thời gian (phút, 0 = không giới hạn):</label>
-                                <input type="number" id="new-exam-time" value="0" min="0" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs font-semibold text-slate-800 focus:border-sky-600 focus:outline-none">
+                                <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Thời gian làm (phút):</label>
+                                <input type="number" id="new-exam-time" value="30" min="1" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs font-semibold text-slate-800 focus:border-sky-600 focus:outline-none">
                             </div>
-                        </div>
-
-                        <div class="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2 border-t">
-                            <div class="w-full sm:w-1/3">
+                            <div>
                                 <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Tổng số câu hỏi:</label>
                                 <input type="number" id="input-total-questions" value="10" min="1" max="200" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs font-bold text-slate-800 focus:border-sky-600 focus:outline-none">
                             </div>
-                            <button onclick="generateQuestionSlots()" class="w-full sm:w-auto bg-slate-900 hover:bg-slate-800 text-white font-semibold px-6 py-2.5 rounded-lg transition shadow text-xs">
+                        </div>
+
+                        <!-- SET THỜI GIAN BẮT ĐẦU VÀ KẾT THÚC -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 pt-2 border-t">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-500 uppercase mb-1"><i class="fa-solid fa-hourglass-start text-sky-600"></i> Thời gian Bắt đầu làm đề:</label>
+                                <input type="datetime-local" id="new-exam-start" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs font-semibold text-slate-800 focus:border-sky-600 focus:outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-500 uppercase mb-1"><i class="fa-solid fa-hourglass-end text-rose-600"></i> Thời gian Kết thúc / Hạn chót:</label>
+                                <input type="datetime-local" id="new-exam-end" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs font-semibold text-slate-800 focus:border-sky-600 focus:outline-none">
+                            </div>
+                        </div>
+
+                        <div class="flex justify-end pt-2">
+                            <button onclick="generateQuestionSlots()" class="bg-slate-900 hover:bg-slate-800 text-white font-semibold px-6 py-2.5 rounded-lg transition shadow text-xs">
                                 <i class="fa-solid fa-wand-magic-sparkles mr-1.5"></i> Tạo khung câu hỏi
                             </button>
                         </div>
@@ -490,7 +517,7 @@
                         <h3 class="font-bold text-slate-900 text-sm flex justify-between items-center">
                             <span>Danh sách các bộ đề đã tạo trong hệ thống</span>
                         </h3>
-                        <div id="admin-exams-list" class="space-y-3 max-h-[300px] overflow-y-auto custom-scrollbar pr-2">
+                        <div id="admin-exams-list" class="space-y-3 max-h-[250px] overflow-y-auto custom-scrollbar pr-2">
                             <p class="italic text-slate-400 text-center py-6">Chưa có bộ đề nào được tạo.</p>
                         </div>
                     </div>
@@ -500,7 +527,7 @@
                             <span>Soạn câu hỏi cho bộ đề hiện tại (<span id="manual-q-count">0</span> câu)</span>
                             <span class="text-sky-600 font-semibold">💡 Mẹo: Click vào ô ảnh rồi bấm Ctrl + V để dán nhanh</span>
                         </h3>
-                        <div id="manual-question-list" class="space-y-3 max-h-[380px] overflow-y-auto custom-scrollbar pr-2">
+                        <div id="manual-question-list" class="space-y-3 max-h-[350px] overflow-y-auto custom-scrollbar pr-2">
                             <p class="italic text-slate-400 text-center py-8">Chưa có khung câu hỏi. Hãy nhập thông tin và bấm "Tạo khung câu hỏi" ở trên.</p>
                         </div>
 
@@ -546,9 +573,16 @@
                     </div>
                 </div>
 
-                <!-- TAB 5: KẾT QUẢ & ĐÁNH GIÁ -->
+                <!-- TAB 5: KẾT QUẢ & ĐÁNH GIÁ (CÓ THÔNG BÁO TRỄ / ĐỘNG VIÊN SỚM) -->
                 <div id="tab-result" class="hidden space-y-6 flex-1 flex flex-col">
                     <div id="pdf-export-content" class="space-y-6 bg-white p-2">
+                        
+                        <!-- BANNER THÔNG BÁO TRỄ HOẶC ĐỘNG VIÊN SỚM -->
+                        <div id="result-status-banner" class="p-4 rounded-xl border text-sm font-semibold flex items-center gap-3">
+                            <i id="banner-icon" class="fa-solid fa-circle-check text-lg"></i>
+                            <div id="banner-text">Đã hoàn thành bài thi!</div>
+                        </div>
+
                         <div class="bg-white border rounded-2xl p-6 shadow-sm flex flex-col md:flex-row items-center justify-between gap-6">
                             <div class="flex items-center gap-6">
                                 <div class="relative w-28 h-28 flex items-center justify-center rounded-full border-8 border-sky-600 bg-sky-50 shadow-inner shrink-0">
@@ -641,6 +675,7 @@
         let allExams = JSON.parse(localStorage.getItem('amc_all_exams')) || [];
         let globalHistory = JSON.parse(localStorage.getItem('amc_global_history')) || {};
         let userBookmarks = JSON.parse(localStorage.getItem('amc_bookmarks')) || {};
+        let userSavedAnswers = JSON.parse(localStorage.getItem('amc_saved_answers')) || {};
         
         let currentActiveExamId = null;
         let editingExamId = null;
@@ -657,6 +692,7 @@
         let currentFilter = 'all';
         let currentExamTitle = "";
         let currentExamTopic = "TOÁN CAO CẤP";
+        let activeExamDeadline = null;
 
         function saveExamsToStorage() {
             localStorage.setItem('amc_all_exams', JSON.stringify(allExams));
@@ -668,6 +704,13 @@
 
         function saveBookmarksToStorage() {
             localStorage.setItem('amc_bookmarks', JSON.stringify(userBookmarks));
+        }
+
+        function saveAutoAnswers() {
+            if(!currentUser || !currentActiveExamId) return;
+            if(!userSavedAnswers[currentUser]) userSavedAnswers[currentUser] = {};
+            userSavedAnswers[currentUser][currentActiveExamId] = userAnswers;
+            localStorage.setItem('amc_saved_answers', JSON.stringify(userSavedAnswers));
         }
 
         function setDynamicGreeting() {
@@ -896,12 +939,14 @@
             document.getElementById('tab-manual-creator').classList.add('hidden');
             document.getElementById('tab-quiz').classList.add('hidden');
             document.getElementById('tab-result').classList.add('hidden');
+            document.getElementById('tab-progress').classList.add('hidden');
 
             document.getElementById('menu-dashboard').className = "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-600 hover:bg-slate-50 transition";
             document.getElementById('menu-subject').className = "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-600 hover:bg-slate-50 transition";
             document.getElementById('menu-bode').className = "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-600 hover:bg-slate-50 transition";
             document.getElementById('menu-history').className = "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-600 hover:bg-slate-50 transition";
             document.getElementById('menu-bookmarks').className = "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-600 hover:bg-slate-50 transition";
+            document.getElementById('menu-progress').className = "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-600 hover:bg-slate-50 transition";
 
             if(tabId === 'dashboard') {
                 document.getElementById('tab-dashboard').classList.remove('hidden');
@@ -918,6 +963,11 @@
                 document.getElementById('menu-bookmarks').className = "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sky-600 bg-sky-50 font-semibold transition";
                 renderBookmarksUI();
             }
+            if(tabId === 'progress') {
+                document.getElementById('tab-progress').classList.remove('hidden');
+                document.getElementById('menu-progress').className = "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sky-600 bg-sky-50 font-semibold transition";
+                renderProgressUI();
+            }
             if(tabId === 'manual-creator') {
                 document.getElementById('tab-manual-creator').classList.remove('hidden');
                 document.getElementById('menu-bode').className = "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sky-600 bg-sky-50 font-semibold transition";
@@ -930,7 +980,6 @@
         function updateDashboardInfo() {
             let isMasterAdmin = (currentUser.toUpperCase() === 'DUCMANH' || currentUser === 'manhute73');
             const selector = document.getElementById('exam-selector');
-            // Lọc bộ đề theo chủ đề đang chọn
             let availableExams = (isMasterAdmin ? allExams : allExams.filter(e => e.isActive)).filter(e => e.topic === currentExamTopic);
 
             if (availableExams.length === 0) {
@@ -938,7 +987,8 @@
                 document.getElementById('display-exam-count').innerText = `0 câu trắc nghiệm`;
                 document.getElementById('input-exam-title').value = "Chưa chọn bộ đề";
                 document.getElementById('input-exam-topic').value = currentExamTopic;
-                document.getElementById('input-exam-time').value = 0;
+                document.getElementById('input-exam-time').value = "0 phút";
+                document.getElementById('exam-window-display').innerText = "Khung giờ: Không giới hạn";
                 currentActiveExamId = null;
             } else {
                 selector.innerHTML = availableExams.map(e => `
@@ -968,12 +1018,66 @@
 
             currentExamTitle = exam.title;
             currentExamTopic = exam.topic;
+            activeExamDeadline = exam.endTime ? new Date(exam.endTime) : null;
+
             document.getElementById('input-exam-title').value = exam.title;
             document.getElementById('input-exam-topic').value = exam.topic;
             document.getElementById('exam-topic-display').innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-sky-600 inline-block"></span> ${exam.topic}`;
-            document.getElementById('input-exam-time').value = exam.timeLimit; // Thời gian cố định theo Admin
+            document.getElementById('input-exam-time').value = `${exam.timeLimit} phút`;
+            
+            let startStr = exam.startTime ? new Date(exam.startTime).toLocaleString('vi-VN') : 'Không giới hạn';
+            let endStr = exam.endTime ? new Date(exam.endTime).toLocaleString('vi-VN') : 'Không giới hạn';
+            document.getElementById('exam-window-display').innerText = `Từ: ${startStr} Đến: ${endStr}`;
+
             let filledCount = exam.questions.filter(q => q && q.imgUrl).length;
-            document.getElementById('display-exam-count').innerText = `${filledCount}/${exam.questions.length} câu trắc nghiệm`;
+            
+            // Tính toán tiến độ bài này (%)
+            let userHistory = globalHistory[currentUser] || [];
+            let passed = userHistory.some(h => h.examTitle === exam.title);
+            let pct = passed ? 100 : 0;
+            document.getElementById('display-exam-count').innerText = `${filledCount}/${exam.questions.length} câu trắc nghiệm (Tiến độ: ${pct}%)`;
+        }
+
+        // --- TÍNH TOÁN TIẾN ĐỘ (%) HOÀN THÀNH ---
+        function renderProgressUI() {
+            let userHistory = globalHistory[currentUser] || [];
+            let activeExams = allExams.filter(e => e.isActive);
+            let totalQuestionsAll = activeExams.reduce((sum, e) => sum + e.questions.filter(q => q && q.imgUrl).length, 0);
+            
+            let completedExamTitles = [...new Set(userHistory.map(h => h.examTitle))];
+            let completedQuestionsAll = activeExams.filter(e => completedExamTitles.includes(e.title)).reduce((sum, e) => sum + e.questions.filter(q => q && q.imgUrl).length, 0);
+
+            let overallPct = totalQuestionsAll > 0 ? Math.round((completedQuestionsAll / totalQuestionsAll) * 100) : 0;
+            document.getElementById('overall-progress-pct').innerText = overallPct + '%';
+            document.getElementById('overall-progress-bar').style.width = overallPct + '%';
+            document.getElementById('overall-progress-detail').innerText = `Đã hoàn thành ${completedQuestionsAll}/${totalQuestionsAll} câu hỏi trong toàn bộ hệ thống đề kích hoạt.`;
+
+            const container = document.getElementById('progress-exams-container');
+            if(activeExams.length === 0) {
+                container.innerHTML = `<p class="text-xs text-slate-400 italic text-center py-12">Chưa có bộ đề nào được kích hoạt trong hệ thống.</p>`;
+                return;
+            }
+
+            container.innerHTML = activeExams.map(e => {
+                let isDone = completedExamTitles.includes(e.title);
+                let qCount = e.questions.filter(q => q && q.imgUrl).length;
+                let pPct = isDone ? 100 : 0;
+                return `
+                    <div class="bg-white border border-slate-200 p-4 rounded-xl space-y-2 shadow-sm">
+                        <div class="flex justify-between items-center text-xs font-bold text-slate-900">
+                            <span>${e.title} (${e.topic}) - ${qCount} câu</span>
+                            <span class="${isDone ? 'text-emerald-600' : 'text-sky-600'}">${pPct}%</span>
+                        </div>
+                        <div class="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden">
+                            <div class="${isDone ? 'bg-emerald-500' : 'bg-sky-500'} h-full transition-all duration-300" style="width: ${pPct}%"></div>
+                        </div>
+                        <div class="text-[11px] text-slate-500 flex justify-between">
+                            <span>Trạng thái: ${isDone ? 'Đã hoàn thành' : 'Chưa hoàn thành'}</span>
+                            <span>Thời lượng: ${e.timeLimit} phút</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
         }
 
         // --- QUẢN LÝ TẠO & CHỈNH SỬA BỘ ĐỀ ---
@@ -1076,16 +1180,18 @@
         function saveCurrentExam() {
             let title = document.getElementById('new-exam-title').value.trim();
             let topic = document.getElementById('new-exam-topic').value;
-            let timeLimit = parseInt(document.getElementById('new-exam-time').value) || 0;
+            let timeLimit = parseInt(document.getElementById('new-exam-time').value) || 30;
+            let startTime = document.getElementById('new-exam-start').value;
+            let endTime = document.getElementById('new-exam-end').value;
 
-            if(!title) { alert("Vui lòng nhập tên bài tập / bộ đề!"); return; }
+            if(!title) { alert("Vui lòng nhập tên bộ đề!"); return; }
             let validQuestions = manualQuestions.filter(q => q && q.imgUrl);
             if(validQuestions.length === 0) { alert("Vui lòng dán ảnh cho ít nhất 1 câu hỏi!"); return; }
 
             if(editingExamId) {
                 allExams = allExams.map(e => {
                     if(e.id === editingExamId) {
-                        return { ...e, title, topic, timeLimit, questions: manualQuestions };
+                        return { ...e, title, topic, timeLimit, startTime, endTime, questions: manualQuestions };
                     }
                     return e;
                 });
@@ -1097,6 +1203,8 @@
                     title: title,
                     topic: topic,
                     timeLimit: timeLimit,
+                    startTime: startTime,
+                    endTime: endTime,
                     questions: manualQuestions,
                     isActive: false
                 });
@@ -1117,6 +1225,8 @@
             document.getElementById('new-exam-title').value = exam.title;
             document.getElementById('new-exam-topic').value = exam.topic;
             document.getElementById('new-exam-time').value = exam.timeLimit;
+            document.getElementById('new-exam-start').value = exam.startTime || "";
+            document.getElementById('new-exam-end').value = exam.endTime || "";
             document.getElementById('input-total-questions').value = exam.questions.length;
             manualQuestions = JSON.parse(JSON.stringify(exam.questions));
 
@@ -1133,7 +1243,9 @@
             editingExamId = null;
             document.getElementById('new-exam-title').value = "";
             document.getElementById('new-exam-topic').value = "TOÁN CAO CẤP";
-            document.getElementById('new-exam-time').value = 0;
+            document.getElementById('new-exam-time').value = 30;
+            document.getElementById('new-exam-start').value = "";
+            document.getElementById('new-exam-end').value = "";
             document.getElementById('input-total-questions').value = 10;
             manualQuestions = [];
 
@@ -1155,7 +1267,7 @@
                 <div class="bg-white border p-4 rounded-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-sm">
                     <div>
                         <div class="font-bold text-slate-900 text-sm">${e.title}</div>
-                        <div class="text-xs text-slate-500">Môn: ${e.topic} • ${e.questions.length} câu • Thời gian: ${e.timeLimit} phút</div>
+                        <div class="text-xs text-slate-500">Môn: ${e.topic} • ${e.questions.length} câu • ${e.timeLimit} phút • Hạn chót: ${e.endTime ? new Date(e.endTime).toLocaleString('vi-VN') : 'Không'}</div>
                     </div>
                     <div class="flex items-center gap-2">
                         <button onclick="editExam('${e.id}')" class="bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold px-3.5 py-2 rounded-lg transition cursor-pointer flex items-center gap-1">
@@ -1186,7 +1298,7 @@
             renderAdminExamsList();
         }
 
-        // --- LÀM BÀI THI ---
+        // --- LÀM BÀI THI & TỰ ĐỘNG KHÔI PHỤC KHI THOÁT APP ---
         function startExam() {
             if(!currentActiveExamId) { alert("Vui lòng chọn bộ đề kiểm tra!"); return; }
             let exam = allExams.find(e => e.id === currentActiveExamId);
@@ -1197,11 +1309,17 @@
 
             currentExamTitle = exam.title;
             currentExamTopic = exam.topic;
+            activeExamDeadline = exam.endTime ? new Date(exam.endTime) : null;
 
             activeQuestions = [...validQuestions];
             if (isShuffleEnabled) activeQuestions.sort(() => Math.random() - 0.5);
 
+            // Khôi phục đáp án đã lưu trước đó (nếu có)
             userAnswers = {};
+            if(userSavedAnswers[currentUser] && userSavedAnswers[currentUser][currentActiveExamId]) {
+                userAnswers = userSavedAnswers[currentUser][currentActiveExamId];
+            }
+
             secondsElapsed = 0;
             countdownSeconds = exam.timeLimit * 60;
 
@@ -1236,12 +1354,15 @@
                     </div>
                     <div class="question-frame-box"><img src="${q.imgUrl}" alt="Câu hỏi"></div>
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
-                        ${q.options.map((opt, optIdx) => `
-                            <label id="label_q_${qIdx}_${optIdx}" onclick="selectOption(${qIdx}, ${optIdx})" class="flex items-center justify-center gap-2 py-2 px-3 rounded-lg border border-slate-200 hover:border-sky-500 hover:bg-sky-50/20 cursor-pointer transition select-none">
-                                <input type="radio" name="q_${qIdx}" value="${optIdx}" class="w-3.5 h-3.5 text-sky-600 focus:ring-sky-500 hidden">
-                                <span id="badge_q_${qIdx}_${optIdx}" class="font-bold text-slate-700 text-xs w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center shrink-0 border border-slate-200">${String.fromCharCode(65 + optIdx)}</span>
-                            </label>
-                        `).join('')}
+                        ${q.options.map((opt, optIdx) => {
+                            let isSelected = userAnswers[qIdx] === optIdx;
+                            return `
+                                <label id="label_q_${qIdx}_${optIdx}" onclick="selectOption(${qIdx}, ${optIdx})" class="flex items-center justify-center gap-2 py-2 px-3 rounded-lg border ${isSelected ? 'border-sky-500 bg-sky-50/40 shadow-sm' : 'border-slate-200 hover:border-sky-500 hover:bg-sky-50/20'} cursor-pointer transition select-none">
+                                    <input type="radio" name="q_${qIdx}" value="${optIdx}" ${isSelected ? 'checked' : ''} class="w-3.5 h-3.5 text-sky-600 focus:ring-sky-500 hidden">
+                                    <span id="badge_q_${qIdx}_${optIdx}" class="font-bold ${isSelected ? 'text-white bg-sky-600' : 'text-slate-700 bg-slate-100 border border-slate-200'} text-xs w-6 h-6 rounded-full flex items-center justify-center shrink-0">${String.fromCharCode(65 + optIdx)}</span>
+                                </label>
+                            `;
+                        }).join('')}
                     </div>
                 </div>
             `).join('');
@@ -1265,6 +1386,7 @@
 
         function selectOption(qIdx, optIdx) {
             userAnswers[qIdx] = optIdx;
+            saveAutoAnswers(); // Tự động lưu đáp án ngay khi chọn để chống mất dữ liệu khi thoát app
             for (let i = 0; i < 4; i++) {
                 let lbl = document.getElementById(`label_q_${qIdx}_${i}`);
                 let badge = document.getElementById(`badge_q_${qIdx}_${i}`);
@@ -1290,6 +1412,13 @@
 
         function submitExam() {
             clearInterval(examTimer);
+
+            // Xóa đáp án đã lưu tạm sau khi nộp bài xong
+            if(userSavedAnswers[currentUser] && userSavedAnswers[currentUser][currentActiveExamId]) {
+                delete userSavedAnswers[currentUser][currentActiveExamId];
+                localStorage.setItem('amc_saved_answers', JSON.stringify(userSavedAnswers));
+            }
+
             let correctCount = 0, total = activeQuestions.length, wrongCount = 0;
             activeQuestions.forEach((q, idx) => {
                 if(userAnswers[idx] === q.correct) correctCount++; else wrongCount++;
@@ -1303,6 +1432,22 @@
             let durationStr = `${m} phút ${s} giây`;
             let now = new Date();
             let timeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')} ${now.getDate().toString().padStart(2, '0')}/${(now.getMonth()+1).toString().padStart(2, '0')}/${now.getFullYear()}`;
+
+            // Kiểm tra nộp trễ hay sớm
+            let isLate = activeExamDeadline && now > activeExamDeadline;
+            let bannerEl = document.getElementById('result-status-banner');
+            let bannerIcon = document.getElementById('banner-icon');
+            let bannerText = document.getElementById('banner-text');
+
+            if (isLate) {
+                bannerEl.className = "p-4 rounded-xl border border-rose-200 bg-rose-50 text-rose-800 text-sm font-semibold flex items-center gap-3";
+                bannerIcon.className = "fa-solid fa-triangle-exclamation text-rose-600 text-lg";
+                bannerText.innerHTML = `⚠️ <b>Thông báo:</b> Bạn đã hoàn thành bài thi sau thời hạn kết thúc (Nộp trễ).`;
+            } else {
+                bannerEl.className = "p-4 rounded-xl border border-emerald-200 bg-emerald-50 text-emerald-800 text-sm font-semibold flex items-center gap-3";
+                bannerIcon.className = "fa-solid fa-circle-check text-emerald-600 text-lg";
+                bannerText.innerHTML = `🌟 <b>Tuyệt vời!</b> Bạn đã nộp bài rất đúng giờ. Cố gắng phát huy phong độ này nhé, chúc bạn ôn thi đạt kết quả cao nhất!`;
+            }
 
             document.getElementById('res-score').innerText = scoreStr;
             document.getElementById('res-correct-count').innerText = correctCount;
@@ -1576,6 +1721,7 @@
             let total = item.total;
             let wrongCount = total - correctCount;
 
+            document.getElementById('result-status-banner').className = "hidden"; // Ẩn banner khi xem lại lịch sử
             document.getElementById('res-score').innerText = item.score;
             document.getElementById('res-correct-count').innerText = correctCount;
             document.getElementById('res-wrong-count').innerText = wrongCount;
