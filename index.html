@@ -65,7 +65,8 @@
         <div class="flex items-center space-x-4">
             <button onclick="switchTab('dashboard')" class="hover:text-white transition"><i class="fa-solid fa-house mr-1"></i> Trang chủ</button>
             <button onclick="switchTab('manual-creator')" class="hover:text-white transition text-rose-400 font-semibold"><i class="fa-solid fa-clipboard mr-1"></i> Dán Ảnh Cắt Thủ Công</button>
-            <button onclick="openAdminModal()" class="hover:text-amber-400 transition text-amber-300 font-medium"><i class="fa-solid fa-shield-halved mr-1"></i> Quản lý Admin</button>
+            <!-- Nút Quản lý Admin chỉ hiện lên khi tài khoản đăng nhập là DUCMANH -->
+            <button id="nav-admin-btn" onclick="openAdminModal()" class="hover:text-amber-400 transition text-amber-300 font-medium hidden"><i class="fa-solid fa-shield-halved mr-1"></i> Quản lý Admin</button>
             <button onclick="logout()" class="hover:text-rose-400 transition text-slate-400"><i class="fa-solid fa-right-from-bracket mr-1"></i> Đăng xuất</button>
         </div>
     </header>
@@ -324,7 +325,7 @@
 
     <!-- Script xử lý logic -->
     <script>
-        let registeredUsers = JSON.parse(localStorage.getItem('amc_users')) || ['admin', 'manhute73'];
+        let registeredUsers = JSON.parse(localStorage.getItem('amc_users')) || ['DUCMANH', 'manhute73'];
         let pendingUsers = JSON.parse(localStorage.getItem('amc_pending')) || [];
 
         function setDynamicGreeting() {
@@ -348,7 +349,6 @@
             }
         }
 
-        // 1. Khi người dùng bấm đăng ký -> Gửi 1 email thông báo về hòm thư Admin (manhute73@gmail.com)
         function handleRegister() {
             let fullname = document.getElementById('reg-fullname').value.trim();
             let username = document.getElementById('reg-username').value.trim();
@@ -384,14 +384,14 @@
 
             emailjs.send('service_x7jmmhb', 'template_hc69xxo', templateParams)
                 .then(function(response) {
-                    alert(`Gửi yêu cầu thành công! Vui lòng chờ Admin (manhute73@gmail.com) phê duyệt.`);
+                    alert(`Gửi yêu cầu thành công! Vui lòng chờ Admin phê duyệt.`);
                     toggleAuthForm('login');
                 }, function(error) {
                     alert("Lỗi khi gửi yêu cầu: " + JSON.stringify(error));
                 });
         }
 
-        // 2. Đăng nhập trực tiếp bằng tên đăng nhập sau khi được duyệt
+        // Đăng nhập: Kiểm tra nếu là "DUCMANH" thì cấp quyền Admin, người khác kiểm tra danh sách duyệt
         function handleLogin() {
             let user = document.getElementById('login-username').value.trim();
             
@@ -400,16 +400,28 @@
                 return;
             }
 
-            let found = registeredUsers.includes(user);
-            if(found) {
+            // Kiểm tra xem có phải DUCMANH (Admin mặc định) hoặc tài khoản đã được phê duyệt không
+            let isMasterAdmin = (user.toUpperCase() === 'DUCMANH' || user === 'manhute73');
+            let isApproved = registeredUsers.includes(user);
+
+            if(isMasterAdmin || isApproved) {
                 document.getElementById('auth-screen').classList.add('hidden');
                 document.getElementById('main-header').classList.remove('hidden');
-                document.getElementById('app-container').classList.remove('hidden');
+                document.getElementById('app-container').classList.add('hidden');
+                
+                // Hiển thị hoặc ẩn nút Quản lý Admin dựa vào tên đăng nhập
+                const adminBtn = document.getElementById('nav-admin-btn');
+                if(user.toUpperCase() === 'DUCMANH') {
+                    adminBtn.classList.remove('hidden'); // Chỉ hiện cho DUCMANH
+                } else {
+                    adminBtn.classList.add('hidden');    // Ẩn đối với người dùng khác
+                }
+
                 switchTab('dashboard');
             } else {
                 let isPending = pendingUsers.some(u => u.username === user);
                 if(isPending) {
-                    alert("Tài khoản của bạn đang chờ Admin (manhute73@gmail.com) phê duyệt.");
+                    alert("Tài khoản của bạn đang chờ Admin phê duyệt.");
                 } else {
                     alert("Tên đăng nhập không tồn tại hoặc chưa được phê duyệt!");
                 }
@@ -445,7 +457,6 @@
             `).join('');
         }
 
-        // 3. Admin bấm Phê duyệt -> Tự động gửi email kích hoạt tới người đăng ký
         function approveUser(idx) {
             let u = pendingUsers[idx];
             registeredUsers.push(u.username);
@@ -455,17 +466,17 @@
             localStorage.setItem('amc_pending', JSON.stringify(pendingUsers));
 
             let templateParams = {
-                to_email: u.email,       // Gửi trực tiếp tới email của người đăng ký
+                to_email: u.email,
                 fullname: u.fullname,
                 username: u.username
             };
 
             emailjs.send('service_x7jmmhb', 'template_hc69xxo', templateParams)
                 .then(function(response) {
-                    alert(`Đã phê duyệt tài khoản "${u.username}" và tự động gửi email kích hoạt đến ${u.email} thành công!`);
+                    alert(`Đã phê duyệt tài khoản "${u.username}" và gửi email kích hoạt thành công!`);
                     renderAdminPendingList();
                 }, function(error) {
-                    alert("Đã cấp quyền trên web nhưng gửi email phản hồi lỗi: " + JSON.stringify(error));
+                    alert("Đã cấp quyền nhưng gửi email phản hồi lỗi: " + JSON.stringify(error));
                     renderAdminPendingList();
                 });
         }
