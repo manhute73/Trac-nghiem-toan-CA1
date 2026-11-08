@@ -649,7 +649,7 @@
 
     <!-- Script xử lý toàn diện -->
     <script>
-        // Danh sách tài khoản thành viên được phép đăng nhập trên mọi thiết bị (Bạn có thể thêm username vào đây)
+        // Danh sách tài khoản thành viên được phép đăng nhập trên mọi thiết bị
         let memberUsers = JSON.parse(localStorage.getItem('amc_members')) || ['hocvien01', 'hocvien02'];
         let allExams = JSON.parse(localStorage.getItem('amc_all_exams')) || [];
         let globalHistory = JSON.parse(localStorage.getItem('amc_global_history')) || {};
@@ -707,6 +707,12 @@
             if (greetingEl) greetingEl.innerText = `${greeting}, bạn ơi!`;
         }
 
+        function isUserAdmin(username) {
+            if (!username) return false;
+            let u = username.trim().toUpperCase();
+            return u === 'DUCMANH' || u === 'MANHUTE73';
+        }
+
         function handleLogin() {
             let user = document.getElementById('login-username').value.trim();
             if(!user) {
@@ -714,10 +720,10 @@
                 return;
             }
 
-            let isMasterAdmin = (user.toUpperCase() === 'DUCMANH' || user === 'manhute73');
+            let isAdmin = isUserAdmin(user);
             let isMember = memberUsers.includes(user);
 
-            if(isMasterAdmin || isMember) {
+            if(isAdmin || isMember) {
                 currentUser = user;
                 document.getElementById('auth-screen').classList.add('hidden');
                 document.getElementById('main-header').classList.remove('hidden');
@@ -728,7 +734,7 @@
                 const dashboardCreatorBtn = document.getElementById('dashboard-creator-btn');
                 const bodeText = document.getElementById('menu-bode-text');
 
-                if(isMasterAdmin) {
+                if(isAdmin) {
                     navAdminBtn.classList.remove('hidden');
                     menuAdminUsers.classList.remove('hidden');
                     dashboardCreatorBtn.classList.remove('hidden');
@@ -818,8 +824,8 @@
         }
 
         function handleMenuBode() {
-            let isMasterAdmin = (currentUser.toUpperCase() === 'DUCMANH' || currentUser === 'manhute73');
-            if(isMasterAdmin) {
+            let isAdmin = isUserAdmin(currentUser);
+            if(isAdmin) {
                 cancelEditExam();
                 switchTab('manual-creator');
             } else {
@@ -883,6 +889,10 @@
                 updateDashboardInfo();
             }
             if(tabId === 'admin-users') {
+                if(!isUserAdmin(currentUser)) {
+                    switchTab('dashboard');
+                    return;
+                }
                 document.getElementById('tab-admin-users').classList.remove('hidden');
                 document.getElementById('menu-admin-users').className = "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sky-600 bg-sky-50 font-semibold transition";
                 renderAdminUsersManagement();
@@ -903,6 +913,10 @@
                 renderProgressUI();
             }
             if(tabId === 'manual-creator') {
+                if(!isUserAdmin(currentUser)) {
+                    switchTab('dashboard');
+                    return;
+                }
                 document.getElementById('tab-manual-creator').classList.remove('hidden');
                 document.getElementById('menu-bode').className = "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sky-600 bg-sky-50 font-semibold transition";
                 renderAdminExamsList();
@@ -912,9 +926,9 @@
         }
 
         function updateDashboardInfo() {
-            let isMasterAdmin = (currentUser.toUpperCase() === 'DUCMANH' || currentUser === 'manhute73');
+            let isAdmin = isUserAdmin(currentUser);
             const selector = document.getElementById('exam-selector');
-            let availableExams = (isMasterAdmin ? allExams : allExams.filter(e => e.isActive)).filter(e => e.topic === currentExamTopic);
+            let availableExams = (isAdmin ? allExams : allExams.filter(e => e.isActive)).filter(e => e.topic === currentExamTopic);
 
             if (availableExams.length === 0) {
                 selector.innerHTML = `<option value="">-- Chưa có bộ đề nào cho môn ${currentExamTopic} --</option>`;
