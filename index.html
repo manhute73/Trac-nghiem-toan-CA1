@@ -86,13 +86,10 @@
 
                 <div class="space-y-3 pt-4 text-xs font-medium text-slate-700">
                     <div class="flex items-center gap-2">
-                        <i class="fa-solid fa-circle-check text-rose-600"></i> Hai chế độ: luyện tập có giải thích ngay và thi thử tính giờ
+                        <i class="fa-solid fa-circle-check text-rose-600"></i> Chỉ cần nhập tên đăng nhập để vào web sau khi Admin duyệt
                     </div>
                     <div class="flex items-center gap-2">
-                        <i class="fa-solid fa-circle-check text-rose-600"></i> Xem lại từng câu, biết chủ đề nào còn yếu để ôn tiếp
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <i class="fa-solid fa-circle-check text-rose-600"></i> Tự động cấp mật khẩu tạm thời 8 ký tự khi Admin duyệt
+                        <i class="fa-solid fa-circle-check text-rose-600"></i> Giao diện ôn tập chuyên sâu, tiện lợi
                     </div>
                 </div>
             </div>
@@ -109,37 +106,30 @@
                 <div id="form-login" class="space-y-6">
                     <div class="space-y-1">
                         <h2 class="text-2xl font-bold text-slate-900">Đăng nhập</h2>
-                        <p class="text-xs text-slate-500">Nhập tài khoản và mật khẩu tạm thời được gửi qua email sau khi Admin duyệt.</p>
+                        <p class="text-xs text-slate-500">Chỉ cần nhập chính xác tên đăng nhập đã được Admin phê duyệt.</p>
                     </div>
 
                     <div class="space-y-4">
                         <div>
                             <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Tên đăng nhập</label>
-                            <input type="text" id="login-username" placeholder="Nhập tên đăng nhập..." class="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-2.5 text-sm text-slate-800 focus:border-rose-600 focus:outline-none">
-                        </div>
-                        <div>
-                            <div class="flex justify-between items-center mb-1">
-                                <label class="text-xs font-bold text-slate-700 uppercase">Mật khẩu</label>
-                                <a href="#" onclick="alert('Vui lòng liên hệ quản trị viên Mạnh Đức (manhute73@gmail.com) để hỗ trợ.')" class="text-xs text-rose-600 hover:underline">Quên mật khẩu?</a>
-                            </div>
-                            <input type="password" id="login-password" placeholder="••••••••" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-2.5 text-sm text-slate-800 focus:border-rose-600 focus:outline-none">
+                            <input type="text" id="login-username" placeholder="Nhập tên đăng nhập của bạn..." class="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-3 text-sm text-slate-800 focus:border-rose-600 focus:outline-none">
                         </div>
 
                         <button onclick="handleLogin()" class="w-full bg-rose-600 hover:bg-rose-700 text-white font-semibold py-3 rounded-xl shadow-lg shadow-rose-600/30 transition text-sm cursor-pointer">
-                            Đăng nhập
+                            Vào web làm bài
                         </button>
                     </div>
 
                     <div class="text-center text-xs text-slate-500">
-                        Chưa có tài khoản? <a href="#" onclick="toggleAuthForm('register')" class="text-rose-600 font-bold hover:underline">Đăng ký ngay</a>
+                        Chưa có tài khoản? <a href="#" onclick="toggleAuthForm('register')" class="text-rose-600 font-bold hover:underline">Gửi yêu cầu đăng ký</a>
                     </div>
                 </div>
 
                 <!-- FORM ĐĂNG KÝ -->
                 <div id="form-register" class="space-y-6 hidden">
                     <div class="space-y-1">
-                        <h2 class="text-2xl font-bold text-slate-900">Đăng ký tài khoản</h2>
-                        <p class="text-xs text-slate-500">Yêu cầu sẽ được gửi tới Admin để xét duyệt cấp mật khẩu tự động.</p>
+                        <h2 class="text-2xl font-bold text-slate-900">Đăng ký truy cập</h2>
+                        <p class="text-xs text-slate-500">Gửi yêu cầu tới Admin <b>manhute73@gmail.com</b> để được cấp quyền vào web.</p>
                     </div>
 
                     <div class="space-y-4">
@@ -148,21 +138,21 @@
                             <input type="text" id="reg-fullname" placeholder="Nhập họ và tên..." class="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-2.5 text-sm text-slate-800 focus:border-rose-600 focus:outline-none">
                         </div>
                         <div>
-                            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Tên đăng nhập mong muốn</label>
+                            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Tên đăng nhập muốn dùng</label>
                             <input type="text" id="reg-username" placeholder="Ví dụ: nguyenducmanh" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-2.5 text-sm text-slate-800 focus:border-rose-600 focus:outline-none">
                         </div>
                         <div>
-                            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Email nhận mật khẩu phản hồi</label>
-                            <input type="email" id="reg-email" placeholder="Nhập email của bạn..." class="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-2.5 text-sm text-slate-800 focus:border-rose-600 focus:outline-none">
+                            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Email của bạn</label>
+                            <input type="email" id="reg-email" placeholder="Nhập email..." class="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-2.5 text-sm text-slate-800 focus:border-rose-600 focus:outline-none">
                         </div>
 
                         <button onclick="handleRegister()" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-semibold py-3 rounded-xl shadow transition text-sm cursor-pointer">
-                            Gửi yêu cầu đăng ký
+                            Gửi yêu cầu cho Admin
                         </button>
                     </div>
 
                     <div class="text-center text-xs text-slate-500">
-                        Đã có tài khoản? <a href="#" onclick="toggleAuthForm('login')" class="text-rose-600 font-bold hover:underline">Đăng nhập</a>
+                        Đã được duyệt? <a href="#" onclick="toggleAuthForm('login')" class="text-rose-600 font-bold hover:underline">Quay lại đăng nhập</a>
                     </div>
                 </div>
 
@@ -179,10 +169,10 @@
                 </h3>
                 <button onclick="closeAdminModal()" class="text-slate-400 hover:text-slate-700 font-bold text-base"><i class="fa-solid fa-xmark"></i></button>
             </div>
-            <p class="text-xs text-slate-500">Danh sách tài khoản đang chờ bạn (manhute73@gmail.com) xác nhận:</p>
+            <p class="text-xs text-slate-500">Danh sách yêu cầu truy cập đang chờ bạn (manhute73@gmail.com) xác nhận:</p>
             
             <div id="admin-pending-list" class="space-y-3 max-h-[300px] overflow-y-auto custom-scrollbar">
-                <p class="text-xs text-slate-400 italic text-center py-6">Chưa có yêu cầu đăng ký nào.</p>
+                <p class="text-xs text-slate-400 italic text-center py-6">Chưa có yêu cầu nào.</p>
             </div>
 
             <div class="border-t pt-3 flex justify-end">
@@ -334,9 +324,8 @@
 
     <!-- Script xử lý logic -->
     <script>
-        let registeredUsers = JSON.parse(localStorage.getItem('amc_users')) || [
-            { username: 'admin', pass: '123456', fullname: 'Quản Trị Viên', email: 'manhute73@gmail.com', status: 'approved' }
-        ];
+        // Danh sách tài khoản đã được duyệt (chỉ cần username)
+        let registeredUsers = JSON.parse(localStorage.getItem('amc_users')) || ['admin', 'manhute73'];
         let pendingUsers = JSON.parse(localStorage.getItem('amc_pending')) || [];
 
         function setDynamicGreeting() {
@@ -360,17 +349,7 @@
             }
         }
 
-        // Hàm tạo mật khẩu ngẫu nhiên hoàn toàn tự động gồm 8 ký tự (chữ hoa, chữ thường, số)
-        function generateRandomPassword() {
-            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-            let pass = '';
-            for (let i = 0; i < 8; i++) {
-                pass += chars.charAt(Math.floor(Math.random() * chars.length));
-            }
-            return pass;
-        }
-
-        // BƯỚC 1: Người dùng bấm đăng ký -> Gửi mail thông báo yêu cầu DUYỆT cho Admin (manhute73@gmail.com)
+        // Bước 1: Gửi yêu cầu đăng ký truy cập tới Admin (manhute73@gmail.com)
         function handleRegister() {
             let fullname = document.getElementById('reg-fullname').value.trim();
             let username = document.getElementById('reg-username').value.trim();
@@ -381,55 +360,50 @@
                 return;
             }
 
-            let exists = registeredUsers.some(u => u.username === username) || pendingUsers.some(u => u.username === username);
+            let exists = registeredUsers.includes(username) || pendingUsers.some(u => u.username === username);
             if(exists) {
                 alert("Tên đăng nhập này đã tồn tại hoặc đang chờ duyệt!");
                 return;
             }
 
-            let tempPass = generateRandomPassword(); // Sinh ngẫu nhiên 8 ký tự
-
             let newUser = {
                 username: username,
-                pass: tempPass,
                 fullname: fullname,
-                email: email,
-                status: 'pending'
+                email: email
             };
 
             pendingUsers.push(newUser);
             localStorage.setItem('amc_pending', JSON.stringify(pendingUsers));
 
-            // Tham số gửi EmailJS tới ADMIN (manhute73@gmail.com)
+            // Tham số gửi EmailJS tới Admin
             let templateParams = {
                 to_email: "manhute73@gmail.com",
-                message_title: "YÊU CẦU PHÊ DUYỆT TÀI KHOẢN MỚI",
+                message_title: "YÊU CẦU CẤP QUYỀN TRUY CẬP WEB",
                 fullname: fullname,
                 username: username,
                 email: email,
-                temppass: tempPass,
-                notification_content: `Có người dùng mới đăng ký hệ thống:\n- Họ tên: ${fullname}\n- Username: ${username}\n- Email nhận phản hồi: ${email}\n- Mật khẩu tạm khởi tạo: ${tempPass}\n\nVui lòng vào trang quản trị web để bấm Phê duyệt.`
+                notification_content: `Có người dùng mới gửi yêu cầu truy cập hệ thống:\n- Họ tên: ${fullname}\n- Tên đăng nhập: ${username}\n- Email: ${email}\n\nVui lòng vào bảng quản trị web để bấm Phê duyệt.`
             };
 
             emailjs.send('service_x7jmmhb', 'template_hc69xxo', templateParams)
                 .then(function(response) {
-                    alert(`Đăng ký thành công! Yêu cầu của bạn đã được gửi tới Admin. Bạn sẽ nhận được email cấp mật khẩu tạm thời sau khi Admin chấp nhận.`);
+                    alert(`Gửi yêu cầu thành công! Vui lòng chờ Admin (manhute73@gmail.com) phê duyệt để vào web.`);
                     toggleAuthForm('login');
                 }, function(error) {
-                    alert("Lỗi khi gửi yêu cầu đăng ký: " + JSON.stringify(error));
+                    alert("Lỗi khi gửi yêu cầu: " + JSON.stringify(error));
                 });
         }
 
+        // Bước 2: Đăng nhập chỉ bằng Tên đăng nhập (Không cần mật khẩu)
         function handleLogin() {
             let user = document.getElementById('login-username').value.trim();
-            let pass = document.getElementById('login-password').value.trim();
             
-            if(!user || !pass) {
-                alert("Vui lòng nhập đầy đủ tên đăng nhập và mật khẩu!");
+            if(!user) {
+                alert("Vui lòng nhập tên đăng nhập!");
                 return;
             }
 
-            let found = registeredUsers.find(u => u.username === user && u.pass === pass);
+            let found = registeredUsers.includes(user);
             if(found) {
                 document.getElementById('auth-screen').classList.add('hidden');
                 document.getElementById('main-header').classList.remove('hidden');
@@ -440,7 +414,7 @@
                 if(isPending) {
                     alert("Tài khoản của bạn đang chờ Admin (manhute73@gmail.com) phê duyệt.");
                 } else {
-                    alert("Sai tên đăng nhập hoặc mật khẩu, hoặc tài khoản chưa được phê duyệt!");
+                    alert("Tên đăng nhập không tồn tại hoặc chưa được Admin phê duyệt!");
                 }
             }
         }
@@ -457,7 +431,7 @@
         function renderAdminPendingList() {
             const container = document.getElementById('admin-pending-list');
             if (pendingUsers.length === 0) {
-                container.innerHTML = `<p class="text-xs text-slate-400 italic text-center py-6">Chưa có yêu cầu đăng ký nào đang chờ duyệt.</p>`;
+                container.innerHTML = `<p class="text-xs text-slate-400 italic text-center py-6">Chưa có yêu cầu nào đang chờ duyệt.</p>`;
                 return;
             }
 
@@ -465,42 +439,26 @@
                 <div class="bg-slate-50 border p-3 rounded-xl flex items-center justify-between text-xs gap-3">
                     <div>
                         <div class="font-bold text-slate-900">${u.fullname} (@${u.username})</div>
-                        <div class="text-slate-500">Email: ${u.email} • Mật khẩu tạm: <span class="font-mono text-rose-600 font-bold">${u.pass}</span></div>
+                        <div class="text-slate-500">Email: ${u.email}</div>
                     </div>
                     <button onclick="approveUser(${idx})" class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-4 py-2 rounded-lg transition shrink-0">
-                        Phê duyệt & Gửi mail
+                        Phê duyệt cho vào web
                     </button>
                 </div>
             `).join('');
         }
 
-        // BƯỚC 2: Admin bấm Phê duyệt -> HỆ THỐNG GỬI MAIL chứa mật khẩu 8 ký tự về cho NGƯỜI ĐĂNG KÝ
+        // Bước 3: Admin bấm Phê duyệt -> Cho phép tài khoản đó đăng nhập trực tiếp
         function approveUser(idx) {
             let u = pendingUsers[idx];
-            u.status = 'approved';
-            registeredUsers.push(u);
+            registeredUsers.push(u.username);
             pendingUsers.splice(idx, 1);
 
             localStorage.setItem('amc_users', JSON.stringify(registeredUsers));
             localStorage.setItem('amc_pending', JSON.stringify(pendingUsers));
 
-            let templateParams = {
-                to_email: u.email, // Gửi trực tiếp tới email người đăng ký
-                message_title: "TÀI KHOẢN LUYỆN THI ĐÃ ĐƯỢC PHÊ DUYỆT",
-                fullname: u.fullname,
-                username: u.username,
-                email: u.email,
-                temppass: u.pass, // Truyền chính xác mật khẩu tạm thời 8 ký tự
-                notification_content: `Xin chào ${u.fullname},\n\nTài khoản luyện thi của bạn đã được Admin chấp nhận.\n- Tên đăng nhập: ${u.username}\n- Mật khẩu tạm thời: ${u.pass}\n\nVui lòng đăng nhập vào hệ thống và đổi lại mật khẩu cá nhân để bảo mật.`
-            };
-
-            emailjs.send('service_x7jmmhb', 'template_hc69xxo', templateParams)
-                .then(function(response) {
-                    alert(`Đã phê duyệt và tự động gửi email cấp mật khẩu tạm thời thành công cho ${u.fullname} (${u.email})!`);
-                    renderAdminPendingList();
-                }, function(error) {
-                    alert("Phê duyệt thành công nhưng lỗi gửi email phản hồi: " + JSON.stringify(error));
-                });
+            alert(`Đã phê duyệt cho tài khoản "${u.username}" (${u.fullname}) truy cập thành công!`);
+            renderAdminPendingList();
         }
 
         function logout() {
