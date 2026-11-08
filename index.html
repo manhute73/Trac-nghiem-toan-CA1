@@ -95,7 +95,7 @@
                         <i class="fa-solid fa-circle-check text-rose-600"></i> Xem lại từng câu, biết chủ đề nào còn yếu để ôn tiếp
                     </div>
                     <div class="flex items-center gap-2">
-                        <i class="fa-solid fa-circle-check text-rose-600"></i> Nhập tên đăng nhập để vào web sau khi được Admin phê duyệt
+                        <i class="fa-solid fa-circle-check text-rose-600"></i> Đăng ký tài khoản và chờ Admin duyệt để vào web làm bài
                     </div>
                 </div>
             </div>
@@ -111,7 +111,7 @@
                 <!-- FORM ĐĂNG NHẬP -->
                 <div id="form-login" class="space-y-6">
                     <div class="space-y-1">
-                        <h2 class="text-2xl font-bold text-slate-900">Đăng nhập</h2>
+                        <h2 class="text-2xl font-bold text-slate-900">Đăng nhập hệ thống</h2>
                         <p class="text-xs text-slate-500">Nhập tên đăng nhập của bạn để vào làm bài.</p>
                     </div>
 
@@ -135,7 +135,7 @@
                 <div id="form-register" class="space-y-6 hidden">
                     <div class="space-y-1">
                         <h2 class="text-2xl font-bold text-slate-900">Đăng ký truy cập</h2>
-                        <p class="text-xs text-slate-500">Gửi yêu cầu xét duyệt tới Admin <b>manhute73@gmail.com</b>.</p>
+                        <p class="text-xs text-slate-500">Hệ thống sẽ gửi yêu cầu xét duyệt tới Admin <b>manhute73@gmail.com</b>.</p>
                     </div>
 
                     <div class="space-y-4">
@@ -148,17 +148,17 @@
                             <input type="text" id="reg-username" placeholder="Ví dụ: nguyenducmanh" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-2.5 text-sm text-slate-800 focus:border-rose-600 focus:outline-none">
                         </div>
                         <div>
-                            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Email của bạn</label>
+                            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Email nhận thông báo của bạn</label>
                             <input type="email" id="reg-email" placeholder="Nhập email..." class="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-2.5 text-sm text-slate-800 focus:border-rose-600 focus:outline-none">
                         </div>
 
                         <button onclick="handleRegister()" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-semibold py-3 rounded-xl shadow transition text-sm cursor-pointer">
-                            Gửi yêu cầu chờ duyệt
+                            Gửi yêu cầu (Chờ Admin duyệt)
                         </button>
                     </div>
 
                     <div class="text-center text-xs text-slate-500">
-                        Đã được duyệt? <a href="#" onclick="toggleAuthForm('login')" class="text-rose-600 font-bold hover:underline">Quay lại đăng nhập</a>
+                        Đã có tài khoản? <a href="#" onclick="toggleAuthForm('login')" class="text-rose-600 font-bold hover:underline">Quay lại đăng nhập</a>
                     </div>
                 </div>
 
@@ -178,11 +178,11 @@
             <p class="text-xs text-slate-500">Danh sách yêu cầu truy cập đang chờ bạn (manhute73@gmail.com) xác nhận:</p>
             
             <div id="admin-pending-list" class="space-y-3 max-h-[300px] overflow-y-auto custom-scrollbar">
-                <p class="text-xs text-slate-400 italic text-center py-6">Chưa có yêu cầu nào.</p>
+                <p class="text-xs text-slate-400 italic text-center py-6">Chưa có yêu cầu nào đang chờ duyệt.</p>
             </div>
 
             <div class="border-t pt-3 flex justify-end">
-                <button onclick="closeAdminModal()" class="bg-slate-900 text-white px-4 py-2 rounded-xl text-xs font-semibold">Đóng</button>
+                <button onclick="closeAdminModal()" class="bg-slate-900 text-white px-4 py-2 rounded-xl text-xs font-semibold cursor-pointer">Đóng</button>
             </div>
         </div>
     </div>
@@ -471,7 +471,7 @@
         </div>
     </main>
 
-    <!-- Script xử lý ứng dụng -->
+    <!-- Script xử lý ứng dụng & EmailJS tự động -->
     <script>
         let registeredUsers = JSON.parse(localStorage.getItem('amc_users')) || ['DUCMANH', 'manhute73'];
         let pendingUsers = JSON.parse(localStorage.getItem('amc_pending')) || [];
@@ -497,6 +497,7 @@
             }
         }
 
+        // 1. GỬI YÊU CẦU ĐĂNG KÝ -> BÁO VỀ MAIL ADMIN (ĐANG CHỜ DUYỆT)
         function handleRegister() {
             let fullname = document.getElementById('reg-fullname').value.trim();
             let username = document.getElementById('reg-username').value.trim();
@@ -517,17 +518,18 @@
             pendingUsers.push(newUser);
             localStorage.setItem('amc_pending', JSON.stringify(pendingUsers));
 
+            // Gửi email thông báo cho Admin (manhute73@gmail.com)
             let templateParams = {
                 to_email: "manhute73@gmail.com",
                 fullname: fullname,
                 username: username,
                 email: email,
-                notification_content: `Có người dùng mới đăng ký:\n- Họ tên: ${fullname}\n- Username: ${username}\n- Email: ${email}`
+                notification_content: `Yêu cầu đăng ký mới đang chờ bạn phê duyệt:\n- Họ tên: ${fullname}\n- Username: ${username}\n- Email: ${email}`
             };
 
             emailjs.send('service_x7jmmhb', 'template_hc69xxo', templateParams)
                 .then(function(response) {
-                    alert(`Gửi yêu cầu thành công! Vui lòng chờ Admin (manhute73@gmail.com) phê duyệt.`);
+                    alert(`Gửi yêu cầu thành công! Hệ thống đã báo cáo đến Admin. Trạng thái: Đang chờ duyệt.`);
                     toggleAuthForm('login');
                 }, function(error) {
                     alert("Lỗi khi gửi yêu cầu: " + JSON.stringify(error));
@@ -561,7 +563,7 @@
             } else {
                 let isPending = pendingUsers.some(u => u.username === user);
                 if(isPending) {
-                    alert("Tài khoản của bạn đang chờ Admin (manhute73@gmail.com) phê duyệt.");
+                    alert("Tài khoản của bạn đang trong trạng thái: Đang chờ Admin phê duyệt.");
                 } else {
                     alert("Tên đăng nhập không tồn tại hoặc chưa được phê duyệt!");
                 }
@@ -591,12 +593,13 @@
                         <div class="text-slate-500">Email: ${u.email}</div>
                     </div>
                     <button onclick="approveUser(${idx})" class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-4 py-2 rounded-lg transition shrink-0 cursor-pointer">
-                        Phê duyệt & Gửi mail kích hoạt
+                        Phê duyệt & Gửi mail thành công
                     </button>
                 </div>
             `).join('');
         }
 
+        // 2. KHI ADMIN BẤM PHÊ DUYỆT -> TỰ ĐỘNG GỬI EMAIL PHẢN HỒI CHO NGƯỜI DÙNG
         function approveUser(idx) {
             let u = pendingUsers[idx];
             registeredUsers.push(u.username);
@@ -605,18 +608,20 @@
             localStorage.setItem('amc_users', JSON.stringify(registeredUsers));
             localStorage.setItem('amc_pending', JSON.stringify(pendingUsers));
 
+            // Cấu hình tham số gửi email tự động thông báo đã duyệt thành công đến người dùng
             let templateParams = {
                 to_email: u.email,
                 fullname: u.fullname,
-                username: u.username
+                username: u.username,
+                notification_content: `Xin chào ${u.fullname},\nTài khoản của bạn đã được Admin phê duyệt thành công!\nTên đăng nhập của bạn là: ${u.username}\nBây giờ bạn có thể truy cập vào trang web để bắt đầu làm bài trắc nghiệm.`
             };
 
             emailjs.send('service_x7jmmhb', 'template_hc69xxo', templateParams)
                 .then(function(response) {
-                    alert(`Đã phê duyệt tài khoản "${u.username}" và gửi email kích hoạt thành công!`);
+                    alert(`Đã phê duyệt tài khoản "${u.username}" và gửi email thông báo thành công đến ${u.email}!`);
                     renderAdminPendingList();
                 }, function(error) {
-                    alert("Đã cấp quyền nhưng gửi email phản hồi lỗi: " + JSON.stringify(error));
+                    alert("Đã cấp quyền trong hệ thống nhưng gửi email phản hồi lỗi: " + JSON.stringify(error));
                     renderAdminPendingList();
                 });
         }
