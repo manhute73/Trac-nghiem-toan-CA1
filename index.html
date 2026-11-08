@@ -12,7 +12,7 @@
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
     <script type="text/javascript">
        (function(){
-          emailjs.init("NB9xq1TAR60kJFMDs"); // Public Key của bạn
+          emailjs.init("NB9xq1TAR60kJFMDs"); // Public Key của bạn[cite: 12, 15]
        })();
     </script>
     <style>
@@ -403,8 +403,8 @@
                 temppass: tempPass
             };
 
-            // Sử dụng Service ID và Template ID của bạn
-            emailjs.send('service_cbg83wf', 'template_09ywv7j', templateParams)
+            // Sử dụng Service ID và Template ID chính xác của bạn[cite: 16, 17]
+            emailjs.send('service_x7jmmhb', 'template_hc69xxo', templateParams)
                 .then(function(response) {
                     alert(`Đăng ký thành công! Hệ thống đã tự động gửi email thông báo mã mật khẩu tạm thời về hộp thư manhute73@gmail.com.`);
                     toggleAuthForm('login');
@@ -483,7 +483,7 @@
                 temppass: u.pass
             };
 
-            emailjs.send('service_cbg83wf', 'template_09ywv7j', templateParams)
+            emailjs.send('service_x7jmmhb', 'template_hc69xxo', templateParams)
                 .then(function(response) {
                     alert(`Đã phê duyệt tài khoản và gửi email cấp mật khẩu thành công cho ${u.fullname}!`);
                     renderAdminPendingList();
