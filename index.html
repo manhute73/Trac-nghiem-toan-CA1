@@ -65,7 +65,7 @@
         </div>
         <div class="flex items-center space-x-4">
             <button onclick="switchTab('dashboard')" class="hover:text-white transition"><i class="fa-solid fa-house mr-1"></i> Trang chủ</button>
-            <button id="nav-admin-btn" onclick="openAdminModal()" class="hover:text-sky-400 transition text-sky-300 font-medium hidden"><i class="fa-solid fa-shield-halved mr-1"></i> Quản lý Admin</button>
+            <button id="nav-admin-btn" onclick="switchTab('admin-users')" class="hover:text-sky-400 transition text-sky-300 font-medium hidden"><i class="fa-solid fa-users-gear mr-1"></i> Quản lý tài khoản</button>
             <button onclick="logout()" class="hover:text-sky-400 transition text-slate-400"><i class="fa-solid fa-right-from-bracket mr-1"></i> Đăng xuất</button>
         </div>
     </header>
@@ -164,27 +164,6 @@
         </div>
     </div>
 
-    <!-- MODAL QUẢN LÝ ADMIN -->
-    <div id="admin-modal" class="fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-4 hidden">
-        <div class="bg-white rounded-2xl max-w-2xl w-full p-6 space-y-4 shadow-2xl">
-            <div class="flex justify-between items-center border-b pb-3">
-                <h3 class="font-bold text-slate-900 text-lg flex items-center gap-2">
-                    <i class="fa-solid fa-user-shield text-sky-600"></i> Bảng Quản Trị Viên (Duyệt tài khoản)
-                </h3>
-                <button onclick="closeAdminModal()" class="text-slate-400 hover:text-slate-700 font-bold text-base"><i class="fa-solid fa-xmark"></i></button>
-            </div>
-            <p class="text-xs text-slate-500">Danh sách yêu cầu truy cập đang chờ bạn (manhute73@gmail.com) xác nhận:</p>
-            
-            <div id="admin-pending-list" class="space-y-3 max-h-[300px] overflow-y-auto custom-scrollbar">
-                <p class="text-xs text-slate-400 italic text-center py-6">Chưa có yêu cầu nào đang chờ duyệt.</p>
-            </div>
-
-            <div class="border-t pt-3 flex justify-end">
-                <button onclick="closeAdminModal()" class="bg-slate-900 text-white px-4 py-2 rounded-xl text-xs font-semibold cursor-pointer">Đóng</button>
-            </div>
-        </div>
-    </div>
-
     <!-- MODAL CHỌN MÔN HỌC -->
     <div id="subject-modal" class="fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-4 hidden">
         <div class="bg-white rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl">
@@ -251,6 +230,10 @@
                     </button>
                     <button onclick="handleMenuBode()" id="menu-bode" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-600 hover:bg-slate-50 transition">
                         <i class="fa-solid fa-folder-open w-5 text-center"></i> <span class="menu-text" id="menu-bode-text">Bộ đề</span>
+                    </button>
+                    <!-- MỤC QUẢN LÝ TÀI KHOẢN (CHỈ ADMIN THẤY) -->
+                    <button onclick="switchTab('admin-users')" id="menu-admin-users" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-600 hover:bg-slate-50 transition hidden">
+                        <i class="fa-solid fa-users-gear w-5 text-center text-sky-600"></i> <span class="menu-text">Quản lý tài khoản</span>
                     </button>
                     <button onclick="switchTab('history')" id="menu-history" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-600 hover:bg-slate-50 transition">
                         <i class="fa-solid fa-clock-rotate-left w-5 text-center"></i> <span class="menu-text">Lịch sử</span>
@@ -363,6 +346,39 @@
                         <button onclick="startExam()" class="w-full bg-[#0284c7] hover:bg-[#0369a1] text-white font-semibold py-4 rounded-xl shadow-lg shadow-sky-600/30 transition flex items-center justify-center gap-2 text-base cursor-pointer">
                             <i class="fa-solid fa-circle-play text-lg"></i> Bắt đầu làm đề
                         </button>
+                    </div>
+                </div>
+
+                <!-- TAB: QUẢN LÝ TÀI KHOẢN (CHỈ ADMIN) -->
+                <div id="tab-admin-users" class="hidden space-y-6 flex-1 flex flex-col">
+                    <div class="border-b pb-3 flex justify-between items-center">
+                        <div>
+                            <h2 class="text-xl font-bold text-slate-900">Quản Lý Tài Khoản Truy Cập</h2>
+                            <p class="text-xs text-slate-500 mt-0.5">Danh sách các tài khoản đã được cấp quyền và đang đợi cấp quyền truy cập hệ thống.</p>
+                        </div>
+                        <button onclick="switchTab('dashboard')" class="bg-sky-600 hover:bg-sky-700 text-white px-4 py-2 rounded-xl text-xs font-medium transition shadow-md">
+                            <i class="fa-solid fa-house mr-1"></i> Trang chủ
+                        </button>
+                    </div>
+
+                    <!-- Phần Đang chờ duyệt -->
+                    <div class="space-y-3">
+                        <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2">
+                            <i class="fa-solid fa-clock-rotate-left text-amber-500"></i> Tài khoản đang đợi cấp quyền (<span id="count-pending">0</span>)
+                        </h3>
+                        <div id="admin-user-pending-container" class="space-y-3">
+                            <p class="text-xs text-slate-400 italic text-center py-6">Không có yêu cầu nào đang đợi.</p>
+                        </div>
+                    </div>
+
+                    <!-- Phần Đã cấp quyền -->
+                    <div class="space-y-3 pt-4 border-t">
+                        <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2">
+                            <i class="fa-solid fa-user-check text-emerald-600"></i> Tài khoản đã được cấp quyền truy cập (<span id="count-approved">0</span>)
+                        </h3>
+                        <div id="admin-user-approved-container" class="space-y-3">
+                            <p class="text-xs text-slate-400 italic text-center py-6">Chưa có tài khoản nào được cấp quyền.</p>
+                        </div>
                     </div>
                 </div>
 
@@ -787,16 +803,19 @@
                 document.getElementById('main-header').classList.remove('hidden');
                 document.getElementById('app-container').classList.remove('hidden');
                 
-                const adminBtn = document.getElementById('nav-admin-btn');
+                const navAdminBtn = document.getElementById('nav-admin-btn');
+                const menuAdminUsers = document.getElementById('menu-admin-users');
                 const dashboardCreatorBtn = document.getElementById('dashboard-creator-btn');
                 const bodeText = document.getElementById('menu-bode-text');
 
                 if(isMasterAdmin) {
-                    adminBtn.classList.remove('hidden');
+                    navAdminBtn.classList.remove('hidden');
+                    menuAdminUsers.classList.remove('hidden');
                     dashboardCreatorBtn.classList.remove('hidden');
                     bodeText.innerText = "Quản lý bộ đề";
                 } else {
-                    adminBtn.classList.add('hidden');
+                    navAdminBtn.classList.add('hidden');
+                    menuAdminUsers.classList.add('hidden');
                     dashboardCreatorBtn.classList.add('hidden');
                     bodeText.innerText = "Bộ đề";
                 }
@@ -811,15 +830,6 @@
                     alert("Tên đăng nhập không tồn tại hoặc chưa được phê duyệt!");
                 }
             }
-        }
-
-        function openAdminModal() {
-            renderAdminPendingList();
-            document.getElementById('admin-modal').classList.remove('hidden');
-        }
-
-        function closeAdminModal() {
-            document.getElementById('admin-modal').classList.add('hidden');
         }
 
         function openSubjectModal() {
@@ -838,27 +848,62 @@
             updateDashboardInfo();
         }
 
-        function renderAdminPendingList() {
-            const container = document.getElementById('admin-pending-list');
+        function renderAdminUsersManagement() {
+            const pendingContainer = document.getElementById('admin-user-pending-container');
+            const approvedContainer = document.getElementById('admin-user-approved-container');
+
+            document.getElementById('count-pending').innerText = pendingUsers.length;
+            document.getElementById('count-approved').innerText = registeredUsers.length;
+
             if (pendingUsers.length === 0) {
-                container.innerHTML = `<p class="text-xs text-slate-400 italic text-center py-6">Chưa có yêu cầu nào đang chờ duyệt.</p>`;
-                return;
+                pendingContainer.innerHTML = `<p class="text-xs text-slate-400 italic text-center py-6">Không có yêu cầu nào đang đợi.</p>`;
+            } else {
+                pendingContainer.innerHTML = pendingUsers.map((u, idx) => `
+                    <div class="bg-white border p-4 rounded-xl flex items-center justify-between text-xs gap-3 shadow-sm">
+                        <div>
+                            <div class="font-bold text-slate-900 text-sm">${u.fullname || 'Chưa cập nhật'} (@${u.username})</div>
+                            <div class="text-slate-500">Email: ${u.email || 'Không có'}</div>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <button onclick="approveUserFromTab(${idx})" class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-4 py-2 rounded-lg transition shrink-0 cursor-pointer">
+                                <i class="fa-solid fa-check mr-1"></i> Phê duyệt
+                            </button>
+                            <button onclick="rejectUserFromTab(${idx})" class="bg-slate-100 hover:bg-rose-600 hover:text-white text-slate-700 font-semibold px-3 py-2 rounded-lg transition shrink-0 cursor-pointer">
+                                <i class="fa-solid fa-xmark"></i> Từ chối
+                            </button>
+                        </div>
+                    </div>
+                `).join('');
             }
 
-            container.innerHTML = pendingUsers.map((u, idx) => `
-                <div class="bg-slate-50 border p-3 rounded-xl flex items-center justify-between text-xs gap-3">
-                    <div>
-                        <div class="font-bold text-slate-900">${u.fullname} (@${u.username})</div>
-                        <div class="text-slate-500">Email: ${u.email}</div>
-                    </div>
-                    <button onclick="approveUser(${idx})" class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-4 py-2 rounded-lg transition shrink-0 cursor-pointer">
-                        Phê duyệt & Gửi mail
-                    </button>
-                </div>
-            `).join('');
+            if (registeredUsers.length === 0) {
+                approvedContainer.innerHTML = `<p class="text-xs text-slate-400 italic text-center py-6">Chưa có tài khoản nào được cấp quyền.</p>`;
+            } else {
+                approvedContainer.innerHTML = registeredUsers.map((username, idx) => {
+                    let isProtectedAdmin = (username.toUpperCase() === 'DUCMANH' || username === 'manhute73');
+                    return `
+                        <div class="bg-white border p-4 rounded-xl flex items-center justify-between text-xs gap-3 shadow-sm">
+                            <div>
+                                <div class="font-bold text-slate-900 text-sm flex items-center gap-2">
+                                    <span>@${username}</span>
+                                    ${isProtectedAdmin ? '<span class="bg-sky-100 text-sky-700 px-2 py-0.5 rounded-full text-[10px] font-bold">Admin hệ thống</span>' : ''}
+                                </div>
+                                <div class="text-slate-500">Đã được cấp quyền truy cập đầy đủ vào website.</div>
+                            </div>
+                            <div>
+                                ${isProtectedAdmin ? '<span class="text-slate-400 italic text-xs">Không thể xóa</span>' : `
+                                    <button onclick="revokeUserAccess('${username}')" class="bg-rose-50 hover:bg-rose-600 hover:text-white text-rose-600 font-semibold px-3.5 py-2 rounded-lg transition shrink-0 cursor-pointer border border-rose-200">
+                                        <i class="fa-solid fa-trash mr-1"></i> Xóa quyền truy cập
+                                    </button>
+                                `}
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
         }
 
-        function approveUser(idx) {
+        function approveUserFromTab(idx) {
             let u = pendingUsers[idx];
             registeredUsers.push(u.username);
             pendingUsers.splice(idx, 1);
@@ -867,21 +912,35 @@
             localStorage.setItem('amc_pending', JSON.stringify(pendingUsers));
 
             let templateParams = {
-                to_email: u.email,
-                email: u.email,
-                fullname: u.fullname,
+                to_email: u.email || "manhute73@gmail.com",
+                email: u.email || "manhute73@gmail.com",
+                fullname: u.fullname || u.username,
                 username: u.username,
-                notification_content: `Xin chào ${u.fullname},\nTài khoản của bạn đã được Admin phê duyệt thành công!\nUsername: ${u.username}\nHãy vào web để làm bài.`
+                notification_content: `Xin chào ${u.fullname || u.username},\nTài khoản của bạn đã được Admin phê duyệt thành công!\nUsername: ${u.username}\nHãy vào web để làm bài.`
             };
 
             emailjs.send('service_x7jmmhb', 'template_hc69xxo', templateParams)
                 .then(function() {
-                    alert(`Đã phê duyệt tài khoản "${u.username}"!`);
-                    renderAdminPendingList();
+                    alert(`Đã phê duyệt tài khoản "${u.username}" thành công!`);
+                    renderAdminUsersManagement();
                 }, function(err) {
-                    alert("Đã cấp quyền nhưng gửi mail lỗi: " + JSON.stringify(err));
-                    renderAdminPendingList();
+                    alert("Đã cấp quyền thành công!");
+                    renderAdminUsersManagement();
                 });
+        }
+
+        function rejectUserFromTab(idx) {
+            if(!confirm("Bạn có chắc chắn muốn từ chối/xóa yêu cầu này không?")) return;
+            pendingUsers.splice(idx, 1);
+            localStorage.setItem('amc_pending', JSON.stringify(pendingUsers));
+            renderAdminUsersManagement();
+        }
+
+        function revokeUserAccess(username) {
+            if(!confirm(`Bạn có chắc chắn muốn thu hồi và xóa quyền truy cập của tài khoản "${username}" không?`)) return;
+            registeredUsers = registeredUsers.filter(u => u !== username);
+            localStorage.setItem('amc_users', JSON.stringify(registeredUsers));
+            renderAdminUsersManagement();
         }
 
         function logout() {
@@ -941,6 +1000,7 @@
             document.getElementById('tab-quiz').classList.add('hidden');
             document.getElementById('tab-result').classList.add('hidden');
             document.getElementById('tab-progress').classList.add('hidden');
+            document.getElementById('tab-admin-users').classList.add('hidden');
 
             document.getElementById('menu-dashboard').className = "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-600 hover:bg-slate-50 transition";
             document.getElementById('menu-subject').className = "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-600 hover:bg-slate-50 transition";
@@ -948,11 +1008,17 @@
             document.getElementById('menu-history').className = "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-600 hover:bg-slate-50 transition";
             document.getElementById('menu-bookmarks').className = "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-600 hover:bg-slate-50 transition";
             document.getElementById('menu-progress').className = "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-600 hover:bg-slate-50 transition";
+            document.getElementById('menu-admin-users').className = "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-600 hover:bg-slate-50 transition";
 
             if(tabId === 'dashboard') {
                 document.getElementById('tab-dashboard').classList.remove('hidden');
                 document.getElementById('menu-dashboard').className = "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sky-600 bg-sky-50 font-semibold transition";
                 updateDashboardInfo();
+            }
+            if(tabId === 'admin-users') {
+                document.getElementById('tab-admin-users').classList.remove('hidden');
+                document.getElementById('menu-admin-users').className = "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sky-600 bg-sky-50 font-semibold transition";
+                renderAdminUsersManagement();
             }
             if(tabId === 'history') {
                 document.getElementById('tab-history').classList.remove('hidden');
