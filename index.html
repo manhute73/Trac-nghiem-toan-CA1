@@ -12,7 +12,7 @@
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
     <script type="text/javascript">
        (function(){
-          emailjs.init("NB9xq1TAR60kJFMDs"); // Public Key của bạn[cite: 12, 15]
+          emailjs.init("NB9xq1TAR60kJFMDs"); // Public Key của bạn[cite: 12]
        })();
     </script>
     <style>
@@ -86,10 +86,13 @@
 
                 <div class="space-y-3 pt-4 text-xs font-medium text-slate-700">
                     <div class="flex items-center gap-2">
-                        <i class="fa-solid fa-circle-check text-rose-600"></i> Quy trình đăng ký kiểm duyệt an toàn bởi Admin
+                        <i class="fa-solid fa-circle-check text-rose-600"></i> Hai chế độ: luyện tập có giải thích ngay và thi thử tính giờ
                     </div>
                     <div class="flex items-center gap-2">
-                        <i class="fa-solid fa-circle-check text-rose-600"></i> Chỉ nhận được mật khẩu sau khi Admin chấp nhận yêu cầu
+                        <i class="fa-solid fa-circle-check text-rose-600"></i> Xem lại từng câu, biết chủ đề nào còn yếu để ôn tiếp
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <i class="fa-solid fa-circle-check text-rose-600"></i> Tự động cấp mật khẩu tạm thời 8 ký tự khi Admin duyệt
                     </div>
                 </div>
             </div>
@@ -106,7 +109,7 @@
                 <div id="form-login" class="space-y-6">
                     <div class="space-y-1">
                         <h2 class="text-2xl font-bold text-slate-900">Đăng nhập</h2>
-                        <p class="text-xs text-slate-500">Nhập tài khoản và mật khẩu được gửi qua email sau khi Admin duyệt.</p>
+                        <p class="text-xs text-slate-500">Nhập tài khoản và mật khẩu tạm thời được gửi qua email sau khi Admin duyệt.</p>
                     </div>
 
                     <div class="space-y-4">
@@ -115,7 +118,10 @@
                             <input type="text" id="login-username" placeholder="Nhập tên đăng nhập..." class="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-2.5 text-sm text-slate-800 focus:border-rose-600 focus:outline-none">
                         </div>
                         <div>
-                            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Mật khẩu</label>
+                            <div class="flex justify-between items-center mb-1">
+                                <label class="text-xs font-bold text-slate-700 uppercase">Mật khẩu</label>
+                                <a href="#" onclick="alert('Vui lòng liên hệ quản trị viên Mạnh Đức (manhute73@gmail.com) để hỗ trợ.')" class="text-xs text-rose-600 hover:underline">Quên mật khẩu?</a>
+                            </div>
                             <input type="password" id="login-password" placeholder="••••••••" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-2.5 text-sm text-slate-800 focus:border-rose-600 focus:outline-none">
                         </div>
 
@@ -133,7 +139,7 @@
                 <div id="form-register" class="space-y-6 hidden">
                     <div class="space-y-1">
                         <h2 class="text-2xl font-bold text-slate-900">Đăng ký tài khoản</h2>
-                        <p class="text-xs text-slate-500">Yêu cầu sẽ được gửi tới Admin <b>manhute73@gmail.com</b> để chờ phê duyệt.</p>
+                        <p class="text-xs text-slate-500">Yêu cầu sẽ được gửi tới Admin để xét duyệt cấp mật khẩu tự động.</p>
                     </div>
 
                     <div class="space-y-4">
@@ -151,7 +157,7 @@
                         </div>
 
                         <button onclick="handleRegister()" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-semibold py-3 rounded-xl shadow transition text-sm cursor-pointer">
-                            Gửi yêu cầu đăng ký cho Admin
+                            Gửi yêu cầu đăng ký
                         </button>
                     </div>
 
@@ -354,8 +360,14 @@
             }
         }
 
+        // Hàm tạo mật khẩu ngẫu nhiên hoàn toàn tự động gồm 8 ký tự (chữ hoa, chữ thường, số)
         function generateRandomPassword() {
-            return 'CAND2027_' + Math.random().toString(36).slice(-4);
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+            let pass = '';
+            for (let i = 0; i < 8; i++) {
+                pass += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return pass;
         }
 
         // BƯỚC 1: Người dùng bấm đăng ký -> Gửi mail thông báo yêu cầu DUYỆT cho Admin (manhute73@gmail.com)
@@ -375,7 +387,7 @@
                 return;
             }
 
-            let tempPass = generateRandomPassword();
+            let tempPass = generateRandomPassword(); // Sinh ngẫu nhiên 8 ký tự
 
             let newUser = {
                 username: username,
@@ -396,13 +408,12 @@
                 username: username,
                 email: email,
                 temppass: tempPass,
-                notification_content: `Có người dùng mới đăng ký hệ thống:\n- Họ tên: ${fullname}\n- Username: ${username}\n- Email: ${email}\n- Mật khẩu tạm khởi tạo: ${tempPass}\n\nVui lòng đăng nhập vào trang quản trị web để bấm Phê duyệt.`
+                notification_content: `Có người dùng mới đăng ký hệ thống:\n- Họ tên: ${fullname}\n- Username: ${username}\n- Email nhận phản hồi: ${email}\n- Mật khẩu tạm khởi tạo: ${tempPass}\n\nVui lòng vào trang quản trị web để bấm Phê duyệt.`
             };
 
-            // Gửi mail ngầm tới Admin qua EmailJS
             emailjs.send('service_x7jmmhb', 'template_hc69xxo', templateParams)
                 .then(function(response) {
-                    alert(`Đăng ký thành công! Yêu cầu của bạn đã được gửi tới Admin. Bạn sẽ nhận được email phản hồi mật khẩu ngay sau khi Admin chấp nhận.`);
+                    alert(`Đăng ký thành công! Yêu cầu của bạn đã được gửi tới Admin. Bạn sẽ nhận được email cấp mật khẩu tạm thời sau khi Admin chấp nhận.`);
                     toggleAuthForm('login');
                 }, function(error) {
                     alert("Lỗi khi gửi yêu cầu đăng ký: " + JSON.stringify(error));
@@ -463,7 +474,7 @@
             `).join('');
         }
 
-        // BƯỚC 2: Admin bấm Phê duyệt -> HỆ THỐNG MỚI TỰ ĐỘNG GỬI MAIL chứa mật khẩu về cho NGƯỜI ĐĂNG KÝ
+        // BƯỚC 2: Admin bấm Phê duyệt -> HỆ THỐNG GỬI MAIL chứa mật khẩu 8 ký tự về cho NGƯỜI ĐĂNG KÝ
         function approveUser(idx) {
             let u = pendingUsers[idx];
             u.status = 'approved';
@@ -473,21 +484,19 @@
             localStorage.setItem('amc_users', JSON.stringify(registeredUsers));
             localStorage.setItem('amc_pending', JSON.stringify(pendingUsers));
 
-            // Tham số gửi EmailJS tới NGƯỜI ĐĂNG KÝ
             let templateParams = {
                 to_email: u.email, // Gửi trực tiếp tới email người đăng ký
                 message_title: "TÀI KHOẢN LUYỆN THI ĐÃ ĐƯỢC PHÊ DUYỆT",
                 fullname: u.fullname,
                 username: u.username,
                 email: u.email,
-                temppass: u.pass,
+                temppass: u.pass, // Truyền chính xác mật khẩu tạm thời 8 ký tự
                 notification_content: `Xin chào ${u.fullname},\n\nTài khoản luyện thi của bạn đã được Admin chấp nhận.\n- Tên đăng nhập: ${u.username}\n- Mật khẩu tạm thời: ${u.pass}\n\nVui lòng đăng nhập vào hệ thống và đổi lại mật khẩu cá nhân để bảo mật.`
             };
 
-            // Gửi mail tự động phản hồi cho người đăng ký qua EmailJS
             emailjs.send('service_x7jmmhb', 'template_hc69xxo', templateParams)
                 .then(function(response) {
-                    alert(`Đã phê duyệt và tự động gửi email cấp mật khẩu thành công cho ${u.fullname} (${u.email})!`);
+                    alert(`Đã phê duyệt và tự động gửi email cấp mật khẩu tạm thời thành công cho ${u.fullname} (${u.email})!`);
                     renderAdminPendingList();
                 }, function(error) {
                     alert("Phê duyệt thành công nhưng lỗi gửi email phản hồi: " + JSON.stringify(error));
@@ -519,9 +528,9 @@
 
         window.onload = function() {
             setDynamicGreeting();
-            document.getElementById('auth-screen').classList.add('hidden');
+            document.getElementById('auth-screen').classList.remove('hidden');
             document.getElementById('main-header').classList.add('hidden');
-            document.getElementById('app-container').classList.remove('hidden');
+            document.getElementById('app-container').classList.add('hidden');
         };
     </script>
 </body>
