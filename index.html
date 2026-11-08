@@ -8,13 +8,6 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- EmailJS SDK -->
-    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
-    <script type="text/javascript">
-       (function(){
-          emailjs.init("NB9xq1TAR60kJFMDs");
-       })();
-    </script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
         body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
@@ -70,11 +63,11 @@
         </div>
     </header>
 
-    <!-- MÀN HÌNH ĐĂNG NHẬP / ĐĂNG KÝ -->
+    <!-- MÀN HÌNH ĐĂNG NHẬP -->
     <div id="auth-screen" class="min-h-screen flex flex-col md:flex-row w-full bg-slate-50">
         <div class="md:w-1/2 bg-gradient-to-br from-blue-900 via-sky-900 to-slate-900 p-8 md:p-16 flex flex-col justify-between text-white">
             <div class="space-y-6">
-                <!-- Logo DM Mới Đẹp -->
+                <!-- Logo DM -->
                 <div class="w-16 h-16 bg-gradient-to-tr from-sky-500 to-blue-600 rounded-2xl shadow-xl flex items-center justify-center text-white font-black text-2xl tracking-widest border border-sky-400/30">
                     DM
                 </div>
@@ -93,7 +86,7 @@
                         <i class="fa-solid fa-circle-check text-sky-400"></i> Tự động lưu bài khi thoát, đánh giá tiến độ (%) chuẩn xác
                     </div>
                     <div class="flex items-center gap-2">
-                        <i class="fa-solid fa-circle-check text-sky-400"></i> Hệ thống xét duyệt tài khoản bảo mật
+                        <i class="fa-solid fa-circle-check text-sky-400"></i> Truy cập đa thiết bị với tài khoản cấp phép
                     </div>
                 </div>
             </div>
@@ -106,58 +99,24 @@
         <div class="md:w-1/2 flex items-center justify-center p-8 md:p-16 bg-white">
             <div class="max-w-md w-full space-y-6">
                 
-                <!-- FORM ĐĂNG NHẬP -->
-                <div id="form-login" class="space-y-6">
-                    <div class="space-y-1">
-                        <h2 class="text-2xl font-bold text-slate-900">Đăng nhập hệ thống</h2>
-                        <p class="text-xs text-slate-500">Nhập tên đăng nhập của bạn để vào làm bài.</p>
-                    </div>
-
-                    <div class="space-y-4">
-                        <div>
-                            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Tên đăng nhập</label>
-                            <input type="text" id="login-username" placeholder="Nhập tên đăng nhập..." class="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-3 text-sm text-slate-800 focus:border-sky-600 focus:outline-none">
-                        </div>
-
-                        <button onclick="handleLogin()" class="w-full bg-sky-600 hover:bg-sky-700 text-white font-semibold py-3 rounded-xl shadow-lg shadow-sky-600/30 transition text-sm cursor-pointer">
-                            Vào web làm bài
-                        </button>
-                    </div>
-
-                    <div class="text-center text-xs text-slate-500">
-                        Chưa có tài khoản? <a href="#" onclick="toggleAuthForm('register')" class="text-sky-600 font-bold hover:underline">Gửi yêu cầu đăng ký</a>
-                    </div>
+                <div class="space-y-1">
+                    <h2 class="text-2xl font-bold text-slate-900">Đăng nhập hệ thống</h2>
+                    <p class="text-xs text-slate-500">Nhập tên đăng nhập của bạn để vào làm bài.</p>
                 </div>
 
-                <!-- FORM ĐĂNG KÝ -->
-                <div id="form-register" class="space-y-6 hidden">
-                    <div class="space-y-1">
-                        <h2 class="text-2xl font-bold text-slate-900">Đăng ký truy cập</h2>
-                        <p class="text-xs text-slate-500">Hệ thống sẽ gửi yêu cầu xét duyệt tới Admin <b>manhute73@gmail.com</b>.</p>
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Tên đăng nhập</label>
+                        <input type="text" id="login-username" placeholder="Nhập tên đăng nhập..." class="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-3 text-sm text-slate-800 focus:border-sky-600 focus:outline-none">
                     </div>
 
-                    <div class="space-y-4">
-                        <div>
-                            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Họ và tên</label>
-                            <input type="text" id="reg-fullname" placeholder="Nhập họ và tên..." class="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-2.5 text-sm text-slate-800 focus:border-sky-600 focus:outline-none">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Tên đăng nhập muốn dùng</label>
-                            <input type="text" id="reg-username" placeholder="Ví dụ: nguyenducmanh" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-2.5 text-sm text-slate-800 focus:border-sky-600 focus:outline-none">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Email nhận thông báo của bạn</label>
-                            <input type="email" id="reg-email" placeholder="Nhập email..." class="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-2.5 text-sm text-slate-800 focus:border-sky-600 focus:outline-none">
-                        </div>
+                    <button onclick="handleLogin()" class="w-full bg-sky-600 hover:bg-sky-700 text-white font-semibold py-3 rounded-xl shadow-lg shadow-sky-600/30 transition text-sm cursor-pointer">
+                        Vào web làm bài
+                    </button>
+                </div>
 
-                        <button onclick="handleRegister()" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-semibold py-3 rounded-xl shadow transition text-sm cursor-pointer">
-                            Gửi yêu cầu (Chờ Admin duyệt)
-                        </button>
-                    </div>
-
-                    <div class="text-center text-xs text-slate-500">
-                        Đã có tài khoản? <a href="#" onclick="toggleAuthForm('login')" class="text-sky-600 font-bold hover:underline">Quay lại đăng nhập</a>
-                    </div>
+                <div class="text-center text-xs text-slate-400 pt-4 border-t">
+                    Hệ thống phân quyền độc quyền bởi Admin. Liên hệ Admin để được cấp tài khoản.
                 </div>
 
             </div>
@@ -211,7 +170,7 @@
         <!-- SIDEBAR TRÁI -->
         <aside id="sidebar-container" class="w-64 bg-white border-r border-slate-200 hidden md:flex flex-col justify-between p-4 space-y-4 no-print shrink-0 transition-all duration-300">
             <div class="space-y-6">
-                <!-- Logo DM Mới Đẹp Sang Trọng -->
+                <!-- Logo DM -->
                 <div class="flex flex-col items-center text-center px-2 pt-2 border-b border-slate-100 pb-4">
                     <div class="w-14 h-14 bg-gradient-to-tr from-sky-600 to-blue-700 rounded-2xl shadow-lg flex items-center justify-center text-white font-black text-xl tracking-wider mb-2 border border-sky-300/30">
                         DM
@@ -231,7 +190,7 @@
                     <button onclick="handleMenuBode()" id="menu-bode" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-600 hover:bg-slate-50 transition">
                         <i class="fa-solid fa-folder-open w-5 text-center"></i> <span class="menu-text" id="menu-bode-text">Bộ đề</span>
                     </button>
-                    <!-- MỤC QUẢN LÝ TÀI KHOẢN (CHỈ ADMIN THẤY) -->
+                    <!-- MỤC QUẢN LÝ TÀI KHOẢN (CHỈ ADMIN DUCMANH MỚI THẤY) -->
                     <button onclick="switchTab('admin-users')" id="menu-admin-users" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-600 hover:bg-slate-50 transition hidden">
                         <i class="fa-solid fa-users-gear w-5 text-center text-sky-600"></i> <span class="menu-text">Quản lý tài khoản</span>
                     </button>
@@ -303,7 +262,7 @@
                             </div>
                         </div>
 
-                        <!-- PHẦN THỜI GIAN LÀM BÀI & KHUNG GIỜ ADMIN SET -->
+                        <!-- PHẦN THỜI GIAN LÀM BÀI & KHUNG GIỜ -->
                         <div class="bg-slate-50 border border-slate-100 p-4 rounded-xl flex items-start gap-3">
                             <div class="text-sky-500 mt-0.5"><i class="fa-solid fa-clock text-lg"></i></div>
                             <div class="flex-1">
@@ -349,48 +308,38 @@
                     </div>
                 </div>
 
-                <!-- TAB: QUẢN LÝ TÀI KHOẢN (CHỈ ADMIN) -->
+                <!-- TAB: QUẢN LÝ TÀI KHOẢN (CHỈ ADMIN DUCMANH THẤY) -->
                 <div id="tab-admin-users" class="hidden space-y-6 flex-1 flex flex-col">
                     <div class="border-b pb-3 flex justify-between items-center">
                         <div>
-                            <h2 class="text-xl font-bold text-slate-900">Quản Lý Tài Khoản Truy Cập</h2>
-                            <p class="text-xs text-slate-500 mt-0.5">Thêm nhanh username thủ công hoặc duyệt các yêu cầu đăng ký.</p>
+                            <h2 class="text-xl font-bold text-slate-900">Quản Lý Tài Khoản Thành Viên</h2>
+                            <p class="text-xs text-slate-500 mt-0.5">Thêm hoặc xóa các username thành viên được phép đăng nhập trên mọi thiết bị.</p>
                         </div>
                         <button onclick="switchTab('dashboard')" class="bg-sky-600 hover:bg-sky-700 text-white px-4 py-2 rounded-xl text-xs font-medium transition shadow-md">
                             <i class="fa-solid fa-house mr-1"></i> Trang chủ
                         </button>
                     </div>
 
-                    <!-- Khung Thêm Nhanh Username Vào Code/Hệ Thống -->
+                    <!-- Khung Thêm User Thành Viên -->
                     <div class="bg-slate-50 border border-slate-200 p-4 rounded-xl space-y-3">
                         <h3 class="font-bold text-slate-900 text-xs uppercase tracking-wider flex items-center gap-2">
-                            <i class="fa-solid fa-user-plus text-sky-600"></i> Thêm trực tiếp Username vào danh sách cấp quyền
+                            <i class="fa-solid fa-user-plus text-sky-600"></i> Thêm tài khoản thành viên mới
                         </h3>
                         <div class="flex gap-2">
-                            <input type="text" id="manual-add-username" placeholder="Nhập username cần cấp quyền (VD: hocvien01)..." class="flex-1 bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs font-semibold text-slate-800 focus:border-sky-600 focus:outline-none">
-                            <button onclick="manualAddUser()" class="bg-sky-600 hover:bg-sky-700 text-white font-semibold px-4 py-2 rounded-lg text-xs transition cursor-pointer shrink-0">
-                                <i class="fa-solid fa-plus mr-1"></i> Cấp quyền ngay
+                            <input type="text" id="manual-add-username" placeholder="Nhập username thành viên (VD: hocvien01)..." class="flex-1 bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs font-semibold text-slate-800 focus:border-sky-600 focus:outline-none">
+                            <button onclick="adminAddUser()" class="bg-sky-600 hover:bg-sky-700 text-white font-semibold px-4 py-2 rounded-lg text-xs transition cursor-pointer shrink-0">
+                                <i class="fa-solid fa-plus mr-1"></i> Thêm tài khoản
                             </button>
                         </div>
                     </div>
 
-                    <!-- Phần Đang chờ duyệt -->
-                    <div class="space-y-3">
+                    <!-- Danh sách tài khoản thành viên hiện có -->
+                    <div class="space-y-3 pt-2">
                         <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2">
-                            <i class="fa-solid fa-clock-rotate-left text-amber-500"></i> Tài khoản đang đợi cấp quyền (<span id="count-pending">0</span>)
+                            <i class="fa-solid fa-users text-emerald-600"></i> Danh sách thành viên được cấp quyền (<span id="count-users">0</span>)
                         </h3>
-                        <div id="admin-user-pending-container" class="space-y-3">
-                            <p class="text-xs text-slate-400 italic text-center py-6">Không có yêu cầu nào đang đợi.</p>
-                        </div>
-                    </div>
-
-                    <!-- Phần Đã cấp quyền -->
-                    <div class="space-y-3 pt-4 border-t">
-                        <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2">
-                            <i class="fa-solid fa-user-check text-emerald-600"></i> Tài khoản đã được cấp quyền truy cập (<span id="count-approved">0</span>)
-                        </h3>
-                        <div id="admin-user-approved-container" class="space-y-3">
-                            <p class="text-xs text-slate-400 italic text-center py-6">Chưa có tài khoản nào được cấp quyền.</p>
+                        <div id="admin-user-list-container" class="space-y-3">
+                            <p class="text-xs text-slate-400 italic text-center py-6">Chưa có tài khoản thành viên nào.</p>
                         </div>
                     </div>
                 </div>
@@ -486,7 +435,7 @@
                     </div>
                 </div>
 
-                <!-- TAB 3: QUẢN LÝ BỘ ĐỀ (CHỈ ADMIN) -->
+                <!-- TAB 3: QUẢN LÝ BỘ ĐỀ (CHỈ ADMIN DUCMANH THẤY) -->
                 <div id="tab-manual-creator" class="hidden space-y-6 flex-1 flex flex-col">
                     <div class="border-b pb-3 flex justify-between items-center">
                         <div>
@@ -607,7 +556,7 @@
                 <div id="tab-result" class="hidden space-y-6 flex-1 flex flex-col">
                     <div id="pdf-export-content" class="space-y-6 bg-white p-2">
                         
-                        <!-- BANNER THÔNG BÁO TRỄ HOẶC ĐỘNG VIÊN SỚM -->
+                        <!-- BANNER THÔNG BÁO -->
                         <div id="result-status-banner" class="p-4 rounded-xl border text-sm font-semibold flex items-center gap-3">
                             <i id="banner-icon" class="fa-solid fa-circle-check text-lg"></i>
                             <div id="banner-text">Đã hoàn thành bài thi!</div>
@@ -700,8 +649,8 @@
 
     <!-- Script xử lý toàn diện -->
     <script>
-        let registeredUsers = JSON.parse(localStorage.getItem('amc_users')) || ['DUCMANH', 'manhute73', 'vovannhat2', 'vovannhat999'];
-        let pendingUsers = JSON.parse(localStorage.getItem('amc_pending')) || [];
+        // Danh sách tài khoản thành viên được phép đăng nhập trên mọi thiết bị (Bạn có thể thêm username vào đây)
+        let memberUsers = JSON.parse(localStorage.getItem('amc_members')) || ['hocvien01', 'hocvien02'];
         let allExams = JSON.parse(localStorage.getItem('amc_all_exams')) || [];
         let globalHistory = JSON.parse(localStorage.getItem('amc_global_history')) || {};
         let userBookmarks = JSON.parse(localStorage.getItem('amc_bookmarks')) || {};
@@ -723,6 +672,10 @@
         let currentExamTitle = "";
         let currentExamTopic = "TOÁN CAO CẤP";
         let activeExamDeadline = null;
+
+        function saveMembersToStorage() {
+            localStorage.setItem('amc_members', JSON.stringify(memberUsers));
+        }
 
         function saveExamsToStorage() {
             localStorage.setItem('amc_all_exams', JSON.stringify(allExams));
@@ -754,52 +707,6 @@
             if (greetingEl) greetingEl.innerText = `${greeting}, bạn ơi!`;
         }
 
-        function toggleAuthForm(type) {
-            if(type === 'register') {
-                document.getElementById('form-login').classList.add('hidden');
-                document.getElementById('form-register').classList.remove('hidden');
-            } else {
-                document.getElementById('form-register').classList.add('hidden');
-                document.getElementById('form-login').classList.remove('hidden');
-            }
-        }
-
-        function handleRegister() {
-            let fullname = document.getElementById('reg-fullname').value.trim();
-            let username = document.getElementById('reg-username').value.trim();
-            let email = document.getElementById('reg-email').value.trim();
-
-            if(!fullname || !username || !email) {
-                alert("Vui lòng điền đầy đủ thông tin đăng ký!");
-                return;
-            }
-
-            let exists = registeredUsers.includes(username) || pendingUsers.some(u => u.username === username);
-            if(exists) {
-                alert("Tên đăng nhập này đã tồn tại hoặc đang chờ duyệt!");
-                return;
-            }
-
-            pendingUsers.push({ username, fullname, email });
-            localStorage.setItem('amc_pending', JSON.stringify(pendingUsers));
-
-            let templateParams = {
-                to_email: "manhute73@gmail.com",
-                email: "manhute73@gmail.com",
-                fullname: fullname,
-                username: username,
-                notification_content: `Yêu cầu đăng ký mới:\n- Họ tên: ${fullname}\n- Username: ${username}\n- Email: ${email}`
-            };
-
-            emailjs.send('service_x7jmmhb', 'template_hc69xxo', templateParams)
-                .then(function() {
-                    alert(`Gửi yêu cầu thành công! Đang chờ Admin duyệt.`);
-                    toggleAuthForm('login');
-                }, function(err) {
-                    alert("Lỗi khi gửi: " + JSON.stringify(err));
-                });
-        }
-
         function handleLogin() {
             let user = document.getElementById('login-username').value.trim();
             if(!user) {
@@ -808,9 +715,9 @@
             }
 
             let isMasterAdmin = (user.toUpperCase() === 'DUCMANH' || user === 'manhute73');
-            let isApproved = registeredUsers.includes(user);
+            let isMember = memberUsers.includes(user);
 
-            if(isMasterAdmin || isApproved) {
+            if(isMasterAdmin || isMember) {
                 currentUser = user;
                 document.getElementById('auth-screen').classList.add('hidden');
                 document.getElementById('main-header').classList.remove('hidden');
@@ -836,12 +743,7 @@
                 updateDashboardInfo();
                 switchTab('dashboard');
             } else {
-                let isPending = pendingUsers.some(u => u.username === user);
-                if(isPending) {
-                    alert("Tài khoản của bạn đang trong trạng thái: Đang chờ Admin phê duyệt.");
-                } else {
-                    alert("Tên đăng nhập không tồn tại hoặc chưa được phê duyệt!");
-                }
+                alert("Tên đăng nhập không tồn tại hoặc chưa được cấp quyền truy cập!");
             }
         }
 
@@ -861,116 +763,51 @@
             updateDashboardInfo();
         }
 
-        function manualAddUser() {
+        function adminAddUser() {
             let newUsername = document.getElementById('manual-add-username').value.trim();
             if(!newUsername) {
                 alert("Vui lòng nhập tên đăng nhập!");
                 return;
             }
-            if(registeredUsers.includes(newUsername)) {
-                alert("Tài khoản này đã có trong danh sách được cấp quyền!");
+            if(memberUsers.includes(newUsername)) {
+                alert("Tài khoản này đã có trong danh sách thành viên!");
                 return;
             }
-            registeredUsers.push(newUsername);
-            localStorage.setItem('amc_users', JSON.stringify(registeredUsers));
+            memberUsers.push(newUsername);
+            saveMembersToStorage();
             document.getElementById('manual-add-username').value = "";
-            alert(`Đã cấp quyền thành công cho tài khoản "${newUsername}"!`);
+            alert(`Đã thêm thành viên "${newUsername}" thành công!`);
+            renderAdminUsersManagement();
+        }
+
+        function removeMemberUser(username) {
+            if(!confirm(`Bạn có chắc chắn muốn xóa quyền truy cập của tài khoản "${username}" không?`)) return;
+            memberUsers = memberUsers.filter(u => u !== username);
+            saveMembersToStorage();
             renderAdminUsersManagement();
         }
 
         function renderAdminUsersManagement() {
-            const pendingContainer = document.getElementById('admin-user-pending-container');
-            const approvedContainer = document.getElementById('admin-user-approved-container');
+            const container = document.getElementById('admin-user-list-container');
+            document.getElementById('count-users').innerText = memberUsers.length;
 
-            document.getElementById('count-pending').innerText = pendingUsers.length;
-            document.getElementById('count-approved').innerText = registeredUsers.length;
-
-            if (pendingUsers.length === 0) {
-                pendingContainer.innerHTML = `<p class="text-xs text-slate-400 italic text-center py-6">Không có yêu cầu nào đang đợi.</p>`;
+            if (memberUsers.length === 0) {
+                container.innerHTML = `<p class="text-xs text-slate-400 italic text-center py-6">Chưa có tài khoản thành viên nào.</p>`;
             } else {
-                pendingContainer.innerHTML = pendingUsers.map((u, idx) => `
+                container.innerHTML = memberUsers.map((username) => `
                     <div class="bg-white border p-4 rounded-xl flex items-center justify-between text-xs gap-3 shadow-sm">
                         <div>
-                            <div class="font-bold text-slate-900 text-sm">${u.fullname || 'Chưa cập nhật'} (@${u.username})</div>
-                            <div class="text-slate-500">Email: ${u.email || 'Không có'}</div>
+                            <div class="font-bold text-slate-900 text-sm">@${username}</div>
+                            <div class="text-slate-500">Thành viên được cấp quyền truy cập website.</div>
                         </div>
-                        <div class="flex items-center gap-2">
-                            <button onclick="approveUserFromTab(${idx})" class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-4 py-2 rounded-lg transition shrink-0 cursor-pointer">
-                                <i class="fa-solid fa-check mr-1"></i> Phê duyệt
-                            </button>
-                            <button onclick="rejectUserFromTab(${idx})" class="bg-slate-100 hover:bg-rose-600 hover:text-white text-slate-700 font-semibold px-3 py-2 rounded-lg transition shrink-0 cursor-pointer">
-                                <i class="fa-solid fa-xmark"></i> Từ chối
+                        <div>
+                            <button onclick="removeMemberUser('${username}')" class="bg-rose-50 hover:bg-rose-600 hover:text-white text-rose-600 font-semibold px-3.5 py-2 rounded-lg transition shrink-0 cursor-pointer border border-rose-200">
+                                <i class="fa-solid fa-trash mr-1"></i> Xóa quyền
                             </button>
                         </div>
                     </div>
                 `).join('');
             }
-
-            if (registeredUsers.length === 0) {
-                approvedContainer.innerHTML = `<p class="text-xs text-slate-400 italic text-center py-6">Chưa có tài khoản nào được cấp quyền.</p>`;
-            } else {
-                approvedContainer.innerHTML = registeredUsers.map((username, idx) => {
-                    let isProtectedAdmin = (username.toUpperCase() === 'DUCMANH' || username === 'manhute73');
-                    return `
-                        <div class="bg-white border p-4 rounded-xl flex items-center justify-between text-xs gap-3 shadow-sm">
-                            <div>
-                                <div class="font-bold text-slate-900 text-sm flex items-center gap-2">
-                                    <span>@${username}</span>
-                                    ${isProtectedAdmin ? '<span class="bg-sky-100 text-sky-700 px-2 py-0.5 rounded-full text-[10px] font-bold">Admin hệ thống</span>' : ''}
-                                </div>
-                                <div class="text-slate-500">Đã được cấp quyền truy cập đầy đủ vào website.</div>
-                            </div>
-                            <div>
-                                ${isProtectedAdmin ? '<span class="text-slate-400 italic text-xs">Không thể xóa</span>' : `
-                                    <button onclick="revokeUserAccess('${username}')" class="bg-rose-50 hover:bg-rose-600 hover:text-white text-rose-600 font-semibold px-3.5 py-2 rounded-lg transition shrink-0 cursor-pointer border border-rose-200">
-                                        <i class="fa-solid fa-trash mr-1"></i> Xóa quyền truy cập
-                                    </button>
-                                `}
-                            </div>
-                        </div>
-                    `;
-                }).join('');
-            }
-        }
-
-        function approveUserFromTab(idx) {
-            let u = pendingUsers[idx];
-            registeredUsers.push(u.username);
-            pendingUsers.splice(idx, 1);
-
-            localStorage.setItem('amc_users', JSON.stringify(registeredUsers));
-            localStorage.setItem('amc_pending', JSON.stringify(pendingUsers));
-
-            let templateParams = {
-                to_email: u.email || "manhute73@gmail.com",
-                email: u.email || "manhute73@gmail.com",
-                fullname: u.fullname || u.username,
-                username: u.username,
-                notification_content: `Xin chào ${u.fullname || u.username},\nTài khoản của bạn đã được Admin phê duyệt thành công!\nUsername: ${u.username}\nHãy vào web để làm bài.`
-            };
-
-            emailjs.send('service_x7jmmhb', 'template_hc69xxo', templateParams)
-                .then(function() {
-                    alert(`Đã phê duyệt tài khoản "${u.username}" thành công!`);
-                    renderAdminUsersManagement();
-                }, function(err) {
-                    alert("Đã cấp quyền thành công!");
-                    renderAdminUsersManagement();
-                });
-        }
-
-        function rejectUserFromTab(idx) {
-            if(!confirm("Bạn có chắc chắn muốn từ chối/xóa yêu cầu này không?")) return;
-            pendingUsers.splice(idx, 1);
-            localStorage.setItem('amc_pending', JSON.stringify(pendingUsers));
-            renderAdminUsersManagement();
-        }
-
-        function revokeUserAccess(username) {
-            if(!confirm(`Bạn có chắc chắn muốn thu hồi và xóa quyền truy cập của tài khoản "${username}" không?`)) return;
-            registeredUsers = registeredUsers.filter(u => u !== username);
-            localStorage.setItem('amc_users', JSON.stringify(registeredUsers));
-            renderAdminUsersManagement();
         }
 
         function logout() {
@@ -1083,7 +920,6 @@
                 selector.innerHTML = `<option value="">-- Chưa có bộ đề nào cho môn ${currentExamTopic} --</option>`;
                 document.getElementById('display-exam-count').innerText = `0 câu trắc nghiệm`;
                 document.getElementById('input-exam-title').value = "Chưa chọn bộ đề";
-                document.getElementById('input-exam-topic').value = currentExamTopic;
                 document.getElementById('input-exam-time').value = "0 phút";
                 document.getElementById('exam-window-display').innerText = "Khung giờ: Không giới hạn";
                 currentActiveExamId = null;
@@ -1119,7 +955,6 @@
 
             document.getElementById('input-exam-title').value = exam.title;
             document.getElementById('exam-topic-display').innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-sky-600 inline-block"></span> ${exam.topic}`;
-            
             document.getElementById('input-exam-time').value = `${exam.timeLimit || 0} phút`;
             
             let startStr = exam.startTime ? new Date(exam.startTime).toLocaleString('vi-VN') : 'Không giới hạn';
