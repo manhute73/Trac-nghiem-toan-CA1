@@ -65,7 +65,7 @@
         <div class="flex items-center space-x-4">
             <button onclick="switchTab('dashboard')" class="hover:text-white transition"><i class="fa-solid fa-house mr-1"></i> Trang chủ</button>
             <button onclick="switchTab('manual-creator')" class="hover:text-white transition text-rose-400 font-semibold"><i class="fa-solid fa-clipboard mr-1"></i> Dán Ảnh Cắt Thủ Công</button>
-            <!-- Nút Quản lý Admin chỉ hiện lên khi tài khoản đăng nhập là DUCMANH -->
+            <!-- Nút Quản lý Admin chỉ hiện duy nhất với tài khoản DUCMANH -->
             <button id="nav-admin-btn" onclick="openAdminModal()" class="hover:text-amber-400 transition text-amber-300 font-medium hidden"><i class="fa-solid fa-shield-halved mr-1"></i> Quản lý Admin</button>
             <button onclick="logout()" class="hover:text-rose-400 transition text-slate-400"><i class="fa-solid fa-right-from-bracket mr-1"></i> Đăng xuất</button>
         </div>
@@ -87,10 +87,13 @@
 
                 <div class="space-y-3 pt-4 text-xs font-medium text-slate-700">
                     <div class="flex items-center gap-2">
-                        <i class="fa-solid fa-circle-check text-rose-600"></i> Đăng ký gửi yêu cầu xét duyệt cho Admin
+                        <i class="fa-solid fa-circle-check text-rose-600"></i> Hai chế độ: luyện tập có giải thích ngay và thi thử tính giờ
                     </div>
                     <div class="flex items-center gap-2">
-                        <i class="fa-solid fa-circle-check text-rose-600"></i> Nhập đúng tên đăng nhập để vào web sau khi được duyệt
+                        <i class="fa-solid fa-circle-check text-rose-600"></i> Xem lại từng câu, biết chủ đề nào còn yếu để ôn tiếp
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <i class="fa-solid fa-circle-check text-rose-600"></i> Nhập tên đăng nhập để vào web sau khi được Admin phê duyệt
                     </div>
                 </div>
             </div>
@@ -161,7 +164,7 @@
         </div>
     </div>
 
-    <!-- MODAL QUẢN LÝ ADMIN -->
+    <!-- MODAL QUẢN LÝ ADMIN (Chỉ DUCMANH mới mở được) -->
     <div id="admin-modal" class="fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-4 hidden">
         <div class="bg-white rounded-2xl max-w-2xl w-full p-6 space-y-4 shadow-2xl">
             <div class="flex justify-between items-center border-b pb-3">
@@ -306,24 +309,34 @@
                         <div class="flex items-center gap-6">
                             <div class="relative w-28 h-28 flex items-center justify-center rounded-full border-8 border-rose-600 bg-rose-50 shadow-inner shrink-0">
                                 <div class="text-center">
-                                    <span id="res-score" class="text-2xl font-black text-slate-900">9,29</span>
+                                    <span id="res-score" class="text-2xl font-black text-slate-900">0</span>
                                     <span class="text-xs text-slate-500 block font-bold">/10</span>
                                 </div>
                             </div>
                             <div>
-                                <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Thi thử • TOÁN CAO CẤP</span>
-                                <h2 class="text-2xl font-black text-slate-900 mt-1" id="res-msg-title">Xuất sắc!</h2>
-                                <p class="text-xs text-slate-600 mt-1" id="res-details-text">Đúng 13/14 câu</p>
+                                <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Kết quả • TOÁN CAO CẤP</span>
+                                <h2 class="text-2xl font-black text-slate-900 mt-1" id="res-msg-title">Hoàn thành bài tập</h2>
+                                <p class="text-xs text-slate-600 mt-1" id="res-details-text">Đúng 0/0 câu</p>
                             </div>
                         </div>
+                        <div class="flex items-center gap-3">
+                            <button onclick="window.print()" class="bg-slate-900 hover:bg-slate-800 text-white px-4 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-2 transition">
+                                <i class="fa-solid fa-print"></i> In / Xuất PDF
+                            </button>
+                            <button onclick="switchTab('dashboard')" class="bg-rose-600 hover:bg-rose-700 text-white px-4 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-2 transition">
+                                <i class="fa-solid fa-rotate-right"></i> Làm bài khác
+                            </button>
+                        </div>
                     </div>
+
+                    <div id="result-detailed-list" class="space-y-4"></div>
                 </div>
             </div>
 
         </div>
     </main>
 
-    <!-- Script xử lý logic -->
+    <!-- Script xử lý logic đầy đủ -->
     <script>
         let registeredUsers = JSON.parse(localStorage.getItem('amc_users')) || ['DUCMANH', 'manhute73'];
         let pendingUsers = JSON.parse(localStorage.getItem('amc_pending')) || [];
@@ -384,14 +397,14 @@
 
             emailjs.send('service_x7jmmhb', 'template_hc69xxo', templateParams)
                 .then(function(response) {
-                    alert(`Gửi yêu cầu thành công! Vui lòng chờ Admin phê duyệt.`);
+                    alert(`Gửi yêu cầu thành công! Vui lòng chờ Admin (manhute73@gmail.com) phê duyệt.`);
                     toggleAuthForm('login');
                 }, function(error) {
                     alert("Lỗi khi gửi yêu cầu: " + JSON.stringify(error));
                 });
         }
 
-        // Đăng nhập: Kiểm tra nếu là "DUCMANH" thì cấp quyền Admin, người khác kiểm tra danh sách duyệt
+        // Đăng nhập: DUCMANH vào thẳng + hiện nút Admin. Người khác kiểm tra danh sách duyệt
         function handleLogin() {
             let user = document.getElementById('login-username').value.trim();
             
@@ -400,28 +413,27 @@
                 return;
             }
 
-            // Kiểm tra xem có phải DUCMANH (Admin mặc định) hoặc tài khoản đã được phê duyệt không
             let isMasterAdmin = (user.toUpperCase() === 'DUCMANH' || user === 'manhute73');
             let isApproved = registeredUsers.includes(user);
 
             if(isMasterAdmin || isApproved) {
                 document.getElementById('auth-screen').classList.add('hidden');
                 document.getElementById('main-header').classList.remove('hidden');
-                document.getElementById('app-container').classList.add('hidden');
+                document.getElementById('app-container').classList.remove('hidden');
                 
-                // Hiển thị hoặc ẩn nút Quản lý Admin dựa vào tên đăng nhập
                 const adminBtn = document.getElementById('nav-admin-btn');
                 if(user.toUpperCase() === 'DUCMANH') {
-                    adminBtn.classList.remove('hidden'); // Chỉ hiện cho DUCMANH
+                    adminBtn.classList.remove('hidden'); // Chỉ DUCMANH thấy
                 } else {
-                    adminBtn.classList.add('hidden');    // Ẩn đối với người dùng khác
+                    adminBtn.classList.add('hidden');    // Người khác ẩn
                 }
 
                 switchTab('dashboard');
+                updateDashboardCount();
             } else {
                 let isPending = pendingUsers.some(u => u.username === user);
                 if(isPending) {
-                    alert("Tài khoản của bạn đang chờ Admin phê duyệt.");
+                    alert("Tài khoản của bạn đang chờ Admin (manhute73@gmail.com) phê duyệt.");
                 } else {
                     alert("Tên đăng nhập không tồn tại hoặc chưa được phê duyệt!");
                 }
@@ -473,7 +485,7 @@
 
             emailjs.send('service_x7jmmhb', 'template_hc69xxo', templateParams)
                 .then(function(response) {
-                    alert(`Đã phê duyệt tài khoản "${u.username}" và gửi email kích hoạt thành công!`);
+                    alert(`Đã phê duyệt tài khoản "${u.username}" và gửi email kích hoạt đến ${u.email} thành công!`);
                     renderAdminPendingList();
                 }, function(error) {
                     alert("Đã cấp quyền nhưng gửi email phản hồi lỗi: " + JSON.stringify(error));
@@ -487,10 +499,216 @@
             document.getElementById('auth-screen').classList.remove('hidden');
         }
 
-        let isShuffleEnabled = true;
+        // Logic tạo câu hỏi thủ công & làm bài trắc nghiệm
         let manualQuestions = [];
         let activeQuestions = [];
         let userAnswers = {};
+        let timerInterval = null;
+        let timeLeft = 0;
+
+        function generateQuestionSlots() {
+            let total = parseInt(document.getElementById('input-total-questions').value) || 10;
+            const container = document.getElementById('manual-question-list');
+            document.getElementById('manual-q-count').innerText = total;
+
+            manualQuestions = [];
+            for(let i=1; i<=total; i++) {
+                manualQuestions.push({ id: i, image: '', correctAnswer: 'A' });
+            }
+
+            renderManualList();
+        }
+
+        function renderManualList() {
+            const container = document.getElementById('manual-question-list');
+            container.innerHTML = manualQuestions.map((q, idx) => `
+                <div class="bg-white border border-slate-200 p-4 rounded-xl space-y-3 shadow-sm">
+                    <div class="flex justify-between items-center">
+                        <span class="font-bold text-slate-800 text-xs uppercase">Câu hỏi ${idx + 1}</span>
+                        <div class="flex items-center gap-2">
+                            <span class="text-xs text-slate-500 font-medium">Đáp án đúng:</span>
+                            <select onchange="updateCorrectAnswer(${idx}, this.value)" class="bg-slate-50 border border-slate-300 rounded px-2 py-1 text-xs font-bold text-rose-600 focus:outline-none">
+                                <option value="A" ${q.correctAnswer === 'A' ? 'selected' : ''}>A</option>
+                                <option value="B" ${q.correctAnswer === 'B' ? 'selected' : ''}>B</option>
+                                <option value="C" ${q.correctAnswer === 'C' ? 'selected' : ''}>C</option>
+                                <option value="D" ${q.correctAnswer === 'D' ? 'selected' : ''}>D</option>
+                            </select>
+                            <button onclick="clearQuestionImage(${idx})" class="text-slate-400 hover:text-rose-600 text-xs px-2 py-1"><i class="fa-solid fa-trash"></i> Xóa ảnh</button>
+                        </div>
+                    </div>
+                    <div class="question-frame-box paste-zone" contenteditable="true" onpaste="handleImagePaste(event, ${idx})" id="slot-${idx}">
+                        ${q.image ? `<img src="${q.image}" alt="Câu ${idx+1}">` : `<span class="text-xs text-slate-400 italic pointer-events-none">Click vào đây rồi nhấn Ctrl + V để dán ảnh đề bài...</span>`}
+                    </div>
+                </div>
+            `).join('');
+            updateDashboardCount();
+        }
+
+        function updateCorrectAnswer(idx, val) {
+            manualQuestions[idx].correctAnswer = val;
+        }
+
+        function clearQuestionImage(idx) {
+            manualQuestions[idx].image = '';
+            renderManualList();
+        }
+
+        function handleImagePaste(event, idx) {
+            let items = (event.clipboardData || event.originalEvent.clipboardData).items;
+            for (let item of items) {
+                if (item.type.indexOf("image") === 0) {
+                    let blob = item.getAsFile();
+                    let reader = new FileReader();
+                    reader.onload = function(event) {
+                        manualQuestions[idx].image = event.target.result;
+                        renderManualList();
+                    };
+                    reader.readAsDataURL(blob);
+                    event.preventDefault();
+                    break;
+                }
+            }
+        }
+
+        function updateDashboardCount() {
+            const countEl = document.getElementById('display-exam-count');
+            if(countEl) countEl.innerText = `${manualQuestions.length} câu trắc nghiệm`;
+        }
+
+        function startExam() {
+            if(manualQuestions.length === 0) {
+                alert("Vui lòng tạo danh sách câu hỏi và dán ảnh trước khi bắt đầu!");
+                switchTab('manual-creator');
+                return;
+            }
+
+            activeQuestions = JSON.parse(JSON.stringify(manualQuestions));
+            userAnswers = {};
+
+            let title = document.getElementById('input-exam-title').value || "BÀI TẬP";
+            document.getElementById('quiz-active-title').innerText = title;
+            document.getElementById('quiz-active-subtitle').innerText = `Đang làm ${activeQuestions.length} câu trắc nghiệm`;
+
+            let timeMinutes = parseInt(document.getElementById('input-exam-time').value) || 0;
+            if(timeMinutes > 0) {
+                timeLeft = timeMinutes * 60;
+                startTimer();
+            } else {
+                document.getElementById('timer-display').innerText = "Không giới hạn";
+            }
+
+            renderQuizQuestions();
+            renderPalette();
+            switchTab('quiz');
+        }
+
+        function startTimer() {
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                let m = Math.floor(timeLeft / 60);
+                let s = timeLeft % 60;
+                document.getElementById('timer-display').innerText = `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+                if(timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    alert("Hết thời gian làm bài!");
+                    validateAndSubmitExam();
+                }
+                timeLeft--;
+            }, 1000);
+        }
+
+        function renderQuizQuestions() {
+            const container = document.getElementById('quiz-questions-container');
+            container.innerHTML = activeQuestions.map((q, idx) => `
+                <div class="bg-white border border-slate-200 p-5 rounded-2xl shadow-sm space-y-4" id="question-card-${idx}">
+                    <div class="flex justify-between items-center border-b pb-2">
+                        <span class="font-bold text-slate-900 text-sm">Câu ${idx + 1}</span>
+                    </div>
+                    <div class="question-frame-box bg-slate-50">
+                        ${q.image ? `<img src="${q.image}" alt="Câu ${idx+1}">` : `<span class="text-xs text-slate-400 italic">Chưa có ảnh nội dung câu hỏi</span>`}
+                    </div>
+                    <div class="flex items-center gap-3 pt-2">
+                        ${['A', 'B', 'C', 'D'].map(opt => `
+                            <button onclick="selectAnswer(${idx}, '${opt}')" id="btn-q${idx}-${opt}" class="w-12 h-12 rounded-xl border border-slate-300 font-bold text-sm transition flex items-center justify-center hover:border-rose-600 hover:text-rose-600 ${userAnswers[idx] === opt ? 'bg-rose-600 text-white border-rose-600 shadow-md' : 'bg-white text-slate-700'}">
+                                ${opt}
+                            </button>
+                        `).join('')}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function selectAnswer(qIdx, opt) {
+            userAnswers[qIdx] = opt;
+            ['A', 'B', 'C', 'D'].forEach(optChar => {
+                let btn = document.getElementById(`btn-q${qIdx}-${optChar}`);
+                if(btn) {
+                    if(optChar === opt) {
+                        btn.className = "w-12 h-12 rounded-xl border border-rose-600 font-bold text-sm transition flex items-center justify-center bg-rose-600 text-white shadow-md";
+                    } else {
+                        btn.className = "w-12 h-12 rounded-xl border border-slate-300 font-bold text-sm transition flex items-center justify-center bg-white text-slate-700 hover:border-rose-600 hover:text-rose-600";
+                    }
+                }
+            });
+            renderPalette();
+        }
+
+        function renderPalette() {
+            const grid = document.getElementById('palette-grid');
+            grid.innerHTML = activeQuestions.map((q, idx) => {
+                let answered = userAnswers[idx] !== undefined;
+                return `
+                    <a href="#question-card-${idx}" class="w-9 h-9 rounded-lg border font-bold text-xs flex items-center justify-center transition ${answered ? 'bg-rose-600 text-white border-rose-600 shadow' : 'bg-slate-100 text-slate-700 border-slate-200 hover:bg-slate-200'}">
+                        ${idx + 1}
+                    </a>
+                `;
+            }).join('');
+        }
+
+        function validateAndSubmitExam() {
+            clearInterval(timerInterval);
+            let unanswered = activeQuestions.length - Object.keys(userAnswers).length;
+            if(unanswered > 0) {
+                if(!confirm(`Bạn còn ${unanswered} câu chưa trả lời. Bạn có chắc chắn muốn nộp bài không?`)) return;
+            }
+            calculateAndShowResult();
+        }
+
+        function calculateAndShowResult() {
+            let correctCount = 0;
+            let total = activeQuestions.length;
+
+            activeQuestions.forEach((q, idx) => {
+                if(userAnswers[idx] === q.correctAnswer) {
+                    correctCount++;
+                }
+            });
+
+            let score = total > 0 ? ((correctCount / total) * 10).toFixed(2) : 0;
+            document.getElementById('res-score').innerText = score.replace('.', ',');
+            document.getElementById('res-details-text').innerText = `Đúng ${correctCount}/${total} câu`;
+
+            const detailList = document.getElementById('result-detailed-list');
+            detailList.innerHTML = activeQuestions.map((q, idx) => {
+                let userOpt = userAnswers[idx] || "Không chọn";
+                let isCorrect = userOpt === q.correctAnswer;
+                return `
+                    <div class="bg-white border border-slate-200 p-4 rounded-xl space-y-3 shadow-sm">
+                        <div class="flex justify-between items-center font-bold text-xs">
+                            <span class="text-slate-900">Câu ${idx + 1}</span>
+                            <span class="${isCorrect ? 'text-emerald-600' : 'text-rose-600'}"><i class="fa-solid ${isCorrect ? 'fa-circle-check' : 'fa-circle-xmark'}"></i> Bạn chọn: ${userOpt} (Đúng: ${q.correctAnswer})</span>
+                        </div>
+                        <div class="question-frame-box bg-slate-50">
+                            ${q.image ? `<img src="${q.image}" alt="Câu ${idx+1}">` : `<span class="text-xs text-slate-400 italic">Không có ảnh đề bài</span>`}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            switchTab('result');
+        }
+
+        let isShuffleEnabled = true;
 
         function switchTab(tabId) {
             document.getElementById('tab-dashboard').classList.add('hidden');
