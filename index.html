@@ -12,7 +12,7 @@
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
     <script type="text/javascript">
        (function(){
-          emailjs.init("NB9xq1TAR60kJFMDs"); // Public Key EmailJS của bạn[cite: 12]
+          emailjs.init("NB9xq1TAR60kJFMDs"); // Public Key EmailJS của bạn
        })();
     </script>
     <style>
@@ -207,7 +207,7 @@
 
                 <div>
                     <label class="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1">Tên bài tập:</label>
-                    <input type="text" id="input-exam-title" value="Xin Chao Duc Manh" class="w-full text-2xl font-bold text-slate-900 tracking-tight border-b-2 border-dashed border-slate-300 focus:border-rose-600 focus:outline-none py-1 bg-transparent">
+                    <input type="text" id="input-exam-title" value="ĐỀ THI TRẮC NGHIỆM CHUYÊN SÂU - TOÁN CAO CẤP" class="w-full text-2xl font-bold text-slate-900 tracking-tight border-b-2 border-dashed border-slate-300 focus:border-rose-600 focus:outline-none py-1 bg-transparent">
                     <p class="text-rose-600 font-semibold text-sm mt-3 flex items-center gap-1.5">
                         <span class="w-1.5 h-1.5 rounded-full bg-rose-600 inline-block"></span> TOÁN CAO CẤP
                     </p>
@@ -265,7 +265,7 @@
 
                 <div class="flex items-center gap-2 text-xs text-slate-500 mt-2">
                     <span class="font-bold">Chủ đề:</span>
-                    <input type="text" id="input-exam-topic" value="Xin Chao Duc Manh" class="flex-1 bg-slate-50 border border-slate-200 text-slate-700 px-3 py-1.5 rounded-lg font-medium focus:border-rose-600 focus:outline-none">
+                    <input type="text" id="input-exam-topic" value="Toán Cao Cấp - Ôn Thi VB2 CAND" class="flex-1 bg-slate-50 border border-slate-200 text-slate-700 px-3 py-1.5 rounded-lg font-medium focus:border-rose-600 focus:outline-none">
                 </div>
 
                 <div class="bg-amber-50 border border-amber-200 text-amber-800 p-4 rounded-xl flex items-start gap-3 text-sm">
@@ -521,9 +521,9 @@
             // Gửi email thông báo cho Admin (manhute73@gmail.com)
             let templateParams = {
                 to_email: "manhute73@gmail.com",
+                email: "manhute73@gmail.com",
                 fullname: fullname,
                 username: username,
-                email: email,
                 notification_content: `Yêu cầu đăng ký mới đang chờ bạn phê duyệt:\n- Họ tên: ${fullname}\n- Username: ${username}\n- Email: ${email}`
             };
 
@@ -611,6 +611,7 @@
             // Cấu hình tham số gửi email tự động thông báo đã duyệt thành công đến người dùng
             let templateParams = {
                 to_email: u.email,
+                email: u.email,
                 fullname: u.fullname,
                 username: u.username,
                 notification_content: `Xin chào ${u.fullname},\nTài khoản của bạn đã được Admin phê duyệt thành công!\nTên đăng nhập của bạn là: ${u.username}\nBây giờ bạn có thể truy cập vào trang web để bắt đầu làm bài trắc nghiệm.`
