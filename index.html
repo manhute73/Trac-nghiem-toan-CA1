@@ -319,14 +319,14 @@
                             </div>
                         </div>
 
-                        <!-- PHẦN THỜI GIAN CỐ ĐỊNH + KHOẢNG THỜI GIAN LÀM BÀI -->
+                        <!-- PHẦN THỜI GIAN LÀM BÀI & KHUNG GIỜ ADMIN SET -->
                         <div class="bg-slate-50 border border-slate-100 p-4 rounded-xl flex items-start gap-3">
                             <div class="text-sky-500 mt-0.5"><i class="fa-solid fa-clock text-lg"></i></div>
                             <div class="flex-1">
                                 <div class="text-xs font-bold text-slate-400 uppercase tracking-wider">Thời gian làm bài</div>
                                 <div class="flex items-center gap-2 mt-1">
-                                    <input type="text" id="input-exam-time" value="0 phút" class="w-32 bg-slate-100 border border-slate-200 rounded-lg px-2 py-1 font-semibold text-slate-700 text-sm cursor-not-allowed" readonly disabled>
-                                    <span id="exam-window-display" class="text-[11px] font-medium text-slate-500">Khung giờ: Không giới hạn</span>
+                                    <input type="text" id="input-exam-time" value="0 phút" class="w-28 bg-slate-100 border border-slate-200 rounded-lg px-2 py-1 font-semibold text-slate-700 text-sm cursor-not-allowed" readonly disabled>
+                                    <span id="exam-window-display" class="text-[11px] font-medium text-slate-600">Khung giờ: Không giới hạn</span>
                                 </div>
                             </div>
                         </div>
@@ -456,7 +456,7 @@
                     </div>
                 </div>
 
-                <!-- TAB 3: QUẢN LÝ BỘ ĐỀ (CHỈ ADMIN - CÓ SET THỜI GIAN BẮT ĐẦU VÀ KẾT THÚC) -->
+                <!-- TAB 3: QUẢN LÝ BỘ ĐỀ (CHỈ ADMIN) -->
                 <div id="tab-manual-creator" class="hidden space-y-6 flex-1 flex flex-col">
                     <div class="border-b pb-3 flex justify-between items-center">
                         <div>
@@ -573,7 +573,7 @@
                     </div>
                 </div>
 
-                <!-- TAB 5: KẾT QUẢ & ĐÁNH GIÁ (CÓ THÔNG BÁO TRỄ / ĐỘNG VIÊN SỚM) -->
+                <!-- TAB 5: KẾT QUẢ & ĐÁNH GIÁ -->
                 <div id="tab-result" class="hidden space-y-6 flex-1 flex flex-col">
                     <div id="pdf-export-content" class="space-y-6 bg-white p-2">
                         
@@ -1021,31 +1021,29 @@
             activeExamDeadline = exam.endTime ? new Date(exam.endTime) : null;
 
             document.getElementById('input-exam-title').value = exam.title;
-            document.getElementById('input-exam-topic').value = exam.topic;
             document.getElementById('exam-topic-display').innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-sky-600 inline-block"></span> ${exam.topic}`;
-            document.getElementById('input-exam-time').value = `${exam.timeLimit} phút`;
+            
+            document.getElementById('input-exam-time').value = `${exam.timeLimit || 0} phút`;
             
             let startStr = exam.startTime ? new Date(exam.startTime).toLocaleString('vi-VN') : 'Không giới hạn';
             let endStr = exam.endTime ? new Date(exam.endTime).toLocaleString('vi-VN') : 'Không giới hạn';
-            document.getElementById('exam-window-display').innerText = `Từ: ${startStr} Đến: ${endStr}`;
+            document.getElementById('exam-window-display').innerHTML = `Khung giờ: Từ <b>${startStr}</b> Đến <b>${endStr}</b>`;
 
-            let filledCount = exam.questions.filter(q => q && q.imgUrl).length;
-            
-            // Tính toán tiến độ bài này (%)
+            let totalQ = exam.questions.length;
             let userHistory = globalHistory[currentUser] || [];
             let passed = userHistory.some(h => h.examTitle === exam.title);
             let pct = passed ? 100 : 0;
-            document.getElementById('display-exam-count').innerText = `${filledCount}/${exam.questions.length} câu trắc nghiệm (Tiến độ: ${pct}%)`;
+            
+            document.getElementById('display-exam-count').innerText = `${totalQ} câu trắc nghiệm (Tiến độ: ${pct}%)`;
         }
 
-        // --- TÍNH TOÁN TIẾN ĐỘ (%) HOÀN THÀNH ---
         function renderProgressUI() {
             let userHistory = globalHistory[currentUser] || [];
             let activeExams = allExams.filter(e => e.isActive);
-            let totalQuestionsAll = activeExams.reduce((sum, e) => sum + e.questions.filter(q => q && q.imgUrl).length, 0);
+            let totalQuestionsAll = activeExams.reduce((sum, e) => sum + e.questions.length, 0);
             
             let completedExamTitles = [...new Set(userHistory.map(h => h.examTitle))];
-            let completedQuestionsAll = activeExams.filter(e => completedExamTitles.includes(e.title)).reduce((sum, e) => sum + e.questions.filter(q => q && q.imgUrl).length, 0);
+            let completedQuestionsAll = activeExams.filter(e => completedExamTitles.includes(e.title)).reduce((sum, e) => sum + e.questions.length, 0);
 
             let overallPct = totalQuestionsAll > 0 ? Math.round((completedQuestionsAll / totalQuestionsAll) * 100) : 0;
             document.getElementById('overall-progress-pct').innerText = overallPct + '%';
@@ -1060,7 +1058,7 @@
 
             container.innerHTML = activeExams.map(e => {
                 let isDone = completedExamTitles.includes(e.title);
-                let qCount = e.questions.filter(q => q && q.imgUrl).length;
+                let qCount = e.questions.length;
                 let pPct = isDone ? 100 : 0;
                 return `
                     <div class="bg-white border border-slate-200 p-4 rounded-xl space-y-2 shadow-sm">
@@ -1080,7 +1078,6 @@
             }).join('');
         }
 
-        // --- QUẢN LÝ TẠO & CHỈNH SỬA BỘ ĐỀ ---
         function generateQuestionSlots() {
             let totalQ = parseInt(document.getElementById('input-total-questions').value) || 10;
             if(!editingExamId) {
@@ -1298,7 +1295,6 @@
             renderAdminExamsList();
         }
 
-        // --- LÀM BÀI THI & TỰ ĐỘNG KHÔI PHỤC KHI THOÁT APP ---
         function startExam() {
             if(!currentActiveExamId) { alert("Vui lòng chọn bộ đề kiểm tra!"); return; }
             let exam = allExams.find(e => e.id === currentActiveExamId);
@@ -1311,17 +1307,16 @@
             currentExamTopic = exam.topic;
             activeExamDeadline = exam.endTime ? new Date(exam.endTime) : null;
 
-            activeQuestions = [...validQuestions];
+            activeQuestions = [...exam.questions];
             if (isShuffleEnabled) activeQuestions.sort(() => Math.random() - 0.5);
 
-            // Khôi phục đáp án đã lưu trước đó (nếu có)
             userAnswers = {};
             if(userSavedAnswers[currentUser] && userSavedAnswers[currentUser][currentActiveExamId]) {
                 userAnswers = userSavedAnswers[currentUser][currentActiveExamId];
             }
 
             secondsElapsed = 0;
-            countdownSeconds = exam.timeLimit * 60;
+            countdownSeconds = (exam.timeLimit || 30) * 60;
 
             if(examTimer) clearInterval(examTimer);
             examTimer = setInterval(() => {
@@ -1330,7 +1325,7 @@
                     countdownSeconds--;
                     if (countdownSeconds <= 0) {
                         clearInterval(examTimer);
-                        alert("Hết thời gian làm bài! Hệ thống tự động nộp bài.");
+                        alert("Hết thời gian làm bài! Hệ thống tự động nộp bài và báo điểm.");
                         submitExam();
                         return;
                     }
@@ -1386,7 +1381,7 @@
 
         function selectOption(qIdx, optIdx) {
             userAnswers[qIdx] = optIdx;
-            saveAutoAnswers(); // Tự động lưu đáp án ngay khi chọn để chống mất dữ liệu khi thoát app
+            saveAutoAnswers();
             for (let i = 0; i < 4; i++) {
                 let lbl = document.getElementById(`label_q_${qIdx}_${i}`);
                 let badge = document.getElementById(`badge_q_${qIdx}_${i}`);
@@ -1413,7 +1408,6 @@
         function submitExam() {
             clearInterval(examTimer);
 
-            // Xóa đáp án đã lưu tạm sau khi nộp bài xong
             if(userSavedAnswers[currentUser] && userSavedAnswers[currentUser][currentActiveExamId]) {
                 delete userSavedAnswers[currentUser][currentActiveExamId];
                 localStorage.setItem('amc_saved_answers', JSON.stringify(userSavedAnswers));
@@ -1433,7 +1427,6 @@
             let now = new Date();
             let timeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')} ${now.getDate().toString().padStart(2, '0')}/${(now.getMonth()+1).toString().padStart(2, '0')}/${now.getFullYear()}`;
 
-            // Kiểm tra nộp trễ hay sớm
             let isLate = activeExamDeadline && now > activeExamDeadline;
             let bannerEl = document.getElementById('result-status-banner');
             let bannerIcon = document.getElementById('banner-icon');
@@ -1504,7 +1497,6 @@
             let existingIdx = userBookmarks[currentUser].findIndex(b => b.id === bookmarkId);
             if(existingIdx >= 0) {
                 userBookmarks[currentUser].splice(existingIdx, 1);
-                alert("Đã bỏ đánh dấu câu hỏi này!");
             } else {
                 userBookmarks[currentUser].push({
                     id: bookmarkId,
@@ -1514,7 +1506,6 @@
                     imgUrl: q.imgUrl,
                     correct: q.correct
                 });
-                alert("Đã thêm vào danh sách câu hỏi cần ôn tập!");
             }
             saveBookmarksToStorage();
             renderReviewList(currentFilter);
@@ -1721,7 +1712,7 @@
             let total = item.total;
             let wrongCount = total - correctCount;
 
-            document.getElementById('result-status-banner').className = "hidden"; // Ẩn banner khi xem lại lịch sử
+            document.getElementById('result-status-banner').className = "hidden";
             document.getElementById('res-score').innerText = item.score;
             document.getElementById('res-correct-count').innerText = correctCount;
             document.getElementById('res-wrong-count').innerText = wrongCount;
