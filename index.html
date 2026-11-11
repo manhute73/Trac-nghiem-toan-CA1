@@ -57,7 +57,6 @@
             <span class="ml-3 font-medium text-slate-200">Luyện Thi VB2 CAND 2027</span>
         </div>
         <div class="flex items-center space-x-4">
-            <!-- Hiển thị tên tài khoản ở thanh header (Yêu cầu 1) -->
             <div id="user-display-badge" class="bg-slate-800 text-sky-300 font-semibold px-3 py-1 rounded-lg text-xs border border-slate-700 flex items-center gap-1.5">
                 <i class="fa-solid fa-user-circle"></i> <span id="current-username-text">Tài khoản</span>
             </div>
@@ -101,7 +100,6 @@
 
         <div class="md:w-1/2 flex items-center justify-center p-8 md:p-16 bg-white">
             <div class="max-w-md w-full space-y-6">
-                
                 <div class="space-y-1">
                     <h2 class="text-2xl font-bold text-slate-900">Đăng nhập hệ thống</h2>
                     <p class="text-xs text-slate-500">Nhập tên đăng nhập của bạn để vào làm bài.</p>
@@ -121,7 +119,6 @@
                 <div class="text-center text-xs text-slate-400 pt-4 border-t">
                     Hệ thống phân quyền độc quyền bởi Admin. Liên hệ Admin để được cấp tài khoản.
                 </div>
-
             </div>
         </div>
     </div>
@@ -173,7 +170,6 @@
         <!-- SIDEBAR TRÁI -->
         <aside id="sidebar-container" class="w-64 bg-white border-r border-slate-200 hidden md:flex flex-col justify-between p-4 space-y-4 no-print shrink-0 transition-all duration-300">
             <div class="space-y-6">
-                <!-- Logo DM -->
                 <div class="flex flex-col items-center text-center px-2 pt-2 border-b border-slate-100 pb-4">
                     <div class="w-14 h-14 bg-gradient-to-tr from-sky-600 to-blue-700 rounded-2xl shadow-lg flex items-center justify-center text-white font-black text-xl tracking-wider mb-2 border border-sky-300/30">
                         DM
@@ -182,7 +178,6 @@
                     <span class="text-[10px] text-sky-600 font-bold bg-sky-50 px-2 py-0.5 rounded-full mt-1">VB2 CAND 2027</span>
                 </div>
 
-                <!-- Menu Items -->
                 <nav class="space-y-1 text-sm font-medium">
                     <button onclick="switchTab('dashboard')" id="menu-dashboard" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-600 hover:bg-slate-50 transition">
                         <i class="fa-solid fa-house w-5 text-center"></i> <span class="menu-text">Tổng quan</span>
@@ -193,7 +188,6 @@
                     <button onclick="handleMenuBode()" id="menu-bode" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-600 hover:bg-slate-50 transition">
                         <i class="fa-solid fa-folder-open w-5 text-center"></i> <span class="menu-text" id="menu-bode-text">Bộ đề</span>
                     </button>
-                    <!-- MỤC QUẢN LÝ TÀI KHOẢN (CHỈ ADMIN MỚI THẤY) -->
                     <button onclick="switchTab('admin-users')" id="menu-admin-users" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-600 hover:bg-slate-50 transition hidden">
                         <i class="fa-solid fa-users-gear w-5 text-center text-sky-600"></i> <span class="menu-text">Quản lý tài khoản</span>
                     </button>
@@ -212,7 +206,6 @@
                 </nav>
             </div>
 
-            <!-- Nút Thu gọn ở dưới cùng -->
             <div class="border-t border-slate-100 pt-2">
                 <button onclick="toggleSidebarCollapse()" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-500 hover:bg-slate-100 hover:text-slate-900 transition text-sm font-medium">
                     <i class="fa-solid fa-angles-left w-5 text-center" id="collapse-icon"></i> <span class="menu-text">Thu gọn</span>
@@ -233,7 +226,6 @@
                         </button>
                     </div>
 
-                    <!-- Ô LỰA CHỌN BỘ ĐỀ -->
                     <div class="bg-slate-50 border border-slate-200 p-4 rounded-xl space-y-2">
                         <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">Chọn bộ đề kiểm tra:</label>
                         <select id="exam-selector" onchange="selectExamFromDropdown(this.value)" class="w-full bg-white border border-slate-300 rounded-xl px-4 py-3 text-sm font-bold text-slate-900 focus:border-sky-600 focus:outline-none shadow-sm">
@@ -265,7 +257,6 @@
                             </div>
                         </div>
 
-                        <!-- PHẦN THỜI GIAN LÀM BÀI & KHUNG GIỜ -->
                         <div class="bg-slate-50 border border-slate-100 p-4 rounded-xl flex items-start gap-3">
                             <div class="text-sky-500 mt-0.5"><i class="fa-solid fa-clock text-lg"></i></div>
                             <div class="flex-1">
@@ -311,7 +302,7 @@
                     </div>
                 </div>
 
-                <!-- TAB: QUẢN LÝ TÀI KHOẢN (CHỈ ADMIN THẤY) -->
+                <!-- TAB: QUẢN LÝ TÀI KHOẢN -->
                 <div id="tab-admin-users" class="hidden space-y-6 flex-1 flex flex-col">
                     <div class="border-b pb-3 flex justify-between items-center">
                         <div>
@@ -323,7 +314,6 @@
                         </button>
                     </div>
 
-                    <!-- Khung Thêm User Thành Viên -->
                     <div class="bg-slate-50 border border-slate-200 p-4 rounded-xl space-y-3">
                         <h3 class="font-bold text-slate-900 text-xs uppercase tracking-wider flex items-center gap-2">
                             <i class="fa-solid fa-user-plus text-sky-600"></i> Thêm tài khoản thành viên mới
@@ -336,7 +326,6 @@
                         </div>
                     </div>
 
-                    <!-- Danh sách tài khoản thành viên hiện có -->
                     <div class="space-y-3 pt-2">
                         <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2">
                             <i class="fa-solid fa-users text-emerald-600"></i> Danh sách thành viên được cấp quyền (<span id="count-users">0</span>)
@@ -375,7 +364,7 @@
                     </div>
                 </div>
 
-                <!-- TAB 2: LỊCH SỬ LÀM BÀI & THÀNH TÍCH -->
+                <!-- TAB: LỊCH SỬ LÀM BÀI & THÀNH TÍCH -->
                 <div id="tab-history" class="hidden space-y-6 flex-1 flex flex-col">
                     <div class="border-b pb-3 flex justify-between items-center">
                         <div>
@@ -438,7 +427,7 @@
                     </div>
                 </div>
 
-                <!-- TAB 3: QUẢN LÝ BỘ ĐỀ (CHỈ ADMIN THẤY) -->
+                <!-- TAB: QUẢN LÝ BỘ ĐỀ & THÊM CÂU HỎI THỦ CÔNG -->
                 <div id="tab-manual-creator" class="hidden space-y-6 flex-1 flex flex-col">
                     <div class="border-b pb-3 flex justify-between items-center">
                         <div>
@@ -476,7 +465,6 @@
                             </div>
                         </div>
 
-                        <!-- SET THỜI GIAN BẮT ĐẦU VÀ KẾT THÚC -->
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-3 pt-2 border-t">
                             <div>
                                 <label class="block text-xs font-bold text-slate-500 uppercase mb-1"><i class="fa-solid fa-hourglass-start text-sky-600"></i> Thời gian Bắt đầu làm đề:</label>
@@ -509,8 +497,16 @@
                             <span>Soạn câu hỏi cho bộ đề hiện tại (<span id="manual-q-count">0</span> câu)</span>
                             <span class="text-sky-600 font-semibold">💡 Mẹo: Click vào ô ảnh rồi bấm Ctrl + V để dán nhanh</span>
                         </h3>
+                        
                         <div id="manual-question-list" class="space-y-3 max-h-[350px] overflow-y-auto custom-scrollbar pr-2">
                             <p class="italic text-slate-400 text-center py-8">Chưa có khung câu hỏi. Hãy nhập thông tin và bấm "Tạo khung câu hỏi" ở trên.</p>
+                        </div>
+
+                        <!-- NÚT THÊM CÂU HỎI THỦ CÔNG (ĐƯỢC BỔ SUNG THEO YÊU CẦU) -->
+                        <div class="pt-2">
+                            <button onclick="addSingleManualQuestion()" class="w-full bg-sky-50 hover:bg-sky-100 text-sky-700 border border-sky-300 font-semibold py-3 rounded-xl text-xs transition flex items-center justify-center gap-2 cursor-pointer shadow-sm">
+                                <i class="fa-solid fa-plus-circle text-sm"></i> Thêm câu hỏi thủ công
+                            </button>
                         </div>
 
                         <div class="pt-3 flex justify-between items-center">
@@ -527,12 +523,9 @@
                 <!-- TAB 4: QUIZ SOLVING INTERFACE -->
                 <div id="tab-quiz" class="hidden space-y-4 flex-1 flex flex-col">
                     <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 items-start">
-                        <!-- Danh sách câu hỏi bên trái (3 cột) -->
                         <div id="quiz-questions-container" class="lg:col-span-3 space-y-4"></div>
 
-                        <!-- Cột phải (Sticky giữ đồng hồ và bảng số câu luôn hiển thị khi lướt xuống - Yêu cầu 2 & 3) -->
                         <div class="lg:col-span-1 bg-slate-50 border border-slate-200 p-4 rounded-xl sticky top-4 space-y-4 shadow-sm z-20">
-                            <!-- Đồng hồ & Nút nộp bài dính kèm -->
                             <div class="flex items-center justify-between bg-white p-3 rounded-xl border shadow-sm">
                                 <div class="text-xs font-bold text-sky-600 bg-sky-50 px-2.5 py-1.5 rounded-lg border border-sky-100">
                                     <i class="fa-solid fa-clock mr-1"></i> <span id="timer-display">00:00</span>
@@ -544,7 +537,6 @@
 
                             <div class="text-xs font-bold text-slate-500 uppercase tracking-wider border-b pb-2">Danh sách câu hỏi</div>
                             
-                            <!-- Lưới số câu đã được căn chỉnh 5 cột rộng rãi, không bị che khuất (Yêu cầu 2) -->
                             <div id="palette-grid" class="grid grid-cols-5 gap-2.5 max-h-[320px] overflow-y-auto custom-scrollbar p-1"></div>
                             
                             <div class="border-t pt-3 space-y-1.5 text-[11px] text-slate-600 font-medium">
@@ -560,7 +552,6 @@
                 <div id="tab-result" class="hidden space-y-6 flex-1 flex flex-col">
                     <div id="pdf-export-content" class="space-y-6 bg-white p-2">
                         
-                        <!-- BANNER THÔNG BÁO -->
                         <div id="result-status-banner" class="p-4 rounded-xl border text-sm font-semibold flex items-center gap-3">
                             <i id="banner-icon" class="fa-solid fa-circle-check text-lg"></i>
                             <div id="banner-text">Đã hoàn thành bài thi!</div>
@@ -638,7 +629,6 @@
 
             </div>
 
-            <!-- Ô Lịch sử nhanh ở trang chủ -->
             <div class="bg-white rounded-2xl shadow-xl p-6 md:p-8 space-y-4 no-print">
                 <div class="flex justify-between items-center">
                     <h3 class="font-bold text-slate-900 text-base">Lịch sử các lần làm trước</h3>
@@ -741,7 +731,6 @@
                 currentUser = user;
                 setDynamicGreeting(currentUser);
 
-                // Cập nhật tên tài khoản hiển thị trên header (Yêu cầu 1)
                 document.getElementById('current-username-text').innerText = currentUser;
 
                 document.getElementById('auth-screen').classList.add('hidden');
@@ -1061,6 +1050,13 @@
                     manualQuestions = manualQuestions.slice(0, totalQ);
                 }
             }
+            updateManualListUI();
+        }
+
+        // HÀM THÊM 1 CÂU HỎI THỦ CÔNG (ĐƯỢC BỔ SUNG THEO YÊU CẦU)
+        function addSingleManualQuestion() {
+            manualQuestions.push({ id: manualQuestions.length + 1, imgUrl: "", options: ["A", "B", "C", "D"], correct: 0 });
+            document.getElementById('input-total-questions').value = manualQuestions.length;
             updateManualListUI();
         }
 
@@ -1608,7 +1604,6 @@
             alert("Đã xóa toàn bộ lịch sử làm bài!");
         }
 
-        // HÀM XÓA TỪNG BÀI KIỂM TRA TRONG LỊCH SỬ
         function deleteSingleHistory(index) {
             if(!confirm("Bạn có chắc chắn muốn xóa lượt làm bài này không?")) return;
             if(globalHistory[currentUser]) {
