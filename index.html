@@ -8,6 +8,8 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Supabase JS SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
         body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
@@ -47,6 +49,14 @@
     </style>
 </head>
 <body class="min-h-screen text-slate-800 flex flex-col">
+
+    <!-- Loading Overlay đồng bộ dữ liệu -->
+    <div id="sync-loading" class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs z-[60] flex items-center justify-center hidden">
+        <div class="bg-white px-6 py-4 rounded-2xl shadow-xl flex items-center gap-3 text-sm font-bold text-slate-800">
+            <i class="fa-solid fa-spinner fa-spin text-sky-600 text-lg"></i>
+            <span id="sync-loading-text">Đang đồng bộ dữ liệu...</span>
+        </div>
+    </div>
 
     <!-- Top Browser Bar -->
     <header id="main-header" class="bg-[#0f172a] text-slate-300 px-4 py-2.5 flex items-center justify-between text-sm select-none border-b border-slate-800 hidden no-print">
@@ -108,7 +118,7 @@
                 <div class="space-y-4">
                     <div>
                         <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Tên đăng nhập</label>
-                        <input type="text" id="login-username" placeholder="Nhập tên đăng nhập..." class="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-3 text-sm text-slate-800 focus:border-sky-600 focus:outline-none">
+                        <input type="text" id="login-username" placeholder="Nhập tên đăng nhập..." onkeydown="if(event.key==='Enter') handleLogin()" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-3 text-sm text-slate-800 focus:border-sky-600 focus:outline-none">
                     </div>
 
                     <button onclick="handleLogin()" class="w-full bg-sky-600 hover:bg-sky-700 text-white font-semibold py-3.5 rounded-xl shadow-lg shadow-sky-600/30 transition text-sm cursor-pointer">
@@ -220,7 +230,12 @@
                 <!-- TAB 1: DASHBOARD / EXAM PREVIEW -->
                 <div id="tab-dashboard" class="space-y-6 flex-1 flex flex-col">
                     <div class="flex justify-between items-center pb-4 mb-2 border-b border-slate-100">
-                        <h2 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Bảng điều khiển luyện tập</h2>
+                        <div class="flex items-center gap-2">
+                            <h2 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Bảng điều khiển luyện tập</h2>
+                            <button onclick="syncAllDataFromCloud(true)" title="Làm mới danh sách đề từ hệ thống" class="text-xs text-sky-600 hover:text-sky-800 bg-sky-50 px-2.5 py-1 rounded-lg font-semibold transition cursor-pointer flex items-center gap-1">
+                                <i class="fa-solid fa-rotate"></i> Cập nhật đề
+                            </button>
+                        </div>
                         <button id="dashboard-creator-btn" onclick="switchTab('manual-creator')" class="bg-sky-50 hover:bg-sky-100 text-sky-700 px-4 py-2 rounded-xl font-medium text-sm transition flex items-center gap-2 border border-sky-200 hidden">
                             <i class="fa-solid fa-folder-plus"></i> Tạo đề kiểm tra
                         </button>
@@ -441,7 +456,7 @@
                     <div class="bg-sky-50/80 border border-sky-200 p-4 rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4 shadow-sm">
                         <div>
                             <h2 id="creator-main-title" class="text-lg font-bold text-slate-950">Quản Lý & Tạo Đề Kiểm Tra</h2>
-                            <p class="text-xs text-slate-600">Tạo mới, chỉnh sửa bộ đề, set thời gian, tải xuống từng file đề hoặc tải lên file để ôn tập.</p>
+                            <p class="text-xs text-slate-600">Tạo mới, chỉnh sửa bộ đề, set thời gian, tải xuống từng file đề hoặc tải lên file để đồng bộ lên hệ thống.</p>
                         </div>
                         <div class="flex flex-wrap items-center gap-2 w-full md:w-auto">
                             <!-- Nút tải lên file đề -->
@@ -681,19 +696,17 @@
         </div>
     </div>
 
-    <!-- Script xử lý toàn diện -->
+    <!-- Script xử lý toàn diện kết nối Supabase Cloud -->
     <script>
-        let memberUsers = JSON.parse(localStorage.getItem('amc_members')) || ['hocvien01', 'hocvien02'];
-        let sharedDefaultExams = [];
-        let allExams = JSON.parse(localStorage.getItem('amc_all_exams')) || [];
-        
-        sharedDefaultExams.forEach(defExam => {
-            if(!allExams.some(e => e.id === defExam.id)) {
-                allExams.push(defExam);
-            }
-        });
+        // CẤU HÌNH SUPABASE CỦA BẠN
+        const SUPABASE_URL = 'https://mpjeonfkdhnimuaazxog.supabase.co';
+        const SUPABASE_KEY = 'sb_publishable_rfTySRdDFPTnh3UT-vJ-uw_SJ9-RbAP';
+        const STORAGE_BUCKET = 'DUCMANH';
+        const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        let globalHistory = JSON.parse(localStorage.getItem('amc_global_history')) || {};
+        let memberUsers = ['hocvien01', 'hocvien02'];
+        let allExams = [];
+        let globalHistory = {};
         let globalTrash = JSON.parse(localStorage.getItem('amc_global_trash')) || {};
         let userBookmarks = JSON.parse(localStorage.getItem('amc_bookmarks')) || {};
         let userSavedAnswers = JSON.parse(localStorage.getItem('amc_saved_answers')) || {};
@@ -715,16 +728,106 @@
         let currentExamTopic = "TOÁN CAO CẤP";
         let activeExamDeadline = null;
 
-        function saveMembersToStorage() {
-            localStorage.setItem('amc_members', JSON.stringify(memberUsers));
+        function showSyncLoader(msg = "Đang đồng bộ dữ liệu...") {
+            document.getElementById('sync-loading-text').innerText = msg;
+            document.getElementById('sync-loading').classList.remove('hidden');
         }
 
-        function saveExamsToStorage() {
-            localStorage.setItem('amc_all_exams', JSON.stringify(allExams));
+        function hideSyncLoader() {
+            document.getElementById('sync-loading').classList.add('hidden');
         }
 
-        function saveHistoryToStorage() {
-            localStorage.setItem('amc_global_history', JSON.stringify(globalHistory));
+        // HÀM UPLOAD ẢNH LÊN SUPABASE STORAGE BUCKET 'DUCMANH'
+        async function uploadImageToSupabase(dataUrlOrBlob) {
+            try {
+                let blob;
+                if (typeof dataUrlOrBlob === 'string' && dataUrlOrBlob.startsWith('data:')) {
+                    const res = await fetch(dataUrlOrBlob);
+                    blob = await res.blob();
+                } else if (dataUrlOrBlob instanceof Blob) {
+                    blob = dataUrlOrBlob;
+                } else {
+                    return dataUrlOrBlob; // Đã là URL hợp lệ
+                }
+
+                const fileName = `q_${Date.now()}_${Math.random().toString(36).substring(2, 8)}.png`;
+                const { data, error } = await sb.storage
+                    .from(STORAGE_BUCKET)
+                    .upload(fileName, blob, { contentType: 'image/png', upsert: false });
+
+                if (error) {
+                    console.error("Lỗi upload Storage:", error);
+                    return typeof dataUrlOrBlob === 'string' ? dataUrlOrBlob : "";
+                }
+
+                const { data: pubData } = sb.storage.from(STORAGE_BUCKET).getPublicUrl(fileName);
+                return pubData.publicUrl;
+            } catch (e) {
+                console.error("Exception upload:", e);
+                return typeof dataUrlOrBlob === 'string' ? dataUrlOrBlob : "";
+            }
+        }
+
+        // ĐỒNG BỘ DANH SÁCH THÀNH VIÊN & BỘ ĐỀ TỪ SUPABASE
+        async function syncAllDataFromCloud(showAlert = false) {
+            showSyncLoader("Đang tải dữ liệu từ hệ thống...");
+            try {
+                // 1. Tải danh sách users
+                const { data: usersData, error: usersErr } = await sb.from('users').select('username');
+                if (!usersErr && usersData) {
+                    memberUsers = usersData.map(u => u.username);
+                }
+
+                // 2. Tải danh sách exams
+                const { data: examsData, error: examsErr } = await sb.from('exams').select('*').order('created_at', { ascending: false });
+                if (!examsErr && examsData) {
+                    allExams = examsData.map(e => ({
+                        id: e.id,
+                        title: e.title,
+                        topic: e.topic,
+                        timeLimit: e.time_limit,
+                        startTime: e.start_time,
+                        endTime: e.end_time,
+                        isActive: e.is_active,
+                        questions: e.questions || []
+                    }));
+                }
+
+                // 3. Nếu đã đăng nhập, tải lịch sử làm bài của user đó
+                if (currentUser) {
+                    const { data: histData, error: histErr } = await sb
+                        .from('histories')
+                        .select('*')
+                        .eq('username', currentUser)
+                        .order('created_at', { ascending: false });
+
+                    if (!histErr && histData) {
+                        globalHistory[currentUser] = histData.map(h => ({
+                            dbId: h.id,
+                            examTitle: h.exam_title,
+                            topic: h.topic,
+                            timeStr: h.time_str,
+                            scoreNum: Number(h.score_num),
+                            score: h.score,
+                            correct: h.correct,
+                            total: h.total,
+                            durationStr: h.duration_str,
+                            userAnswers: h.user_answers || {},
+                            activeQuestions: h.active_questions || []
+                        }));
+                    }
+                    updateDashboardInfo();
+                    if (!document.getElementById('tab-manual-creator').classList.contains('hidden')) {
+                        renderAdminExamsList();
+                    }
+                }
+                if (showAlert) alert("Đã cập nhật danh sách bộ đề mới nhất từ hệ thống!");
+            } catch (err) {
+                console.error("Lỗi đồng bộ Supabase:", err);
+                if (showAlert) alert("Không thể kết nối đến máy chủ dữ liệu. Vui lòng kiểm tra lại mạng!");
+            } finally {
+                hideSyncLoader();
+            }
         }
 
         function saveTrashToStorage() {
@@ -756,40 +859,56 @@
             downloadAnchor.remove();
         }
 
-        // HÀM TẢI LÊN MỘT HOẶC NHIỀU BỘ ĐỀ TỪ FILE JSON ĐÃ LƯU
+        // HÀM TẢI LÊN FILE ĐỀ TỪ MÁY TÍNH VÀ ĐẨY LÊN SUPABASE
         function importExamSingleFile(event) {
             let file = event.target.files[0];
             if(!file) return;
             let reader = new FileReader();
-            reader.onload = function(e) {
+            reader.onload = async function(e) {
                 try {
                     let importedData = JSON.parse(e.target.result);
                     let examsArray = Array.isArray(importedData) ? importedData : [importedData];
                     
+                    showSyncLoader("Đang tải ảnh và đồng bộ bộ đề lên đám mây...");
                     let addedCount = 0;
-                    examsArray.forEach(imp => {
+
+                    for (let imp of examsArray) {
                         if(imp && imp.id && imp.title && Array.isArray(imp.questions)) {
-                            let existingIndex = allExams.findIndex(e => e.id === imp.id);
-                            if(existingIndex >= 0) {
-                                allExams[existingIndex] = imp; // Cập nhật nếu đã có
-                            } else {
-                                allExams.push(imp); // Thêm mới nếu chưa có
+                            // Nếu file JSON cũ lưu ảnh dạng Base64, tự động đẩy lên Storage lấy URL gọn nhẹ
+                            for (let q of imp.questions) {
+                                if (q.imgUrl && q.imgUrl.startsWith('data:')) {
+                                    q.imgUrl = await uploadImageToSupabase(q.imgUrl);
+                                }
                             }
-                            addedCount++;
+
+                            const { error } = await sb.from('exams').upsert({
+                                id: imp.id,
+                                title: imp.title,
+                                topic: imp.topic || 'TOÁN CAO CẤP',
+                                time_limit: imp.timeLimit || 30,
+                                start_time: imp.startTime || '',
+                                end_time: imp.endTime || '',
+                                is_active: imp.isActive || false,
+                                questions: imp.questions
+                            });
+
+                            if (!error) addedCount++;
                         }
-                    });
+                    }
+
+                    await syncAllDataFromCloud(false);
+                    hideSyncLoader();
 
                     if(addedCount > 0) {
-                        saveExamsToStorage();
-                        renderAdminExamsList();
-                        updateDashboardInfo();
-                        alert(`Đã tải lên và nạp thành công ${addedCount} bộ đề vào hệ thống! Bạn có thể kích hoạt để làm bài ngay.`);
+                        alert(`Đã tải lên và đồng bộ thành công ${addedCount} bộ đề lên hệ thống! Học viên ở máy khác có thể làm bài ngay khi bạn bấm Kích hoạt.`);
                     } else {
-                        alert("File JSON không đúng định dạng cấu trúc bộ đề!");
+                        alert("File JSON không đúng định dạng cấu trúc bộ đề hoặc lỗi lưu dữ liệu!");
                     }
                 } catch(err) {
+                    hideSyncLoader();
                     alert("Lỗi đọc file JSON!");
                 }
+                event.target.value = "";
             };
             reader.readAsText(file);
         }
@@ -814,17 +933,30 @@
             return u === 'DUCMANH' || u === 'MANHUTE73';
         }
 
-        function handleLogin() {
+        async function handleLogin() {
             let user = document.getElementById('login-username').value.trim();
             if(!user) {
                 alert("Vui lòng nhập tên đăng nhập!");
                 return;
             }
 
+            showSyncLoader("Đang kiểm tra tài khoản...");
+            try {
+                const { data: usersData } = await sb.from('users').select('username');
+                if (usersData) {
+                    memberUsers = usersData.map(u => u.username);
+                }
+            } catch (e) {}
+
             let isAdmin = isUserAdmin(user);
-            let isMember = memberUsers.includes(user);
+            let isMember = memberUsers.some(u => u.toLowerCase() === user.toLowerCase());
 
             if(isAdmin || isMember) {
+                // Giữ đúng định dạng username trong DB nếu là member
+                if (!isAdmin) {
+                    const matched = memberUsers.find(u => u.toLowerCase() === user.toLowerCase());
+                    if (matched) user = matched;
+                }
                 currentUser = user;
                 setDynamicGreeting(currentUser);
 
@@ -851,9 +983,10 @@
                     bodeText.innerText = "Bộ đề";
                 }
 
-                updateDashboardInfo();
+                await syncAllDataFromCloud(false);
                 switchTab('dashboard');
             } else {
+                hideSyncLoader();
                 alert("Tên đăng nhập không tồn tại hoặc chưa được cấp quyền truy cập!");
             }
         }
@@ -874,27 +1007,44 @@
             updateDashboardInfo();
         }
 
-        function adminAddUser() {
+        async function adminAddUser() {
             let newUsername = document.getElementById('manual-add-username').value.trim();
             if(!newUsername) {
                 alert("Vui lòng nhập tên đăng nhập!");
                 return;
             }
-            if(memberUsers.includes(newUsername)) {
+            if(memberUsers.some(u => u.toLowerCase() === newUsername.toLowerCase())) {
                 alert("Tài khoản này đã có trong danh sách thành viên!");
                 return;
             }
+
+            showSyncLoader("Đang thêm tài khoản...");
+            const { error } = await sb.from('users').insert([{ username: newUsername }]);
+            hideSyncLoader();
+
+            if (error) {
+                alert("Lỗi khi thêm tài khoản: " + error.message);
+                return;
+            }
+
             memberUsers.push(newUsername);
-            saveMembersToStorage();
             document.getElementById('manual-add-username').value = "";
-            alert(`Đã thêm thành viên "${newUsername}" thành công!`);
+            alert(`Đã thêm thành viên "${newUsername}" thành công! Học viên có thể đăng nhập trên mọi thiết bị.`);
             renderAdminUsersManagement();
         }
 
-        function removeMemberUser(username) {
+        async function removeMemberUser(username) {
             if(!confirm(`Bạn có chắc chắn muốn xóa quyền truy cập của tài khoản "${username}" không?`)) return;
+            showSyncLoader("Đang xóa tài khoản...");
+            const { error } = await sb.from('users').delete().eq('username', username);
+            hideSyncLoader();
+
+            if (error) {
+                alert("Lỗi khi xóa tài khoản: " + error.message);
+                return;
+            }
+
             memberUsers = memberUsers.filter(u => u !== username);
-            saveMembersToStorage();
             renderAdminUsersManagement();
         }
 
@@ -909,7 +1059,7 @@
                     <div class="bg-white border p-4 rounded-xl flex items-center justify-between text-xs gap-3 shadow-sm">
                         <div>
                             <div class="font-bold text-slate-900 text-sm">@${username}</div>
-                            <div class="text-slate-500">Thành viên được cấp quyền truy cập website.</div>
+                            <div class="text-slate-500">Thành viên được cấp quyền truy cập website trên mọi thiết bị.</div>
                         </div>
                         <div>
                             <button onclick="removeMemberUser('${username}')" class="bg-rose-50 hover:bg-rose-600 hover:text-white text-rose-600 font-semibold px-3.5 py-2 rounded-lg transition shrink-0 cursor-pointer border border-rose-200">
@@ -1037,7 +1187,7 @@
             let availableExams = (isAdmin ? allExams : allExams.filter(e => e.isActive)).filter(e => e.topic === currentExamTopic);
 
             if (availableExams.length === 0) {
-                selector.innerHTML = `<option value="">-- Chưa có bộ đề nào cho môn ${currentExamTopic} --</option>`;
+                selector.innerHTML = `<option value="">-- Chưa có bộ đề nào được kích hoạt cho môn ${currentExamTopic} --</option>`;
                 document.getElementById('display-exam-count').innerText = `0 câu trắc nghiệm`;
                 document.getElementById('input-exam-title').value = "Chưa chọn bộ đề";
                 document.getElementById('input-exam-time').value = "0 phút";
@@ -1046,7 +1196,7 @@
             } else {
                 selector.innerHTML = availableExams.map(e => `
                     <option value="${e.id}" ${currentActiveExamId === e.id ? 'selected' : ''}>
-                        ${e.title} (${e.questions.length} câu)
+                        ${e.title} (${e.questions.length} câu) ${!e.isActive && isAdmin ? '[Chưa kích hoạt]' : ''}
                     </option>
                 `).join('');
 
@@ -1162,41 +1312,42 @@
             updateManualListUI();
         }
 
+        // DÁN ẢNH TỪ CLIPBOARD -> TỰ ĐỘNG UPLOAD LÊN SUPABASE STORAGE 'DUCMANH'
         function handlePasteImage(index, event) {
             const items = (event.clipboardData || event.originalEvent.clipboardData).items;
             for (let i = 0; i < items.length; i++) {
                 if (items[i].type.indexOf("image") !== -1) {
                     const blob = items[i].getAsFile();
-                    const reader = new FileReader();
-                    reader.onload = function(e) {
-                        let imgDataUrl = e.target.result;
-                        const img = new Image();
-                        img.onload = function() {
-                            const canvas = document.createElement('canvas');
-                            canvas.width = img.width; canvas.height = img.height;
-                            const ctx = canvas.getContext('2d');
-                            ctx.drawImage(img, 0, 0);
-                            manualQuestions[index].imgUrl = canvas.toDataURL('image/png');
-                            updateManualListUI();
-                        };
-                        img.src = imgDataUrl;
-                    };
-                    reader.readAsDataURL(blob);
                     event.preventDefault();
+                    
+                    showSyncLoader(`Đang tải ảnh câu ${index + 1} lên máy chủ...`);
+                    uploadImageToSupabase(blob).then(publicUrl => {
+                        hideSyncLoader();
+                        if (publicUrl) {
+                            manualQuestions[index].imgUrl = publicUrl;
+                            updateManualListUI();
+                        } else {
+                            alert("Lỗi tải ảnh lên kho lưu trữ!");
+                        }
+                    });
                     break;
                 }
             }
         }
 
-        function handleQuestionImageUpload(index, event) {
+        // CHỌN FILE ẢNH TỪ MÁY -> TỰ ĐỘNG UPLOAD LÊN SUPABASE STORAGE 'DUCMANH'
+        async function handleQuestionImageUpload(index, event) {
             const file = event.target.files[0];
             if (!file) return;
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                manualQuestions[index].imgUrl = e.target.result;
+            showSyncLoader(`Đang tải ảnh câu ${index + 1} lên máy chủ...`);
+            const publicUrl = await uploadImageToSupabase(file);
+            hideSyncLoader();
+            if (publicUrl) {
+                manualQuestions[index].imgUrl = publicUrl;
                 updateManualListUI();
-            };
-            reader.readAsDataURL(file);
+            } else {
+                alert("Lỗi tải ảnh lên kho lưu trữ!");
+            }
         }
 
         function updateQuestionCorrect(index, value) {
@@ -1243,7 +1394,8 @@
             `).join('');
         }
 
-        function saveCurrentExam() {
+        // LƯU HOẶC CẬP NHẬT BỘ ĐỀ LÊN SUPABASE
+        async function saveCurrentExam() {
             let title = document.getElementById('new-exam-title').value.trim();
             let topic = document.getElementById('new-exam-topic').value;
             let timeLimit = parseInt(document.getElementById('new-exam-time').value) || 30;
@@ -1254,32 +1406,52 @@
             let validQuestions = manualQuestions.filter(q => q && q.imgUrl);
             if(validQuestions.length === 0) { alert("Vui lòng dán ảnh cho ít nhất 1 câu hỏi!"); return; }
 
+            showSyncLoader("Đang lưu bộ đề lên hệ thống đám mây...");
+
             if(editingExamId) {
-                allExams = allExams.map(e => {
-                    if(e.id === editingExamId) {
-                        return { ...e, title, topic, timeLimit, startTime, endTime, questions: manualQuestions };
-                    }
-                    return e;
-                });
-                alert(`Đã cập nhật bộ đề "${title}" thành công!`);
-                cancelEditExam();
-            } else {
-                allExams.push({
-                    id: 'exam_' + Date.now(),
+                const { error } = await sb.from('exams').update({
                     title: title,
                     topic: topic,
-                    timeLimit: timeLimit,
-                    startTime: startTime,
-                    endTime: endTime,
+                    time_limit: timeLimit,
+                    start_time: startTime,
+                    end_time: endTime,
+                    questions: manualQuestions
+                }).eq('id', editingExamId);
+
+                if (error) {
+                    hideSyncLoader();
+                    alert("Lỗi cập nhật bộ đề: " + error.message);
+                    return;
+                }
+                await syncAllDataFromCloud(false);
+                hideSyncLoader();
+                alert(`Đã cập nhật bộ đề "${title}" lên hệ thống thành công!`);
+                cancelEditExam();
+            } else {
+                const newId = 'exam_' + Date.now();
+                const { error } = await sb.from('exams').insert([{
+                    id: newId,
+                    title: title,
+                    topic: topic,
+                    time_limit: timeLimit,
+                    start_time: startTime,
+                    end_time: endTime,
                     questions: manualQuestions,
-                    isActive: false
-                });
-                alert(`Đã lưu bộ đề "${title}" thành công!`);
+                    is_active: false
+                }]);
+
+                if (error) {
+                    hideSyncLoader();
+                    alert("Lỗi lưu bộ đề: " + error.message);
+                    return;
+                }
+                await syncAllDataFromCloud(false);
+                hideSyncLoader();
+                alert(`Đã lưu bộ đề "${title}" lên hệ thống thành công! Hãy bấm "Kích hoạt" để học viên ở máy khác có thể làm bài.`);
                 document.getElementById('new-exam-title').value = "";
                 manualQuestions = [];
                 updateManualListUI();
             }
-            saveExamsToStorage();
             renderAdminExamsList();
         }
 
@@ -1336,7 +1508,6 @@
                         <div class="text-xs text-slate-500">Môn: ${e.topic} • ${e.questions.length} câu • ${e.timeLimit} phút • Hạn chót: ${e.endTime ? new Date(e.endTime).toLocaleString('vi-VN') : 'Không'}</div>
                     </div>
                     <div class="flex items-center gap-2">
-                        <!-- NÚT TẢI XUỐNG RIÊNG TỪNG BỘ ĐỀ (ĐẶT Ở VỊ TRÍ KHUNG CHỮ NHẬT ĐỎ) -->
                         <button onclick="downloadSingleExam('${e.id}')" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-3 py-2 rounded-lg transition cursor-pointer flex items-center gap-1 shadow" title="Tải file đề này về máy">
                             <i class="fa-solid fa-file-arrow-down"></i> Tải về
                         </button>
@@ -1354,17 +1525,39 @@
             `).join('');
         }
 
-        function toggleExamActive(examId) {
-            allExams = allExams.map(e => { if(e.id === examId) e.isActive = !e.isActive; return e; });
-            saveExamsToStorage();
+        // BẬT/TẮT KÍCH HOẠT ĐỀ TRÊN SUPABASE
+        async function toggleExamActive(examId) {
+            let targetExam = allExams.find(e => e.id === examId);
+            if (!targetExam) return;
+            let newState = !targetExam.isActive;
+
+            showSyncLoader("Đang cập nhật trạng thái kích hoạt...");
+            const { error } = await sb.from('exams').update({ is_active: newState }).eq('id', examId);
+            hideSyncLoader();
+
+            if (error) {
+                alert("Lỗi cập nhật trạng thái: " + error.message);
+                return;
+            }
+
+            allExams = allExams.map(e => { if(e.id === examId) e.isActive = newState; return e; });
             renderAdminExamsList();
         }
 
-        function deleteExam(examId) {
-            if(!confirm("Bạn có chắc chắn muốn xóa bộ đề này không?")) return;
+        // XÓA ĐỀ TRÊN SUPABASE
+        async function deleteExam(examId) {
+            if(!confirm("Bạn có chắc chắn muốn xóa bộ đề này khỏi hệ thống không?")) return;
+            showSyncLoader("Đang xóa bộ đề...");
+            const { error } = await sb.from('exams').delete().eq('id', examId);
+            hideSyncLoader();
+
+            if (error) {
+                alert("Lỗi xóa bộ đề: " + error.message);
+                return;
+            }
+
             if(editingExamId === examId) cancelEditExam();
             allExams = allExams.filter(e => e.id !== examId);
-            saveExamsToStorage();
             renderAdminExamsList();
         }
 
@@ -1475,7 +1668,8 @@
             submitExam();
         }
 
-        function submitExam() {
+        // NỘP BÀI VÀ LƯU KẾT QUẢ LÊN SUPABASE
+        async function submitExam() {
             clearInterval(examTimer);
 
             if(userSavedAnswers[currentUser] && userSavedAnswers[currentUser][currentActiveExamId]) {
@@ -1527,8 +1721,26 @@
             document.getElementById('res-msg-title').innerText = percent >= 80 ? "Xuất sắc!" : "Cần cố gắng hơn!";
             document.getElementById('res-msg-desc').innerText = percent >= 80 ? "Bạn nắm rất chắc nội dung này." : "Bạn cần ôn tập thêm kiến thức phần này.";
 
+            // Lưu lịch sử lên Supabase
+            showSyncLoader("Đang lưu kết quả bài làm...");
+            const { data: insertedHist, error } = await sb.from('histories').insert([{
+                username: currentUser,
+                exam_title: currentExamTitle,
+                topic: currentExamTopic,
+                time_str: timeStr,
+                score_num: scoreNum,
+                score: scoreStr,
+                correct: correctCount,
+                total: total,
+                duration_str: durationStr,
+                user_answers: {...userAnswers},
+                active_questions: [...activeQuestions]
+            }]).select();
+            hideSyncLoader();
+
             if(!globalHistory[currentUser]) globalHistory[currentUser] = [];
             globalHistory[currentUser].unshift({
+                dbId: insertedHist && insertedHist[0] ? insertedHist[0].id : null,
                 examTitle: currentExamTitle,
                 topic: currentExamTopic,
                 timeStr: timeStr,
@@ -1540,7 +1752,6 @@
                 userAnswers: {...userAnswers},
                 activeQuestions: [...activeQuestions]
             });
-            saveHistoryToStorage();
 
             document.getElementById('count-all').innerText = total;
             document.getElementById('count-wrong').innerText = wrongCount;
@@ -1695,27 +1906,32 @@
             renderBookmarksUI();
         }
 
-        function clearHistory() {
+        async function clearHistory() {
             if(!confirm("Bạn có chắc chắn muốn xóa toàn bộ lịch sử làm bài không?")) return;
             if(globalHistory[currentUser] && globalHistory[currentUser].length > 0) {
                 if(!globalTrash[currentUser]) globalTrash[currentUser] = [];
                 globalTrash[currentUser].push(...globalHistory[currentUser]);
                 saveTrashToStorage();
             }
+            showSyncLoader("Đang xóa lịch sử...");
+            await sb.from('histories').delete().eq('username', currentUser);
+            hideSyncLoader();
+
             globalHistory[currentUser] = [];
-            saveHistoryToStorage();
             updateHistoryUI();
             renderFullHistoryUI();
             alert("Đã chuyển toàn bộ lịch sử làm bài vào thùng rác!");
         }
 
-        function deleteSingleHistory(index) {
+        async function deleteSingleHistory(index) {
             if(!confirm("Bạn có chắc chắn muốn xóa lượt làm bài này không?")) return;
             if(globalHistory[currentUser]) {
                 let removedItem = globalHistory[currentUser].splice(index, 1)[0];
+                if (removedItem && removedItem.dbId) {
+                    await sb.from('histories').delete().eq('id', removedItem.dbId);
+                }
                 if(!globalTrash[currentUser]) globalTrash[currentUser] = [];
                 globalTrash[currentUser].unshift(removedItem);
-                saveHistoryToStorage();
                 saveTrashToStorage();
                 updateHistoryUI();
                 renderFullHistoryUI();
@@ -1756,13 +1972,33 @@
             `).join('');
         }
 
-        function restoreTrashItem(trashIdx) {
+        async function restoreTrashItem(trashIdx) {
             if(!globalTrash[currentUser] || !globalTrash[currentUser][trashIdx]) return;
             let restoredItem = globalTrash[currentUser].splice(trashIdx, 1)[0];
+            
+            showSyncLoader("Đang phục hồi lịch sử...");
+            const { data: insertedHist } = await sb.from('histories').insert([{
+                username: currentUser,
+                exam_title: restoredItem.examTitle,
+                topic: restoredItem.topic,
+                time_str: restoredItem.timeStr,
+                score_num: restoredItem.scoreNum,
+                score: restoredItem.score,
+                correct: restoredItem.correct,
+                total: restoredItem.total,
+                duration_str: restoredItem.durationStr,
+                user_answers: restoredItem.userAnswers,
+                active_questions: restoredItem.activeQuestions
+            }]).select();
+            hideSyncLoader();
+
+            if (insertedHist && insertedHist[0]) {
+                restoredItem.dbId = insertedHist[0].id;
+            }
+
             if(!globalHistory[currentUser]) globalHistory[currentUser] = [];
             globalHistory[currentUser].unshift(restoredItem);
 
-            saveHistoryToStorage();
             saveTrashToStorage();
             updateHistoryUI();
             renderFullHistoryUI();
