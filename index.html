@@ -434,23 +434,23 @@
                     </div>
                 </div>
 
-                <!-- TAB: QUẢN LÝ BỘ ĐỀ & BỔ SUNG NÚT LƯU/TẢI FILE ĐỀ CHỐNG MẤT DỮ LIỆU -->
+                <!-- TAB: QUẢN LÝ BỘ ĐỀ & NÚT TẢI XUỐNG RIÊNG TỪNG BỘ ĐỀ -->
                 <div id="tab-manual-creator" class="hidden space-y-6 flex-1 flex flex-col">
-                    <div class="border-b pb-3 flex justify-between items-center">
+                    
+                    <!-- THANH TIÊU ĐỀ & NÚT TẢI LÊN FILE ĐỀ -->
+                    <div class="bg-sky-50/80 border border-sky-200 p-4 rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4 shadow-sm">
                         <div>
                             <h2 id="creator-main-title" class="text-lg font-bold text-slate-950">Quản Lý & Tạo Đề Kiểm Tra</h2>
-                            <p class="text-xs text-slate-500">Tạo mới, chỉnh sửa bộ đề, set thời gian bắt đầu/kết thúc và kích hoạt đề.</p>
+                            <p class="text-xs text-slate-600">Tạo mới, chỉnh sửa bộ đề, set thời gian, tải xuống từng file đề hoặc tải lên file để ôn tập.</p>
                         </div>
-                        <div class="flex items-center gap-2">
-                            <!-- Nút sao lưu & phục hồi bộ đề chống mất dữ liệu -->
-                            <button onclick="exportExamsBackup()" class="bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-300 px-3.5 py-2 rounded-xl text-xs font-semibold transition flex items-center gap-1.5 cursor-pointer shadow-sm">
-                                <i class="fa-solid fa-file-arrow-down"></i> Tải file đề (.json)
-                            </button>
-                            <input type="file" id="import-file-input" accept=".json" class="hidden" onchange="importExamsBackup(event)">
-                            <button onclick="document.getElementById('import-file-input').click()" class="bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-300 px-3.5 py-2 rounded-xl text-xs font-semibold transition flex items-center gap-1.5 cursor-pointer shadow-sm">
+                        <div class="flex flex-wrap items-center gap-2 w-full md:w-auto">
+                            <!-- Nút tải lên file đề -->
+                            <input type="file" id="import-file-input" accept=".json" class="hidden" onchange="importExamSingleFile(event)">
+                            <button onclick="document.getElementById('import-file-input').click()" class="bg-blue-600 hover:bg-blue-700 text-white px-3.5 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer shadow">
                                 <i class="fa-solid fa-file-arrow-up"></i> Tải lên file đề
                             </button>
-                            <button onclick="switchTab('dashboard')" class="bg-sky-600 hover:bg-sky-700 text-white px-4 py-2 rounded-xl text-xs font-medium transition flex items-center gap-2 shadow-md shrink-0">
+                            <!-- Nút về trang chủ -->
+                            <button onclick="switchTab('dashboard')" class="bg-slate-800 hover:bg-slate-900 text-white px-3.5 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer shadow">
                                 <i class="fa-solid fa-arrow-left"></i> Về trang chủ
                             </button>
                         </div>
@@ -494,7 +494,7 @@
                         </div>
 
                         <div class="flex justify-end pt-2">
-                            <button onclick="generateQuestionSlots()" class="bg-slate-900 hover:bg-slate-800 text-white font-semibold px-6 py-2.5 rounded-lg transition shadow text-xs">
+                            <button onclick="generateQuestionSlots()" class="bg-slate-900 hover:bg-slate-800 text-white font-semibold px-6 py-2.5 rounded-lg transition shadow text-xs cursor-pointer">
                                 <i class="fa-solid fa-wand-magic-sparkles mr-1.5"></i> Tạo khung câu hỏi
                             </button>
                         </div>
@@ -742,40 +742,50 @@
             localStorage.setItem('amc_saved_answers', JSON.stringify(userSavedAnswers));
         }
 
-        // HÀM TẢI VỀ / TẢI LÊN FILE ĐỀ CHỐNG MẤT DỮ LIỆU
-        function exportExamsBackup() {
-            let dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(allExams, null, 2));
+        // HÀM TẢI XUỐNG RIÊNG TỪNG BỘ ĐỀ (.json)
+        function downloadSingleExam(examId) {
+            let exam = allExams.find(e => e.id === examId);
+            if(!exam) return;
+            let dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(exam, null, 2));
             let downloadAnchor = document.createElement('a');
             downloadAnchor.setAttribute("href", dataStr);
-            downloadAnchor.setAttribute("download", `TestMaster_Backup_DeThi_${Date.now()}.json`);
+            let safeTitle = exam.title.replace(/[^a-zA-Z0-9]/g, '_');
+            downloadAnchor.setAttribute("download", `DeThi_${safeTitle}.json`);
             document.body.appendChild(downloadAnchor);
             downloadAnchor.click();
             downloadAnchor.remove();
         }
 
-        function importExamsBackup(event) {
+        // HÀM TẢI LÊN MỘT HOẶC NHIỀU BỘ ĐỀ TỪ FILE JSON ĐÃ LƯU
+        function importExamSingleFile(event) {
             let file = event.target.files[0];
             if(!file) return;
             let reader = new FileReader();
             reader.onload = function(e) {
                 try {
-                    let importedExams = JSON.parse(e.target.result);
-                    if(Array.isArray(importedExams)) {
-                        if(confirm(`Đã đọc thành công ${importedExams.length} bộ đề từ file sao lưu. Bạn có muốn gộp hoặc thay thế danh sách bộ đề hiện tại không? (Bấm OK để gộp, Cancel để hủy)`)) {
-                            importedExams.forEach(imp => {
-                                if(!allExams.some(e => e.id === imp.id)) {
-                                    allExams.push(imp);
-                                }
-                            });
-                        } else {
-                            allExams = importedExams;
+                    let importedData = JSON.parse(e.target.result);
+                    let examsArray = Array.isArray(importedData) ? importedData : [importedData];
+                    
+                    let addedCount = 0;
+                    examsArray.forEach(imp => {
+                        if(imp && imp.id && imp.title && Array.isArray(imp.questions)) {
+                            let existingIndex = allExams.findIndex(e => e.id === imp.id);
+                            if(existingIndex >= 0) {
+                                allExams[existingIndex] = imp; // Cập nhật nếu đã có
+                            } else {
+                                allExams.push(imp); // Thêm mới nếu chưa có
+                            }
+                            addedCount++;
                         }
+                    });
+
+                    if(addedCount > 0) {
                         saveExamsToStorage();
                         renderAdminExamsList();
                         updateDashboardInfo();
-                        alert("Đã khôi phục bộ đề thành công!");
+                        alert(`Đã tải lên và nạp thành công ${addedCount} bộ đề vào hệ thống! Bạn có thể kích hoạt để làm bài ngay.`);
                     } else {
-                        alert("File không hợp lệ!");
+                        alert("File JSON không đúng định dạng cấu trúc bộ đề!");
                     }
                 } catch(err) {
                     alert("Lỗi đọc file JSON!");
@@ -1326,13 +1336,17 @@
                         <div class="text-xs text-slate-500">Môn: ${e.topic} • ${e.questions.length} câu • ${e.timeLimit} phút • Hạn chót: ${e.endTime ? new Date(e.endTime).toLocaleString('vi-VN') : 'Không'}</div>
                     </div>
                     <div class="flex items-center gap-2">
-                        <button onclick="editExam('${e.id}')" class="bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold px-3.5 py-2 rounded-lg transition cursor-pointer flex items-center gap-1">
+                        <!-- NÚT TẢI XUỐNG RIÊNG TỪNG BỘ ĐỀ (ĐẶT Ở VỊ TRÍ KHUNG CHỮ NHẬT ĐỎ) -->
+                        <button onclick="downloadSingleExam('${e.id}')" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-3 py-2 rounded-lg transition cursor-pointer flex items-center gap-1 shadow" title="Tải file đề này về máy">
+                            <i class="fa-solid fa-file-arrow-down"></i> Tải về
+                        </button>
+                        <button onclick="editExam('${e.id}')" class="bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold px-3 py-2 rounded-lg transition cursor-pointer flex items-center gap-1">
                             <i class="fa-solid fa-pen text-slate-500"></i> Sửa
                         </button>
-                        <button onclick="toggleExamActive('${e.id}')" class="${e.isActive ? 'bg-blue-600 hover:bg-blue-700 text-white' : 'bg-emerald-600 hover:bg-emerald-700 text-white'} text-xs font-bold px-3.5 py-2 rounded-lg transition cursor-pointer">
-                            ${e.isActive ? 'Đã kích hoạt' : 'Kích hoạt bộ đề'}
+                        <button onclick="toggleExamActive('${e.id}')" class="${e.isActive ? 'bg-blue-600 hover:bg-blue-700 text-white' : 'bg-sky-600 hover:bg-sky-700 text-white'} text-xs font-bold px-3 py-2 rounded-lg transition cursor-pointer">
+                            ${e.isActive ? 'Đã kích hoạt' : 'Kích hoạt'}
                         </button>
-                        <button onclick="deleteExam('${e.id}')" class="bg-slate-200 hover:bg-sky-600 hover:text-white text-slate-700 text-xs font-bold px-3 py-2 rounded-lg transition cursor-pointer">
+                        <button onclick="deleteExam('${e.id}')" class="bg-slate-200 hover:bg-rose-600 hover:text-white text-slate-700 text-xs font-bold px-2.5 py-2 rounded-lg transition cursor-pointer" title="Xóa đề">
                             <i class="fa-solid fa-trash"></i>
                         </button>
                     </div>
