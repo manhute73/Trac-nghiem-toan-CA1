@@ -267,7 +267,7 @@
                             <div class="flex-1">
                                 <div class="text-xs font-bold text-slate-400 uppercase tracking-wider">Số câu & Tiến độ đề</div>
                                 <div class="flex items-center gap-2 mt-1">
-                                    <span id="display-exam-count" class="font-semibold text-slate-800 text-sm">0 câu trắc nghiệm</span>
+                                    <span id="display-exam-count" class="font-semibold text-slate-800 text-sm">0 câu hỏi</span>
                                 </div>
                             </div>
                         </div>
@@ -527,10 +527,10 @@
                     <div class="space-y-3 border-t pt-4">
                         <h3 class="font-bold text-slate-800 text-xs flex justify-between items-center">
                             <span>Soạn câu hỏi cho bộ đề hiện tại (<span id="manual-q-count">0</span> câu)</span>
-                            <span class="text-sky-600 font-semibold">💡 Mẹo: Click vào ô ảnh rồi bấm Ctrl + V để dán nhanh</span>
+                            <span class="text-sky-600 font-semibold">💡 Mẹo: Click vào ô ảnh rồi bấm Ctrl + V để dán nhanh (Điền ô "Đáp án:" nếu là câu tự luận điền đáp án)</span>
                         </h3>
                         
-                        <div id="manual-question-list" class="space-y-3 max-h-[350px] overflow-y-auto custom-scrollbar pr-2">
+                        <div id="manual-question-list" class="space-y-3 max-h-[380px] overflow-y-auto custom-scrollbar pr-2">
                             <p class="italic text-slate-400 text-center py-8">Chưa có khung câu hỏi. Hãy nhập thông tin và bấm "Tạo khung câu hỏi" ở trên.</p>
                         </div>
 
@@ -728,6 +728,30 @@
         let currentExamTopic = "TOÁN CAO CẤP";
         let activeExamDeadline = null;
 
+        // HÀM HỖ TRỢ KIỂM TRA CÂU HỎI DẠNG ĐIỀN ĐÁP ÁN & SO SÁNH KẾT QUẢ
+        function isFillInBlankQuestion(q) {
+            return q && typeof q.textAnswer === 'string' && q.textAnswer.trim() !== '';
+        }
+
+        function normalizeAnswerString(str) {
+            if (str === undefined || str === null) return "";
+            return String(str).trim().toLowerCase().replace(/\s+/g, '').replace(/,/g, '.');
+        }
+
+        function checkQuestionIsCorrect(q, userAns) {
+            if (isFillInBlankQuestion(q)) {
+                if (userAns === undefined || userAns === null || String(userAns).trim() === '') return false;
+                return normalizeAnswerString(userAns) === normalizeAnswerString(q.textAnswer);
+            } else {
+                return userAns === q.correct;
+            }
+        }
+
+        function escapeHtmlAttr(str) {
+            if (!str) return '';
+            return String(str).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        }
+
         function showSyncLoader(msg = "Đang đồng bộ dữ liệu...") {
             document.getElementById('sync-loading-text').innerText = msg;
             document.getElementById('sync-loading').classList.remove('hidden');
@@ -874,7 +898,6 @@
 
                     for (let imp of examsArray) {
                         if(imp && imp.id && imp.title && Array.isArray(imp.questions)) {
-                            // Nếu file JSON cũ lưu ảnh dạng Base64, tự động đẩy lên Storage lấy URL gọn nhẹ
                             for (let q of imp.questions) {
                                 if (q.imgUrl && q.imgUrl.startsWith('data:')) {
                                     q.imgUrl = await uploadImageToSupabase(q.imgUrl);
@@ -952,7 +975,6 @@
             let isMember = memberUsers.some(u => u.toLowerCase() === user.toLowerCase());
 
             if(isAdmin || isMember) {
-                // Giữ đúng định dạng username trong DB nếu là member
                 if (!isAdmin) {
                     const matched = memberUsers.find(u => u.toLowerCase() === user.toLowerCase());
                     if (matched) user = matched;
@@ -1188,7 +1210,7 @@
 
             if (availableExams.length === 0) {
                 selector.innerHTML = `<option value="">-- Chưa có bộ đề nào được kích hoạt cho môn ${currentExamTopic} --</option>`;
-                document.getElementById('display-exam-count').innerText = `0 câu trắc nghiệm`;
+                document.getElementById('display-exam-count').innerText = `0 câu hỏi`;
                 document.getElementById('input-exam-title').value = "Chưa chọn bộ đề";
                 document.getElementById('input-exam-time').value = "0 phút";
                 document.getElementById('exam-window-display').innerText = "Khung giờ: Không giới hạn";
@@ -1236,7 +1258,7 @@
             let passed = userHistory.some(h => h.examTitle === exam.title);
             let pct = passed ? 100 : 0;
             
-            document.getElementById('display-exam-count').innerText = `${totalQ} câu trắc nghiệm (Tiến độ: ${pct}%)`;
+            document.getElementById('display-exam-count').innerText = `${totalQ} câu hỏi (Tiến độ: ${pct}%)`;
         }
 
         function renderProgressUI() {
@@ -1285,13 +1307,13 @@
             if(!editingExamId) {
                 manualQuestions = [];
                 for (let i = 0; i < totalQ; i++) {
-                    manualQuestions.push({ id: i + 1, imgUrl: "", options: ["A", "B", "C", "D"], correct: 0 });
+                    manualQuestions.push({ id: i + 1, imgUrl: "", options: ["A", "B", "C", "D"], correct: 0, textAnswer: "" });
                 }
             } else {
                 if(totalQ > manualQuestions.length) {
                     let diff = totalQ - manualQuestions.length;
                     for(let i=0; i<diff; i++) {
-                        manualQuestions.push({ id: manualQuestions.length + 1, imgUrl: "", options: ["A", "B", "C", "D"], correct: 0 });
+                        manualQuestions.push({ id: manualQuestions.length + 1, imgUrl: "", options: ["A", "B", "C", "D"], correct: 0, textAnswer: "" });
                     }
                 } else if(totalQ < manualQuestions.length) {
                     manualQuestions = manualQuestions.slice(0, totalQ);
@@ -1301,7 +1323,7 @@
         }
 
         function addSingleManualQuestion() {
-            manualQuestions.push({ id: manualQuestions.length + 1, imgUrl: "", options: ["A", "B", "C", "D"], correct: 0 });
+            manualQuestions.push({ id: manualQuestions.length + 1, imgUrl: "", options: ["A", "B", "C", "D"], correct: 0, textAnswer: "" });
             document.getElementById('input-total-questions').value = manualQuestions.length;
             updateManualListUI();
         }
@@ -1354,6 +1376,20 @@
             manualQuestions[index].correct = parseInt(value);
         }
 
+        function updateQuestionTextAnswer(index, value) {
+            manualQuestions[index].textAnswer = value;
+            const selectEl = document.getElementById(`select_correct_${index}`);
+            if (selectEl) {
+                if (value.trim() !== '') {
+                    selectEl.disabled = true;
+                    selectEl.classList.add('opacity-40', 'cursor-not-allowed');
+                } else {
+                    selectEl.disabled = false;
+                    selectEl.classList.remove('opacity-40', 'cursor-not-allowed');
+                }
+            }
+        }
+
         function updateManualListUI() {
             let filledCount = manualQuestions.filter(q => q && q.imgUrl).length;
             document.getElementById('manual-q-count').innerText = `${filledCount}/${manualQuestions.length}`;
@@ -1362,7 +1398,9 @@
                 listEl.innerHTML = `<p class="italic text-slate-400 text-center py-8">Chưa có khung câu hỏi nào.</p>`;
                 return;
             }
-            listEl.innerHTML = manualQuestions.map((q, idx) => `
+            listEl.innerHTML = manualQuestions.map((q, idx) => {
+                let hasTextAns = isFillInBlankQuestion(q);
+                return `
                 <div class="bg-white border ${q.imgUrl ? 'border-emerald-200 bg-emerald-50/10' : 'border-slate-200'} p-3 rounded-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-sm">
                     <div class="flex items-center gap-3 w-full sm:w-auto">
                         <span class="font-bold text-slate-900 text-xs bg-slate-100 px-2.5 py-1.5 rounded-lg shrink-0">Câu ${idx + 1}</span>
@@ -1377,21 +1415,27 @@
                         </div>
                     </div>
                     <div class="flex items-center gap-3 w-full sm:w-auto justify-end">
-                        <div class="flex items-center gap-2">
-                            <span class="text-xs font-bold text-slate-500">Đáp án:</span>
-                            <select onchange="updateQuestionCorrect(${idx}, this.value)" class="bg-white border border-slate-300 rounded-lg px-2.5 py-1.5 text-xs font-bold text-emerald-700 focus:border-sky-600 focus:outline-none shadow-sm">
-                                <option value="0" ${q.correct === 0 ? 'selected' : ''}>A đúng</option>
-                                <option value="1" ${q.correct === 1 ? 'selected' : ''}>B đúng</option>
-                                <option value="2" ${q.correct === 2 ? 'selected' : ''}>C đúng</option>
-                                <option value="3" ${q.correct === 3 ? 'selected' : ''}>D đúng</option>
-                            </select>
+                        <div class="flex flex-col items-end gap-1.5">
+                            <div class="flex items-center gap-2">
+                                <span class="text-xs font-bold text-slate-500">Đáp án:</span>
+                                <select id="select_correct_${idx}" ${hasTextAns ? 'disabled' : ''} onchange="updateQuestionCorrect(${idx}, this.value)" class="bg-white border border-slate-300 rounded-lg px-2.5 py-1.5 text-xs font-bold text-emerald-700 focus:border-sky-600 focus:outline-none shadow-sm ${hasTextAns ? 'opacity-40 cursor-not-allowed' : ''}">
+                                    <option value="0" ${q.correct === 0 ? 'selected' : ''}>A đúng</option>
+                                    <option value="1" ${q.correct === 1 ? 'selected' : ''}>B đúng</option>
+                                    <option value="2" ${q.correct === 2 ? 'selected' : ''}>C đúng</option>
+                                    <option value="3" ${q.correct === 3 ? 'selected' : ''}>D đúng</option>
+                                </select>
+                            </div>
+                            <div class="flex items-center gap-1.5">
+                                <span class="text-[11px] font-bold text-sky-700">Đáp án:</span>
+                                <input type="text" value="${escapeHtmlAttr(q.textAnswer || '')}" oninput="updateQuestionTextAnswer(${idx}, this.value)" placeholder="Điền vào đây..." class="w-32 bg-sky-50/50 border border-sky-300 rounded-lg px-2.5 py-1 text-xs font-bold text-slate-900 placeholder:font-normal placeholder:text-slate-400 focus:border-sky-600 focus:bg-white focus:outline-none shadow-xs">
+                            </div>
                         </div>
                         <button onclick="deleteManualQuestion(${idx})" title="Xóa câu này" class="bg-rose-50 hover:bg-rose-600 hover:text-white text-rose-600 px-3 py-1.5 rounded-lg text-xs font-bold transition border border-rose-200 cursor-pointer">
                             <i class="fa-solid fa-trash"></i>
                         </button>
                     </div>
                 </div>
-            `).join('');
+            `}).join('');
         }
 
         // LƯU HOẶC CẬP NHẬT BỘ ĐỀ LÊN SUPABASE
@@ -1604,35 +1648,64 @@
             }, 1000);
 
             const container = document.getElementById('quiz-questions-container');
-            container.innerHTML = activeQuestions.map((q, qIdx) => `
-                <div id="question_card_${qIdx}" class="bg-white border border-slate-200 p-4 rounded-xl shadow-sm space-y-3">
-                    <div class="flex items-center justify-between pb-2 border-b border-slate-100">
-                        <span class="font-bold text-slate-900 text-xs bg-slate-100 px-2.5 py-1 rounded-md">Câu ${qIdx + 1}</span>
-                        <span class="text-xs font-semibold text-slate-500">${exam.title}</span>
+            container.innerHTML = activeQuestions.map((q, qIdx) => {
+                let isFillBlank = isFillInBlankQuestion(q);
+                let answerAreaHtml = '';
+
+                if (isFillBlank) {
+                    let savedVal = userAnswers[qIdx] !== undefined ? userAnswers[qIdx] : '';
+                    answerAreaHtml = `
+                        <div class="pt-2 flex flex-col sm:flex-row items-start sm:items-center gap-3">
+                            <label for="input_fill_${qIdx}" class="font-bold text-slate-800 text-sm shrink-0">Đáp án:</label>
+                            <input type="text" id="input_fill_${qIdx}" value="${escapeHtmlAttr(savedVal)}" oninput="handleFillBlankInput(${qIdx}, this.value)" placeholder="Nhập đáp án của bạn vào ô vuông này..." class="w-full sm:w-72 bg-slate-50 border-2 border-slate-300 focus:border-sky-600 focus:bg-white rounded-xl px-4 py-2.5 text-sm font-bold text-slate-900 focus:outline-none shadow-xs transition">
+                        </div>
+                    `;
+                } else {
+                    answerAreaHtml = `
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
+                            ${q.options.map((opt, optIdx) => {
+                                let isSelected = userAnswers[qIdx] === optIdx;
+                                return `
+                                    <label id="label_q_${qIdx}_${optIdx}" onclick="selectOption(${qIdx}, ${optIdx})" class="flex items-center justify-center gap-2 py-2 px-3 rounded-lg border ${isSelected ? 'border-sky-500 bg-sky-50/40 shadow-sm' : 'border-slate-200 bg-slate-50 hover:border-sky-500 hover:bg-sky-50/25'} cursor-pointer transition select-none">
+                                        <input type="radio" name="q_${qIdx}" value="${optIdx}" ${isSelected ? 'checked' : ''} class="w-3.5 h-3.5 text-sky-600 focus:ring-sky-500 hidden">
+                                        <span id="badge_q_${qIdx}_${optIdx}" class="font-bold ${isSelected ? 'text-white bg-sky-600' : 'text-slate-700 bg-white border border-slate-200'} text-xs w-6 h-6 rounded-full flex items-center justify-center shrink-0">${String.fromCharCode(65 + optIdx)}</span>
+                                    </label>
+                                `;
+                            }).join('')}
+                        </div>
+                    `;
+                }
+
+                return `
+                    <div id="question_card_${qIdx}" class="bg-white border border-slate-200 p-4 rounded-xl shadow-sm space-y-3">
+                        <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+                            <span class="font-bold text-slate-900 text-xs bg-slate-100 px-2.5 py-1 rounded-md">Câu ${qIdx + 1}</span>
+                            <span class="text-xs font-semibold text-slate-500">${exam.title}</span>
+                        </div>
+                        <div class="question-frame-box"><img src="${q.imgUrl}" alt="Câu hỏi"></div>
+                        ${answerAreaHtml}
                     </div>
-                    <div class="question-frame-box"><img src="${q.imgUrl}" alt="Câu hỏi"></div>
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
-                        ${q.options.map((opt, optIdx) => {
-                            let isSelected = userAnswers[qIdx] === optIdx;
-                            return `
-                                <label id="label_q_${qIdx}_${optIdx}" onclick="selectOption(${qIdx}, ${optIdx})" class="flex items-center justify-center gap-2 py-2 px-3 rounded-lg border ${isSelected ? 'border-sky-500 bg-sky-50/40 shadow-sm' : 'border-slate-200 bg-slate-50 hover:border-sky-500 hover:bg-sky-50/25'} cursor-pointer transition select-none">
-                                    <input type="radio" name="q_${qIdx}" value="${optIdx}" ${isSelected ? 'checked' : ''} class="w-3.5 h-3.5 text-sky-600 focus:ring-sky-500 hidden">
-                                    <span id="badge_q_${qIdx}_${optIdx}" class="font-bold ${isSelected ? 'text-white bg-sky-600' : 'text-slate-700 bg-white border border-slate-200'} text-xs w-6 h-6 rounded-full flex items-center justify-center shrink-0">${String.fromCharCode(65 + optIdx)}</span>
-                                </label>
-                            `;
-                        }).join('')}
-                    </div>
-                </div>
-            `).join('');
+                `;
+            }).join('');
 
             updatePaletteGrid();
             switchTab('quiz');
         }
 
+        function handleFillBlankInput(qIdx, val) {
+            if (val.trim() === '') {
+                delete userAnswers[qIdx];
+            } else {
+                userAnswers[qIdx] = val;
+            }
+            saveAutoAnswers();
+            updatePaletteGrid();
+        }
+
         function updatePaletteGrid() {
             const paletteEl = document.getElementById('palette-grid');
             paletteEl.innerHTML = activeQuestions.map((q, qIdx) => {
-                let isAnswered = userAnswers[qIdx] !== undefined;
+                let isAnswered = userAnswers[qIdx] !== undefined && String(userAnswers[qIdx]).trim() !== '';
                 return `<button onclick="scrollToQuestion(${qIdx})" class="w-9 h-9 rounded-lg text-xs flex items-center justify-center transition ${isAnswered ? "bg-emerald-600 text-white font-bold" : "bg-white text-sky-600 border border-sky-300 font-normal"}">${qIdx + 1}</button>`;
             }).join('');
         }
@@ -1661,7 +1734,7 @@
 
         function validateAndSubmitExam() {
             let total = activeQuestions.length;
-            let answeredCount = Object.keys(userAnswers).length;
+            let answeredCount = Object.keys(userAnswers).filter(k => userAnswers[k] !== undefined && String(userAnswers[k]).trim() !== '').length;
             if (answeredCount < total) {
                 if(!confirm(`Bạn mới trả lời ${answeredCount}/${total} câu. Bạn có chắc chắn muốn nộp bài không?`)) return;
             }
@@ -1679,7 +1752,7 @@
 
             let correctCount = 0, total = activeQuestions.length, wrongCount = 0;
             activeQuestions.forEach((q, idx) => {
-                if(userAnswers[idx] === q.correct) correctCount++; else wrongCount++;
+                if(checkQuestionIsCorrect(q, userAnswers[idx])) correctCount++; else wrongCount++;
             });
 
             let scoreNum = total > 0 ? (correctCount / total) * 10 : 0;
@@ -1785,7 +1858,8 @@
                     topic: currentExamTopic,
                     questionIndex: qIdx + 1,
                     imgUrl: q.imgUrl,
-                    correct: q.correct
+                    correct: q.correct,
+                    textAnswer: q.textAnswer || ""
                 });
             }
             saveBookmarksToStorage();
@@ -1795,8 +1869,7 @@
         function renderReviewList(filterType) {
             const reviewContainer = document.getElementById('review-questions-container');
             let filteredQuestions = activeQuestions.map((q, idx) => ({q, idx})).filter(item => {
-                let userChoice = userAnswers[item.idx];
-                let isCorrect = userChoice === item.q.correct;
+                let isCorrect = checkQuestionIsCorrect(item.q, userAnswers[item.idx]);
                 if (filterType === 'correct') return isCorrect;
                 if (filterType === 'wrong') return !isCorrect;
                 return true;
@@ -1811,38 +1884,71 @@
 
             reviewContainer.innerHTML = filteredQuestions.map(({q, idx: qIdx}) => {
                 let userChoice = userAnswers[qIdx];
-                let isCorrect = userChoice === q.correct;
+                let isCorrect = checkQuestionIsCorrect(q, userChoice);
                 let bookmarkId = `${currentExamTitle}_q_${qIdx}`;
                 let isBookmarked = bookmarks.some(b => b.id === bookmarkId);
+                let isFillBlank = isFillInBlankQuestion(q);
 
-                let optionsHtml = ['A', 'B', 'C', 'D'].map((optLetter, optIdx) => {
-                    let isUserChoice = (userChoice === optIdx);
-                    let isCorrectChoice = (q.correct === optIdx);
+                let reviewDetailsHtml = '';
 
-                    let boxClass = "bg-white border border-slate-200";
-                    let badgeClass = "bg-slate-100 text-slate-700 border border-slate-200";
-                    let labelTag = "";
-
-                    if (isCorrectChoice) {
-                        boxClass = "bg-sky-50/40 border border-sky-400";
-                        badgeClass = "bg-sky-600 text-white font-bold";
-                        labelTag = `<span class="bg-sky-100 text-sky-700 text-xs font-bold px-3 py-1 rounded-full flex items-center gap-1 shadow-sm"><i class="fa-solid fa-check"></i> Đáp án đúng</span>`;
-                    } else if (isUserChoice && !isCorrectChoice) {
-                        boxClass = "bg-sky-50/40 border border-sky-300";
-                        badgeClass = "bg-blue-600 text-white font-bold";
-                        labelTag = `<span class="bg-sky-100 text-blue-700 text-xs font-bold px-3 py-1 rounded-full flex items-center gap-1 shadow-sm"><i class="fa-solid fa-xmark"></i> Bạn chọn sai</span>`;
-                    }
-
-                    return `
-                        <div class="${boxClass} p-3 rounded-xl flex items-center justify-between gap-3 shadow-sm">
-                            <div class="flex items-center gap-3">
-                                <span class="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold ${badgeClass}">${optLetter}</span>
-                                <span class="text-xs font-medium text-slate-700">Lựa chọn ${optLetter}</span>
+                if (isFillBlank) {
+                    let userText = (userChoice !== undefined && String(userChoice).trim() !== '') ? escapeHtmlAttr(userChoice) : '(Bỏ trống)';
+                    reviewDetailsHtml = `
+                        <div class="space-y-2 pt-2">
+                            <div class="${isCorrect ? 'bg-emerald-50/60 border border-emerald-400' : 'bg-rose-50/60 border border-rose-300'} p-3 rounded-xl flex items-center justify-between gap-3 shadow-sm">
+                                <div class="text-xs font-semibold text-slate-800">
+                                    Đáp án bạn đã điền: <span class="font-bold text-sm ${isCorrect ? 'text-emerald-700' : 'text-rose-700'}">${userText}</span>
+                                </div>
+                                <span class="${isCorrect ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'} text-xs font-bold px-3 py-1 rounded-full flex items-center gap-1">
+                                    <i class="fa-solid ${isCorrect ? 'fa-check' : 'fa-xmark'}"></i> ${isCorrect ? 'Chính xác' : 'Chưa đúng'}
+                                </span>
                             </div>
-                            <div>${labelTag}</div>
+                            ${!isCorrect ? `
+                                <div class="bg-sky-50/60 border border-sky-400 p-3 rounded-xl flex items-center justify-between gap-3 shadow-sm">
+                                    <div class="text-xs font-semibold text-slate-800">
+                                        Đáp án đúng của đề: <span class="font-bold text-sm text-sky-700">${escapeHtmlAttr(q.textAnswer)}</span>
+                                    </div>
+                                    <span class="bg-sky-100 text-sky-700 text-xs font-bold px-3 py-1 rounded-full flex items-center gap-1">
+                                        <i class="fa-solid fa-check"></i> Đáp án chuẩn
+                                    </span>
+                                </div>
+                            ` : ''}
                         </div>
                     `;
-                }).join('');
+                } else {
+                    reviewDetailsHtml = `
+                        <div class="space-y-2 pt-2">
+                            ${['A', 'B', 'C', 'D'].map((optLetter, optIdx) => {
+                                let isUserChoice = (userChoice === optIdx);
+                                let isCorrectChoice = (q.correct === optIdx);
+
+                                let boxClass = "bg-white border border-slate-200";
+                                let badgeClass = "bg-slate-100 text-slate-700 border border-slate-200";
+                                let labelTag = "";
+
+                                if (isCorrectChoice) {
+                                    boxClass = "bg-sky-50/40 border border-sky-400";
+                                    badgeClass = "bg-sky-600 text-white font-bold";
+                                    labelTag = `<span class="bg-sky-100 text-sky-700 text-xs font-bold px-3 py-1 rounded-full flex items-center gap-1 shadow-sm"><i class="fa-solid fa-check"></i> Đáp án đúng</span>`;
+                                } else if (isUserChoice && !isCorrectChoice) {
+                                    boxClass = "bg-sky-50/40 border border-sky-300";
+                                    badgeClass = "bg-blue-600 text-white font-bold";
+                                    labelTag = `<span class="bg-sky-100 text-blue-700 text-xs font-bold px-3 py-1 rounded-full flex items-center gap-1 shadow-sm"><i class="fa-solid fa-xmark"></i> Bạn chọn sai</span>`;
+                                }
+
+                                return `
+                                    <div class="${boxClass} p-3 rounded-xl flex items-center justify-between gap-3 shadow-sm">
+                                        <div class="flex items-center gap-3">
+                                            <span class="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold ${badgeClass}">${optLetter}</span>
+                                            <span class="text-xs font-medium text-slate-700">Lựa chọn ${optLetter}</span>
+                                        </div>
+                                        <div>${labelTag}</div>
+                                    </div>
+                                `;
+                            }).join('')}
+                        </div>
+                    `;
+                }
 
                 return `
                     <div class="bg-white border-l-4 ${isCorrect ? 'border-l-emerald-500 border-slate-200' : 'border-l-sky-600 border-slate-200'} border rounded-xl p-4 space-y-3 shadow-sm">
@@ -1863,9 +1969,7 @@
 
                         <div class="question-frame-box"><img src="${q.imgUrl}" alt="Câu hỏi"></div>
 
-                        <div class="space-y-2 pt-2">
-                            ${optionsHtml}
-                        </div>
+                        ${reviewDetailsHtml}
                     </div>
                 `;
             }).join('');
@@ -1880,7 +1984,11 @@
                 return;
             }
 
-            container.innerHTML = bookmarks.map((b) => `
+            container.innerHTML = bookmarks.map((b) => {
+                let ansDisplay = (b.textAnswer && b.textAnswer.trim() !== '') 
+                    ? escapeHtmlAttr(b.textAnswer) 
+                    : `<span class="uppercase">${String.fromCharCode(65 + b.correct)}</span>`;
+                return `
                 <div class="bg-white border border-slate-200 p-5 rounded-2xl shadow-sm space-y-3">
                     <div class="flex items-center justify-between border-b pb-2">
                         <div>
@@ -1893,10 +2001,10 @@
                     </div>
                     <div class="question-frame-box"><img src="${b.imgUrl}" alt="Câu hỏi đánh dấu"></div>
                     <div class="text-xs font-semibold text-sky-700">
-                        Đáp án đúng: <span class="uppercase">${String.fromCharCode(65 + b.correct)}</span>
+                        Đáp án đúng: ${ansDisplay}
                     </div>
                 </div>
-            `).join('');
+            `}).join('');
         }
 
         function removeBookmark(id) {
